@@ -18,13 +18,15 @@ const included = [
 export default function ProductPage() {
   return (
     <div className="pageShell detailPage karcherDetailPage">
-      <Link href="/produkter" className="backLink" aria-label="Till produkter">
-        <BackIcon />
-      </Link>
+      <div className="productContextRow">
+        <Link href="/produkter" className="backLink" aria-label="Till produkter">
+          <BackIcon />
+        </Link>
+        <span>Textil- och möbeltvätt</span>
+      </div>
 
-      <header className="productTitle">
+      <header className="productTitle compactProductTitle">
         <h1>KÄRCHER<br />SE 3 COMPACT</h1>
-        <p>Textil- och möbeltvätt</p>
       </header>
 
       <div className="detailProductVisual">
@@ -56,40 +58,18 @@ export default function ProductPage() {
       </details>
 
       <div className="stackedActions">
-        <Link
-          href="/produkter/karcher-se-3-compact/guide#kom-igang"
-          className="darkAction"
-        >
-          <BookIcon />
-          <span>Användarguide</span>
-          <b>›</b>
+        <Link href="/produkter/karcher-se-3-compact/guide#kom-igang" className="darkAction">
+          <BookIcon /><span>Användarguide</span><b>›</b>
         </Link>
-
-        <Link
-          href="/produkter/karcher-se-3-compact/guide#vanliga-fel"
-          className="darkAction"
-        >
-          <InfoIcon />
-          <span>Vanliga problem</span>
-          <b>›</b>
+        <Link href="/produkter/karcher-se-3-compact/guide#vanliga-fel" className="darkAction">
+          <InfoIcon /><span>Vanliga problem</span><b>›</b>
         </Link>
-
-        <Link
-          href="/produkter/karcher-se-3-compact/guide#aterlamning"
-          className="darkAction"
-        >
-          <CheckIcon />
-          <span>Innan återlämning</span>
-          <b>›</b>
+        <Link href="/produkter/karcher-se-3-compact/guide#aterlamning" className="darkAction">
+          <CheckIcon /><span>Innan återlämning</span><b>›</b>
         </Link>
       </div>
 
-      <a
-        className="primaryButton wide"
-        href="https://www.hygglo.se"
-        target="_blank"
-        rel="noreferrer"
-      >
+      <a className="primaryButton wide" href="https://www.hygglo.se" target="_blank" rel="noreferrer">
         Boka på Hygglo <span>↗</span>
       </a>
     </div>
