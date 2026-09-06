@@ -5,7 +5,10 @@ export default function HomePage() {
   return <div className="homePage">
     <section className="hero">
       <div className="heroContent">
-        <h1>Det du behöver.<br/><span>När du behöver det.</span></h1>
+        <h1>
+          <span className="heroLine heroLinePrimary">Det du behöver.</span>
+          <span className="heroLine heroLineAccent">När du behöver det.</span>
+        </h1>
         <p>Hyr verktyg, maskiner och utrustning för hemmet, resan och nästa projekt.</p>
         <Link className="primaryButton" href="/produkter">Utforska produkter <ArrowIcon /></Link>
       </div>
