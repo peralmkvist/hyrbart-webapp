@@ -11,12 +11,21 @@ const items = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+
+  // Guider är ett fokuserat arbetsläge och ska inte visa huvudnavigationen.
+  if (pathname.includes('/guide')) return null;
+
   return (
     <nav className="liquidNav" aria-label="Huvudmeny">
       {items.map(({ href, label, Icon, match }) => {
         const active = match(pathname);
         return (
-          <Link key={href} href={href} className={`navItem ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
+          <Link
+            key={href}
+            href={href}
+            className={`navItem ${active ? 'active' : ''}`}
+            aria-current={active ? 'page' : undefined}
+          >
             <span className="activeLens" aria-hidden="true" />
             <Icon className="navIcon" />
             <span>{label}</span>
