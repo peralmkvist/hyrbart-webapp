@@ -426,3 +426,37 @@
 .karcherDetailPage .detailProductVisual .productVisual.large{
   margin-top:14px !important;
 }
+/* Restore guide sticky header after later CSS additions */
+.guidePage{
+  overflow:visible !important;
+}
+
+.guidePage .guideSticky{
+  position:static !important;
+  overflow:visible !important;
+  transform:none !important;
+}
+
+.guidePage .guideSticky .guideTop{
+  position:-webkit-sticky !important;
+  position:sticky !important;
+  top:0 !important;
+  z-index:100 !important;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+}
+
+.guidePage .guideSticky .guideTabs{
+  position:-webkit-sticky !important;
+  position:sticky !important;
+  top:58px !important;
+  z-index:99 !important;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+}
+
+.guidePage .guideSection{
+  scroll-margin-top:116px !important;
+}
