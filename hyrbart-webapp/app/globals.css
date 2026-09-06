@@ -215,3 +215,73 @@
 .productsPage .pageHeader{
   margin-top:0 !important;
 }
+/* Kärcher product detail v2 */
+.karcherDetailPage{
+  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+}
+
+.karcherDetailPage .detailProductVisual .productVisual.large{
+  height:230px;
+  margin:14px 0 22px;
+}
+
+.karcherDetailPage .included{
+  margin-top:0;
+}
+
+.karcherDetailPage .included h2{
+  margin-top:0;
+}
+
+.karcherDetailPage .specDropdown summary .specChevron{
+  transition:transform .18s ease;
+}
+
+.karcherDetailPage .specDropdown[open] summary .specChevron{
+  transform:rotate(180deg);
+}
+
+.karcherDetailPage .darkAction{
+  min-height:58px;
+}
+
+.karcherDetailPage .primaryButton.wide{
+  min-height:58px;
+}
+/* Compact product header */
+.karcherDetailPage .productContextRow{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding-top:8px;
+  margin-bottom:22px;
+  min-height:44px;
+}
+
+.karcherDetailPage .productContextRow .backLink{
+  position:static;
+  margin:0;
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.karcherDetailPage .productContextRow > span{
+  color:var(--muted);
+  font-size:17px;
+  line-height:1.25;
+  font-weight:500;
+}
+
+.karcherDetailPage .compactProductTitle{
+  margin-top:0;
+}
+
+.karcherDetailPage .compactProductTitle h1{
+  margin-top:0;
+}
+
+.karcherDetailPage .detailProductVisual .productVisual.large{
+  margin-top:10px;
+}
