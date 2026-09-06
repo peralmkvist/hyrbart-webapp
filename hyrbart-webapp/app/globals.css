@@ -1,552 +1,803 @@
-
-:root{--accent:#c6f000;--ink:#15191b;--muted:#62676b;--bg:#f4f4f1;--surface:#fff;--line:#d9dcda;--info:#1976d2;--radius:18px;--nav-h:74px}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button{font:inherit}main{min-height:100svh;padding-bottom:calc(var(--nav-h) + 28px)}
-.pageShell{max-width:760px;margin:0 auto;padding:28px 20px 40px}.pageHeader h1,.productTitle h1{margin:0;font-size:clamp(2rem,8vw,3.8rem);line-height:.92;letter-spacing:-.045em;font-weight:900}.pageHeader p,.productTitle p{margin:8px 0 0;color:var(--muted);font-size:1rem}.primaryButton{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:14px;background:var(--accent);padding:15px 20px;font-weight:850;box-shadow:0 4px 14px rgba(0,0,0,.08)}.primaryButton svg{width:19px}.primaryButton.compact{width:100%;padding:11px 12px;margin-top:10px}.primaryButton.wide{width:100%;margin-top:14px}
-.homePage{min-height:100svh;background:#101516;padding-bottom:calc(var(--nav-h) + 56px + env(safe-area-inset-bottom))}.hero{position:relative;min-height:72svh;overflow:hidden;color:#fff;background:linear-gradient(180deg,#101516,#1d2528)}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.18) 58%,rgba(0,0,0,.28))}.heroBackdrop{position:absolute;inset:auto -10% 0 12%;height:52%;opacity:.9;filter:saturate(.8)}.heroTool{position:absolute;right:7%;bottom:10%;transform:scale(.62)}.heroContent{position:relative;z-index:1;padding:72px 28px 30px;max-width:570px}.hero h1{margin:0 0 18px;font-size:clamp(3rem,13vw,5.7rem);line-height:.88;letter-spacing:-.055em}.hero h1 span{color:var(--accent)}.hero p{font-size:1.08rem;line-height:1.45;max-width:420px}.hero .primaryButton{margin-top:12px;color:#111}.aboutCard{position:relative;z-index:3;margin:-26px 16px 0;background:#fff;border-radius:26px;padding:24px;display:grid;grid-template-columns:68px 1fr;gap:18px;box-shadow:0 10px 26px rgba(0,0,0,.16)}.aboutCard h2{margin:0 0 8px}.aboutCard p{margin:0 0 10px;color:#394043;line-height:1.45}.avatar{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#d8c49c,#4e6b59);color:white;font-weight:900;font-size:28px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;color:#34393c}.chip.active{background:var(--accent);border-color:transparent;color:#111;font-weight:800}.productGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.productCard{background:#fff;border:1px solid #eceeec;border-radius:16px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.035)}.productCard h2{font-size:1.05rem;line-height:1.08;margin:10px 0 5px}.productCard p{margin:0;color:#404649;line-height:1.35}
-.productVisual{height:145px;border-radius:12px;background:linear-gradient(180deg,#f7f7f6,#e9eceb);display:grid;place-items:center;overflow:hidden;position:relative}.productVisual.large{height:300px;background:transparent}.machineBody{position:relative;width:62%;height:55%;border-radius:24px 22px 18px 18px;background:#15191b;box-shadow:0 14px 25px rgba(0,0,0,.15)}.machineTop{position:absolute;left:28%;top:-18%;width:43%;height:24%;border:12px solid #171a1c;border-bottom:0;border-radius:16px 16px 0 0}.machineAccent{position:absolute;left:14%;right:10%;bottom:13%;height:38%;background:var(--machine-accent);border-radius:8px}.machineWheel{position:absolute;bottom:-8%;width:20%;aspect-ratio:1;border-radius:50%;background:#222;border:6px solid #111}.w1{left:13%}.w2{right:10%}.sawBlade{position:absolute;right:4%;top:-20%;width:44%;aspect-ratio:1;border-radius:50%;border:8px solid #a8b0b3;background:conic-gradient(from 10deg,#f4f4f4,#b8bec0,#f4f4f4)}
-.backLink,.guideTop a{display:inline-grid;place-items:center;width:40px;height:40px;margin-bottom:6px}.productTitle{margin-top:2px}.included h2{font-size:1.35rem}.includedGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.includedGrid>div{display:flex;align-items:center;gap:8px;font-size:.93rem}.checkCircle{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--accent);flex:0 0 auto}.checkCircle svg{width:16px}.specDropdown{margin:22px 0 10px;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}.specDropdown summary{display:grid;grid-template-columns:24px 1fr auto;gap:9px;align-items:center;padding:14px 15px;font-weight:800;cursor:pointer;list-style:none}.specBody{border-top:1px solid var(--line);padding:10px 15px}.specBody>div{display:flex;justify-content:space-between;padding:7px 0}.stackedActions{display:grid;gap:7px}.darkAction{min-height:48px;border-radius:10px;background:var(--ink);color:#fff;display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:9px;padding:10px 14px;font-weight:750}.darkAction svg{width:21px}.darkAction b{font-size:24px;font-weight:400}
-.guideTop{display:grid;grid-template-columns:42px 1fr;align-items:center;text-align:center;margin-bottom:6px}.guideTop a{margin:0}.guideTabs{position:sticky;top:0;z-index:5;margin:0 -20px 28px;padding:0 20px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}.guideTabs a{padding:13px 4px;text-align:center;font-size:.82rem;white-space:nowrap}.guideTabs a.active{font-weight:800;box-shadow:inset 0 -3px var(--accent)}.guideSection{min-height:calc(100svh - var(--nav-h) - 70px);padding:8px 0 34px;scroll-margin-top:60px}.stepHeading{display:flex;align-items:center;gap:13px}.stepHeading span{background:var(--ink);color:var(--accent);border-radius:9px;width:43px;height:43px;display:grid;place-items:center;font-weight:900;font-size:1.4rem}.stepHeading h1,.stepHeading h2{font-size:2rem;margin:0;letter-spacing:-.03em}.guideSection>p{font-size:1.05rem;line-height:1.5}.guideImage{height:340px;border-radius:14px;background:linear-gradient(180deg,#e7e5e2,#b5b8b7);position:relative;overflow:hidden;margin:18px 0}.tank{position:absolute;left:12%;right:12%;bottom:9%;height:60%;border-radius:16px 16px 28px 28px;border:8px solid #707779;background:rgba(255,255,255,.1);overflow:hidden}.fill{position:absolute;left:0;right:0;bottom:0;height:45%;background:rgba(110,145,151,.35)}.pour{position:absolute;right:18%;top:8%;font-size:90px;transform:rotate(18deg);color:white}.bottle{position:absolute;right:19%;bottom:13%;width:90px;height:170px;border-radius:12px;background:#e4bd00;border-top:34px solid #202426;display:grid;place-items:center;font-weight:900}.infoBox{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:14px;border-radius:12px;background:#e4f2ff}.infoBox svg{color:var(--info)}.infoBox p{margin:3px 0 0}.termsPage{max-width:680px}.termsCard{padding:20px 0;border-bottom:1px solid var(--line)}.termsCard h2{margin:0 0 8px}.termsCard p{line-height:1.6;color:#363c3f}.termsNote{margin-top:30px;padding:16px;border-radius:12px;background:#fff4d7;line-height:1.5}
-.liquidNav{position:fixed;z-index:100;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(calc(100% - 40px),720px);height:var(--nav-h);display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(255,255,255,.66);border-radius:26px;background:rgba(242,244,242,.67);backdrop-filter:blur(13px) saturate(1.22);-webkit-backdrop-filter:blur(13px) saturate(1.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 6px 22px rgba(15,20,20,.09);overflow:hidden}.navItem{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.78rem;color:#1e2325;isolation:isolate}.navIcon{width:24px;height:24px;position:relative;z-index:2}.navItem>span:last-child{position:relative;z-index:2}.navItem.active{color:var(--accent);font-weight:800}.activeLens{position:absolute;z-index:1;inset:2px 0;border-radius:24px;background:rgba(255,255,255,.14);backdrop-filter:blur(2px) brightness(1.035);-webkit-backdrop-filter:blur(2px) brightness(1.035);box-shadow:inset 1px 0 rgba(255,255,255,.48),inset -1px 0 rgba(255,255,255,.18);opacity:0;transition:opacity .2s ease}.navItem.active .activeLens{opacity:1}
-@media(min-width:800px){.heroContent{padding-left:max(28px,calc((100vw - 760px)/2))}.aboutCard{max-width:720px;margin:-26px auto 22px}.homePage{padding-bottom:20px}.pageShell{padding-top:46px}}
-
-.hero h1 .heroLine{display:block}
-.hero h1 .heroLinePrimary{color:#fff}
-.hero h1 .heroLineAccent{color:var(--accent)}
-/* Products v2 – mobile list layout */
-.productsPage{
-  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
-}
-.productsChips{
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  overflow-y:hidden;
-  gap:8px;
-  margin:20px -20px 22px;
-  padding:0 20px 6px;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
-}
-.productsChips::-webkit-scrollbar{display:none}
-.productsChips .chip{
-  flex:0 0 auto;
-  white-space:nowrap;
-}
-.productGrid.productList{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:14px;
-}
-.productListCard{
-  display:grid;
-  grid-template-columns:42% minmax(0,1fr);
-  gap:14px;
-  align-items:stretch;
-  padding:12px;
-}
-.productListCard .productVisual{
-  height:auto;
-  min-height:190px;
-}
-.productCardContent{
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-}
-.productListCard h2{
-  margin:5px 0 7px;
-  font-size:1.22rem;
-  line-height:1.08;
-}
-.productListCard p{
-  margin:0;
-  font-size:.98rem;
-  line-height:1.38;
-}
-.productListCard .primaryButton.compact{
-  margin-top:14px;
-}
-@media (max-width:380px){
-  .productListCard{grid-template-columns:40% minmax(0,1fr);gap:11px}
-  .productListCard .productVisual{min-height:176px}
-  .productListCard h2{font-size:1.1rem}
-}
-/* Fixed product catalogue header – reliable on iOS Safari */
-.productsPage{
-  padding-top:238px;
-  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+:root {
+  --accent: #c6f000;
+  --ink: #15191b;
+  --muted: #62676b;
+  --bg: #f4f4f1;
+  --surface: #fff;
+  --line: #d9dcda;
+  --info: #1976d2;
+  --radius: 18px;
+  --nav-h: 74px;
 }
 
-.productsStickyHeader{
-  position:fixed;
-  top:0;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:80;
-  width:min(100%,760px);
-  padding:28px 20px 8px;
-  background:rgba(244,244,241,.985);
-  -webkit-backdrop-filter:blur(14px);
-  backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(21,25,27,.06);
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.productsStickyHeader .pageHeader{
-  margin:0;
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+
+main {
+  min-height: 100svh;
+  padding-bottom: calc(var(--nav-h) + 28px);
 }
 
-.productsStickyHeader .pageHeader h1{
-  margin:0 0 5px;
+.pageShell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
 }
 
-.productsStickyHeader .pageHeader p{
-  margin:0;
+.pageHeader h1,
+.productTitle h1 {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 3.8rem);
+  line-height: .92;
+  letter-spacing: -.045em;
+  font-weight: 900;
 }
 
-.productsStickyHeader .productsChips{
-  margin:14px -20px 0;
-  padding:0 20px 7px;
+.pageHeader p,
+.productTitle p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
 }
 
-@media (max-width:520px){
-  .productsPage{
-    padding-top:236px;
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 14px;
+  background: var(--accent);
+  padding: 15px 20px;
+  font-weight: 850;
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+
+.primaryButton svg { width: 19px; }
+
+.primaryButton.compact {
+  width: 100%;
+  padding: 11px 12px;
+  margin-top: 10px;
+}
+
+.primaryButton.wide {
+  width: 100%;
+  margin-top: 14px;
+}
+
+/* Home */
+.homePage {
+  min-height: 100svh;
+  background: #101516;
+  padding-bottom: calc(var(--nav-h) + 56px + env(safe-area-inset-bottom));
+}
+
+.hero {
+  position: relative;
+  min-height: 72svh;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(180deg,#101516,#1d2528);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.18) 58%,rgba(0,0,0,.28));
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  padding: 72px 28px 30px;
+  max-width: 570px;
+}
+
+.hero h1 {
+  margin: 0 0 18px;
+  font-size: clamp(3rem,13vw,5.7rem);
+  line-height: .88;
+  letter-spacing: -.055em;
+}
+
+.hero h1 .heroLine { display: block; }
+.hero h1 .heroLinePrimary { color: #fff; }
+.hero h1 .heroLineAccent { color: var(--accent); }
+
+.hero p {
+  font-size: 1.08rem;
+  line-height: 1.45;
+  max-width: 420px;
+}
+
+.hero .primaryButton {
+  margin-top: 12px;
+  color: #111;
+}
+
+.aboutCard {
+  position: relative;
+  z-index: 3;
+  margin: -26px 16px 0;
+  background: #fff;
+  border-radius: 26px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 68px 1fr;
+  gap: 18px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.16);
+}
+
+.aboutCard h2 { margin: 0 0 8px; }
+
+.aboutCard p {
+  margin: 0 0 10px;
+  color: #394043;
+  line-height: 1.45;
+}
+
+.avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg,#d8c49c,#4e6b59);
+  color: #fff;
+  font-weight: 900;
+  font-size: 28px;
+}
+
+/* Category chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 13px;
+  color: #34393c;
+}
+
+.chip.active {
+  background: var(--accent);
+  border-color: transparent;
+  color: #111;
+  font-weight: 800;
+}
+
+/* Product catalogue */
+.productsPage {
+  padding-top: 18px;
+  padding-bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+}
+
+.productsChips {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 8px;
+  margin: 0 -20px 22px;
+  padding: 10px 20px;
+  background: rgba(244,244,241,.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.productsChips::-webkit-scrollbar { display: none; }
+
+.productsChips .chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.productGrid.productList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.productCard {
+  background: #fff;
+  border: 1px solid #eceeec;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.035);
+}
+
+.productListCard {
+  display: grid;
+  grid-template-columns: 42% minmax(0,1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.productListCard .productVisual {
+  height: auto;
+  min-height: 190px;
+}
+
+.productCardContent {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.productListCard h2 {
+  margin: 5px 0 7px;
+  font-size: 1.22rem;
+  line-height: 1.08;
+}
+
+.productListCard p {
+  margin: 0;
+  color: #404649;
+  font-size: .98rem;
+  line-height: 1.38;
+}
+
+.productListCard .primaryButton.compact { margin-top: 14px; }
+
+.productCardLink {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.productCardLink:active { transform: scale(.992); }
+
+.productCardLink:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.productCardCta { pointer-events: none; }
+
+/* Product visuals / temporary placeholders */
+.productVisual {
+  height: 145px;
+  border-radius: 12px;
+  background: linear-gradient(180deg,#f7f7f6,#e9eceb);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.productVisual.large {
+  height: 300px;
+  background: transparent;
+}
+
+.machineBody {
+  position: relative;
+  width: 62%;
+  height: 55%;
+  border-radius: 24px 22px 18px 18px;
+  background: #15191b;
+  box-shadow: 0 14px 25px rgba(0,0,0,.15);
+}
+
+.machineTop {
+  position: absolute;
+  left: 28%;
+  top: -18%;
+  width: 43%;
+  height: 24%;
+  border: 12px solid #171a1c;
+  border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+}
+
+.machineAccent {
+  position: absolute;
+  left: 14%;
+  right: 10%;
+  bottom: 13%;
+  height: 38%;
+  background: var(--machine-accent);
+  border-radius: 8px;
+}
+
+.machineWheel {
+  position: absolute;
+  bottom: -8%;
+  width: 20%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #222;
+  border: 6px solid #111;
+}
+
+.w1 { left: 13%; }
+.w2 { right: 10%; }
+
+.sawBlade {
+  position: absolute;
+  right: 4%;
+  top: -20%;
+  width: 44%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 8px solid #a8b0b3;
+  background: conic-gradient(from 10deg,#f4f4f4,#b8bec0,#f4f4f4);
+}
+
+/* Generic product detail */
+.genericProductPage {
+  padding-bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+}
+
+.backLink {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 18px;
+  font-weight: 750;
+}
+
+.genericProductHero {
+  display: grid;
+  gap: 18px;
+}
+
+.genericProductHero .productVisual { min-height: 280px; }
+
+.genericProductNotice {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.genericProductNotice p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+/* Kärcher product detail */
+.karcherDetailPage {
+  padding-bottom: 140px;
+}
+
+.karcherDetailPage .productContextRow {
+  position: sticky;
+  top: 0;
+  z-index: 72;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 56px;
+  margin: 0 -20px;
+  padding: 8px 20px 4px;
+  background: rgba(244,244,241,.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.karcherDetailPage .productContextRow .backLink {
+  position: static;
+  margin: 0;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.karcherDetailPage .productContextRow > span {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.karcherDetailPage .compactProductTitle {
+  position: sticky;
+  top: 56px;
+  z-index: 71;
+  margin: 0 -20px 18px;
+  padding: 8px 20px 12px;
+  background: rgba(244,244,241,.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+
+.karcherDetailPage .compactProductTitle h1 { margin: 0; }
+
+.karcherDetailPage .detailProductVisual .productVisual.large {
+  height: 230px;
+  margin: 14px 0 22px;
+}
+
+.karcherDetailPage .included { margin-top: 0; }
+
+.included h2 {
+  margin-top: 0;
+  font-size: 1.35rem;
+}
+
+.includedGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.includedGrid > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .93rem;
+}
+
+.checkCircle {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  flex: 0 0 auto;
+}
+
+.checkCircle svg { width: 16px; }
+
+.specDropdown {
+  margin: 22px 0 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.specDropdown summary {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 9px;
+  align-items: center;
+  padding: 14px 15px;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+
+.specBody {
+  border-top: 1px solid var(--line);
+  padding: 10px 15px;
+}
+
+.specBody > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+}
+
+.karcherDetailPage .specDropdown summary .specChevron {
+  transition: transform .18s ease;
+}
+
+.karcherDetailPage .specDropdown[open] summary .specChevron {
+  transform: rotate(180deg);
+}
+
+.stackedActions {
+  display: grid;
+  gap: 7px;
+}
+
+.darkAction {
+  min-height: 58px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px;
+  font-weight: 750;
+}
+
+.darkAction svg { width: 21px; }
+.darkAction b { font-size: 24px; font-weight: 400; }
+
+.karcherDetailPage .primaryButton.wide { min-height: 58px; }
+.karcherDetailPage > :last-child { margin-bottom: 0; }
+
+/* Guide */
+.guidePage {
+  padding-top: 0;
+  padding-bottom: 48px;
+  overflow: visible;
+}
+
+.guideHeaderSticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  margin: 0 -20px 22px;
+  background: rgba(244,244,241,.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 var(--line);
+}
+
+.guideTop {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  text-align: center;
+  min-height: 58px;
+  margin: 0;
+  padding: 8px 20px 4px;
+}
+
+.guideTop a {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+}
+
+.guideTabs {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  margin: 0;
+  padding: 0 20px;
+}
+
+.guideTabs a {
+  padding: 13px 4px;
+  text-align: center;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+
+.guideTabs a.active {
+  font-weight: 800;
+  box-shadow: inset 0 -3px var(--accent);
+}
+
+.guideSection {
+  min-height: calc(100svh - 118px);
+  padding: 8px 0 34px;
+  scroll-margin-top: 118px;
+}
+
+.stepHeading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.stepHeading span {
+  background: var(--ink);
+  color: var(--accent);
+  border-radius: 9px;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 1.4rem;
+}
+
+.stepHeading h1,
+.stepHeading h2 {
+  font-size: 2rem;
+  margin: 0;
+  letter-spacing: -.03em;
+}
+
+.guideSection > p {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.guideImage {
+  height: 340px;
+  border-radius: 14px;
+  background: linear-gradient(180deg,#e7e5e2,#b5b8b7);
+  position: relative;
+  overflow: hidden;
+  margin: 18px 0;
+}
+
+.tank {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 9%;
+  height: 60%;
+  border-radius: 16px 16px 28px 28px;
+  border: 8px solid #707779;
+  background: rgba(255,255,255,.1);
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45%;
+  background: rgba(110,145,151,.35);
+}
+
+.pour {
+  position: absolute;
+  right: 18%;
+  top: 8%;
+  font-size: 90px;
+  transform: rotate(18deg);
+  color: #fff;
+}
+
+.bottle {
+  position: absolute;
+  right: 19%;
+  bottom: 13%;
+  width: 90px;
+  height: 170px;
+  border-radius: 12px;
+  background: #e4bd00;
+  border-top: 34px solid #202426;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+
+.infoBox {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #e4f2ff;
+}
+
+.infoBox svg { color: var(--info); }
+.infoBox p { margin: 3px 0 0; }
+
+/* Rental terms */
+.termsPage { max-width: 680px; }
+
+.termsCard {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.termsCard h2 { margin: 0 0 8px; }
+
+.termsCard p {
+  line-height: 1.6;
+  color: #363c3f;
+}
+
+.termsNote {
+  margin-top: 30px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff4d7;
+  line-height: 1.5;
+}
+
+/* Bottom navigation */
+.liquidNav {
+  position: fixed;
+  z-index: 100;
+  left: 50%;
+  bottom: max(12px,env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(calc(100% - 40px),720px);
+  height: var(--nav-h);
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  border: 1px solid rgba(255,255,255,.66);
+  border-radius: 26px;
+  background: rgba(242,244,242,.67);
+  backdrop-filter: blur(13px) saturate(1.22);
+  -webkit-backdrop-filter: blur(13px) saturate(1.22);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 6px 22px rgba(15,20,20,.09);
+  overflow: hidden;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: .78rem;
+  color: #1e2325;
+  isolation: isolate;
+}
+
+.navIcon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.navItem > span:last-child {
+  position: relative;
+  z-index: 2;
+}
+
+.navItem.active {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.activeLens {
+  position: absolute;
+  z-index: 1;
+  inset: 2px 0;
+  border-radius: 24px;
+  background: rgba(255,255,255,.14);
+  backdrop-filter: blur(2px) brightness(1.035);
+  -webkit-backdrop-filter: blur(2px) brightness(1.035);
+  box-shadow: inset 1px 0 rgba(255,255,255,.48), inset -1px 0 rgba(255,255,255,.18);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.navItem.active .activeLens { opacity: 1; }
+
+/* Responsive */
+@media (max-width: 380px) {
+  .productListCard {
+    grid-template-columns: 40% minmax(0,1fr);
+    gap: 11px;
   }
+
+  .productListCard .productVisual { min-height: 176px; }
+  .productListCard h2 { font-size: 1.1rem; }
 }
 
-@media (max-width:380px){
-  .productsPage{
-    padding-top:226px;
+@media (min-width: 800px) {
+  .heroContent {
+    padding-left: max(28px,calc((100vw - 760px)/2));
   }
 
-  .productsStickyHeader{
-    padding-top:24px;
+  .aboutCard {
+    max-width: 720px;
+    margin: -26px auto 22px;
   }
-}
-/* Products – remove old sticky-header workaround and keep only categories sticky */
-.productsPage{
-  padding-top:0 !important;
-  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
-}
 
-.productsPage .pageHeader{
-  position:static !important;
-  top:auto !important;
-  transform:none !important;
-  margin-top:0 !important;
-}
+  .homePage { padding-bottom: 20px; }
+  .pageShell { padding-top: 46px; }
 
-.productsChips{
-  position:sticky;
-  top:0;
-  z-index:20;
-  margin:20px -20px 22px;
-  padding:10px 20px;
-  background:rgba(244,244,241,.94);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-}
-/* Products – restore breathing room above page title */
-.productsPage{
-  padding-top:28px !important;
-}
-/* Products – cleaner top + fully clickable cards */
-.productsPage{
-  padding-top:18px !important;
-}
-
-.productsChips{
-  margin-top:0 !important;
-}
-
-.productCardLink{
-  color:inherit;
-  text-decoration:none;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-}
-
-.productCardLink:active{
-  transform:scale(.992);
-}
-
-.productCardLink:focus-visible{
-  outline:3px solid var(--accent);
-  outline-offset:3px;
-}
-
-.productCardCta{
-  pointer-events:none;
-}
-
-.genericProductPage{
-  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
-}
-
-.backLink{
-  display:inline-block;
-  margin-bottom:18px;
-  font-weight:750;
-}
-
-.genericProductHero{
-  display:grid;
-  gap:18px;
-}
-
-.genericProductHero .productVisual{
-  min-height:280px;
-}
-
-.genericProductNotice{
-  margin-top:24px;
-  padding:20px;
-  border-radius:20px;
-  background:#fff;
-  border:1px solid var(--line);
-}
-
-.genericProductNotice p{
-  margin:8px 0 0;
-  color:var(--muted);
-}
-
-
-.productsPage .pageHeader{
-  margin-top:0 !important;
-}
-/* Kärcher product detail v2 */
-.karcherDetailPage{
-  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
-}
-
-.karcherDetailPage .detailProductVisual .productVisual.large{
-  height:230px;
-  margin:14px 0 22px;
-}
-
-.karcherDetailPage .included{
-  margin-top:0;
-}
-
-.karcherDetailPage .included h2{
-  margin-top:0;
-}
-
-.karcherDetailPage .specDropdown summary .specChevron{
-  transition:transform .18s ease;
-}
-
-.karcherDetailPage .specDropdown[open] summary .specChevron{
-  transform:rotate(180deg);
-}
-
-.karcherDetailPage .darkAction{
-  min-height:58px;
-}
-
-.karcherDetailPage .primaryButton.wide{
-  min-height:58px;
-}
-/* Compact product header */
-.karcherDetailPage .productContextRow{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding-top:8px;
-  margin-bottom:22px;
-  min-height:44px;
-}
-
-.karcherDetailPage .productContextRow .backLink{
-  position:static;
-  margin:0;
-  flex:0 0 auto;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.karcherDetailPage .productContextRow > span{
-  color:var(--muted);
-  font-size:17px;
-  line-height:1.25;
-  font-weight:500;
-}
-
-.karcherDetailPage .compactProductTitle{
-  margin-top:0;
-}
-
-.karcherDetailPage .compactProductTitle h1{
-  margin-top:0;
-}
-
-.karcherDetailPage .detailProductVisual .productVisual.large{
-  margin-top:10px;
-}
-/* Guide – focused mode, sticky title/tabs and live active section */
-.guidePage{
-  padding-top:0 !important;
-  padding-bottom:48px !important;
-}
-
-.guideSticky{
-  position:sticky;
-  top:0;
-  z-index:60;
-  margin:0 -20px 22px;
-  background:rgba(244,244,241,.96);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-  box-shadow:0 1px 0 var(--line);
-}
-
-.guideSticky .guideTop{
-  min-height:58px;
-  margin:0;
-  padding:8px 20px 4px;
-  background:transparent;
-}
-
-.guideSticky .guideTop strong{
-  font-size:1rem;
-  letter-spacing:.01em;
-}
-
-.guideSticky .guideTabs{
-  position:static;
-  top:auto;
-  z-index:auto;
-  margin:0;
-  padding:0 20px;
-  background:transparent;
-  backdrop-filter:none;
-  -webkit-backdrop-filter:none;
-  border-bottom:0;
-}
-
-.guideSticky .guideTabs a{
-  padding:12px 4px 13px;
-}
-
-.guideSection{
-  min-height:calc(100svh - 118px);
-  scroll-margin-top:118px;
-}
-/* Guide – robust iOS sticky header.
-   Keep title row and tabs sticky separately instead of relying on a sticky wrapper. */
-
-.guideSticky{
-  position:static !important;
-  top:auto !important;
-  z-index:auto !important;
-  margin:0 -20px 22px !important;
-  background:transparent !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-  box-shadow:none !important;
-}
-
-.guideSticky .guideTop{
-  position:sticky !important;
-  top:0 !important;
-  z-index:70 !important;
-  min-height:58px;
-  margin:0 !important;
-  padding:8px 20px 4px !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-}
-
-.guideSticky .guideTabs{
-  position:sticky !important;
-  top:58px !important;
-  z-index:69 !important;
-  margin:0 !important;
-  padding:0 20px !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--line) !important;
-  box-shadow:0 1px 0 rgba(0,0,0,.02);
-}
-
-/* Anchor targets must clear both sticky rows. */
-.guideSection{
-  scroll-margin-top:116px !important;
-}
-/* Product detail – sticky context row + product title */
-.karcherDetailPage .productContextRow{
-  position:sticky !important;
-  top:0 !important;
-  z-index:72 !important;
-  margin:0 -20px !important;
-  padding:8px 20px 4px !important;
-  min-height:56px;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-}
-
-.karcherDetailPage .compactProductTitle{
-  position:sticky !important;
-  top:56px !important;
-  z-index:71 !important;
-  margin:0 -20px 18px !important;
-  padding:8px 20px 12px !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--line);
-}
-
-.karcherDetailPage .compactProductTitle h1{
-  margin:0 !important;
-}
-/* Product detail – reduce empty space below Hygglo CTA */
-.karcherDetailPage{
-  padding-bottom:140px !important;
-}
-
-/* Remove any oversized spacer/margin after the booking CTA. */
-.karcherDetailPage .hyggloCta,
-.karcherDetailPage .bookingCta,
-.karcherDetailPage .bookButton{
-  margin-bottom:0 !important;
-}
-
-.karcherDetailPage > :last-child{
-  margin-bottom:0 !important;
-}
-
-/* Keep the product image from feeling glued to the sticky header. */
-.karcherDetailPage .detailProductVisual .productVisual.large{
-  margin-top:14px !important;
-}
-/* Restore guide sticky header after later CSS additions */
-.guidePage{
-  overflow:visible !important;
-}
-
-.guidePage .guideSticky{
-  position:static !important;
-  overflow:visible !important;
-  transform:none !important;
-}
-
-.guidePage .guideSticky .guideTop{
-  position:-webkit-sticky !important;
-  position:sticky !important;
-  top:0 !important;
-  z-index:100 !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px) !important;
-  -webkit-backdrop-filter:blur(16px) !important;
-}
-
-.guidePage .guideSticky .guideTabs{
-  position:-webkit-sticky !important;
-  position:sticky !important;
-  top:58px !important;
-  z-index:99 !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px) !important;
-  -webkit-backdrop-filter:blur(16px) !important;
-}
-
-.guidePage .guideSection{
-  scroll-margin-top:116px !important;
-}
-/* Guide sticky header – structural fix.
-   The title row and tabs must be direct children of the scrolling page.
-   A sticky element is constrained by its parent; the previous short wrapper
-   caused both rows to stop sticking once that wrapper left the viewport. */
-
-.guidePage{
-  padding-top:0 !important;
-  padding-bottom:48px !important;
-  overflow:visible !important;
-}
-
-.guidePage .guideTop{
-  position:-webkit-sticky !important;
-  position:sticky !important;
-  top:0 !important;
-  z-index:100 !important;
-  min-height:58px !important;
-  margin:0 -20px !important;
-  padding:8px 20px 4px !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px) !important;
-  -webkit-backdrop-filter:blur(16px) !important;
-}
-
-.guidePage .guideTabs{
-  position:-webkit-sticky !important;
-  position:sticky !important;
-  top:58px !important;
-  z-index:99 !important;
-  margin:0 -20px 22px !important;
-  padding:0 20px !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px) !important;
-  -webkit-backdrop-filter:blur(16px) !important;
-  border-bottom:1px solid var(--line) !important;
-}
-
-.guidePage .guideSection{
-  scroll-margin-top:116px !important;
-}
-/* Guide – one combined sticky header block.
-   This avoids iOS Safari treating the title row and tabs differently. */
-
-.guidePage{
-  padding-top:0 !important;
-  padding-bottom:48px !important;
-  overflow:visible !important;
-}
-
-.guidePage .guideHeaderSticky{
-  position:-webkit-sticky !important;
-  position:sticky !important;
-  top:0 !important;
-  z-index:120 !important;
-  margin:0 -20px 22px !important;
-  background:rgba(244,244,241,.98) !important;
-  backdrop-filter:blur(16px) !important;
-  -webkit-backdrop-filter:blur(16px) !important;
-  box-shadow:0 1px 0 var(--line);
-}
-
-/* Children are deliberately NOT sticky individually. */
-.guidePage .guideHeaderSticky .guideTop{
-  position:static !important;
-  top:auto !important;
-  z-index:auto !important;
-  min-height:58px !important;
-  margin:0 !important;
-  padding:8px 20px 4px !important;
-  background:transparent !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-
-.guidePage .guideHeaderSticky .guideTabs{
-  position:static !important;
-  top:auto !important;
-  z-index:auto !important;
-  margin:0 !important;
-  padding:0 20px !important;
-  background:transparent !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-  border-bottom:0 !important;
-  box-shadow:none !important;
-}
-
-.guidePage .guideSection{
-  scroll-margin-top:118px !important;
+  /* Sticky mobile headers should still start at the viewport top. */
+  .guidePage { padding-top: 0; }
 }
