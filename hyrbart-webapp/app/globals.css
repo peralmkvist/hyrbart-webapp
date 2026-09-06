@@ -150,6 +150,67 @@
 .productsPage{
   padding-top:28px !important;
 }
+/* Products – cleaner top + fully clickable cards */
+.productsPage{
+  padding-top:18px !important;
+}
+
+.productsChips{
+  margin-top:0 !important;
+}
+
+.productCardLink{
+  color:inherit;
+  text-decoration:none;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.productCardLink:active{
+  transform:scale(.992);
+}
+
+.productCardLink:focus-visible{
+  outline:3px solid var(--accent);
+  outline-offset:3px;
+}
+
+.productCardCta{
+  pointer-events:none;
+}
+
+.genericProductPage{
+  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+}
+
+.backLink{
+  display:inline-block;
+  margin-bottom:18px;
+  font-weight:750;
+}
+
+.genericProductHero{
+  display:grid;
+  gap:18px;
+}
+
+.genericProductHero .productVisual{
+  min-height:280px;
+}
+
+.genericProductNotice{
+  margin-top:24px;
+  padding:20px;
+  border-radius:20px;
+  background:#fff;
+  border:1px solid var(--line);
+}
+
+.genericProductNotice p{
+  margin:8px 0 0;
+  color:var(--muted);
+}
+
 
 .productsPage .pageHeader{
   margin-top:0 !important;
