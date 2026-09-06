@@ -1,3 +1,4 @@
+
 :root{--accent:#c6f000;--ink:#15191b;--muted:#62676b;--bg:#f4f4f1;--surface:#fff;--line:#d9dcda;--info:#1976d2;--radius:18px;--nav-h:74px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button{font:inherit}main{min-height:100svh;padding-bottom:calc(var(--nav-h) + 28px)}
 .pageShell{max-width:760px;margin:0 auto;padding:28px 20px 40px}.pageHeader h1,.productTitle h1{margin:0;font-size:clamp(2rem,8vw,3.8rem);line-height:.92;letter-spacing:-.045em;font-weight:900}.pageHeader p,.productTitle p{margin:8px 0 0;color:var(--muted);font-size:1rem}.primaryButton{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:14px;background:var(--accent);padding:15px 20px;font-weight:850;box-shadow:0 4px 14px rgba(0,0,0,.08)}.primaryButton svg{width:19px}.primaryButton.compact{width:100%;padding:11px 12px;margin-top:10px}.primaryButton.wide{width:100%;margin-top:14px}
@@ -284,4 +285,53 @@
 
 .karcherDetailPage .detailProductVisual .productVisual.large{
   margin-top:10px;
+}
+/* Guide – focused mode, sticky title/tabs and live active section */
+.guidePage{
+  padding-top:0 !important;
+  padding-bottom:48px !important;
+}
+
+.guideSticky{
+  position:sticky;
+  top:0;
+  z-index:60;
+  margin:0 -20px 22px;
+  background:rgba(244,244,241,.96);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 1px 0 var(--line);
+}
+
+.guideSticky .guideTop{
+  min-height:58px;
+  margin:0;
+  padding:8px 20px 4px;
+  background:transparent;
+}
+
+.guideSticky .guideTop strong{
+  font-size:1rem;
+  letter-spacing:.01em;
+}
+
+.guideSticky .guideTabs{
+  position:static;
+  top:auto;
+  z-index:auto;
+  margin:0;
+  padding:0 20px;
+  background:transparent;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  border-bottom:0;
+}
+
+.guideSticky .guideTabs a{
+  padding:12px 4px 13px;
+}
+
+.guideSection{
+  min-height:calc(100svh - 118px);
+  scroll-margin-top:118px;
 }
