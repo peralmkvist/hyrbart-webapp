@@ -378,3 +378,36 @@
 .guideSection{
   scroll-margin-top:116px !important;
 }
+/* Product detail – sticky context row + product title */
+.karcherDetailPage .productContextRow{
+  position:sticky !important;
+  top:0 !important;
+  z-index:72 !important;
+  margin:0 -20px !important;
+  padding:8px 20px 4px !important;
+  min-height:56px;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+
+.karcherDetailPage .compactProductTitle{
+  position:sticky !important;
+  top:56px !important;
+  z-index:71 !important;
+  margin:0 -20px 18px !important;
+  padding:8px 20px 12px !important;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+
+.karcherDetailPage .compactProductTitle h1{
+  margin:0 !important;
+}
+
+/* Keep the product image from feeling glued to the sticky header. */
+.karcherDetailPage .detailProductVisual .productVisual.large{
+  margin-top:14px !important;
+}
