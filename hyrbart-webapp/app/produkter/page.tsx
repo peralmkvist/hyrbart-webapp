@@ -1,41 +1,46 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import ProductVisual from '@/components/ProductVisual';
 import { products } from '@/lib/products';
+import ProductVisual from '@/components/ProductVisual';
 
-export default async function GenericProductPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const product = products.find((item) => item.slug === slug);
+const categories = ['Alla', 'Rengöring', 'Sågning', 'Bygg', 'Bil & transport', 'Trädgård', 'Barn & familj'];
 
-  if (!product) notFound();
-
-  const index = products.findIndex((item) => item.slug === slug);
-
+export default function ProductsPage() {
   return (
-    <div className="pageShell genericProductPage">
-      <Link href="/produkter" className="backLink">← Produkter</Link>
-
-      <div className="genericProductHero">
-        <ProductVisual
-          kind={index === 1 ? 'saw' : 'cleaner'}
-          accent={product.accent}
-        />
-
-        <div className="productTitle">
-          <p>{product.type}</p>
-          <h1>{product.brand}<br />{product.name}</h1>
-          <p>{product.price}</p>
-        </div>
+    <div className="pageShell productsPage">
+      <div className="chips productsChips" aria-label="Produktkategorier">
+        {categories.map((category, index) => (
+          <button key={category} className={index === 0 ? 'chip active' : 'chip'}>
+            {category}
+          </button>
+        ))}
       </div>
 
-      <div className="genericProductNotice">
-        <strong>Mer produktinformation kommer här.</strong>
-        <p>Vi bygger nu upp detaljsidan och användarguiden för den här produkten.</p>
-      </div>
+      <section className="productGrid productList">
+        {products.map((product, index) => (
+          <Link
+            href={`/produkter/${product.slug}`}
+            className="productCard productListCard productCardLink"
+            key={product.slug}
+            aria-label={`${product.brand} ${product.name} – mer info`}
+          >
+            <ProductVisual
+              kind={index === 1 ? 'saw' : 'cleaner'}
+              accent={product.accent}
+            />
+
+            <div className="productCardContent">
+              <div>
+                <h2>{product.brand}<br />{product.name}</h2>
+                <p>{product.type}<br />{product.price}</p>
+              </div>
+
+              <span className="primaryButton compact productCardCta" aria-hidden="true">
+                Mer info
+              </span>
+            </div>
+          </Link>
+        ))}
+      </section>
     </div>
   );
 }
