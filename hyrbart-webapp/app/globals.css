@@ -67,4 +67,38 @@
   .productListCard .productVisual{min-height:176px}
   .productListCard h2{font-size:1.1rem}
 }
+/* Sticky product catalogue header */
+.productsStickyHeader{
+  position:sticky;
+  top:0;
+  z-index:30;
+  margin:0 -20px 18px;
+  padding:20px 20px 8px;
+  background:rgba(244,244,241,.97);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(21,25,27,.06);
+}
+
+.productsStickyHeader .pageHeader{
+  margin:0;
+}
+
+.productsStickyHeader .pageHeader h1{
+  margin:0 0 5px;
+}
+
+.productsStickyHeader .pageHeader p{
+  margin:0;
+}
+
+.productsStickyHeader .productsChips{
+  margin:14px -20px 0;
+  padding:0 20px 7px;
+}
+
+/* Keep product list comfortably clear of the fixed bottom navigation */
+.productsPage{
+  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+}
 
