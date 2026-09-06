@@ -23,7 +23,7 @@ export default function GuidePage() {
 
   useEffect(() => {
     const updateActiveSection = () => {
-      const triggerLine = 116;
+      const triggerLine = 118;
       let current = sections[0].id;
 
       for (const section of sections) {
@@ -62,26 +62,28 @@ export default function GuidePage() {
 
   return (
     <div className="guidePage pageShell">
-      <div className="guideTop">
-        <Link href="/produkter/karcher-se-3-compact" aria-label="Till produkten">
-          <BackIcon />
-        </Link>
-        <strong>KÄRCHER SE 3 COMPACT</strong>
-      </div>
+      <div className="guideHeaderSticky">
+        <div className="guideTop">
+          <Link href="/produkter/karcher-se-3-compact" aria-label="Till produkten">
+            <BackIcon />
+          </Link>
+          <strong>KÄRCHER SE 3 COMPACT</strong>
+        </div>
 
-      <nav className="guideTabs" aria-label="Guideavsnitt">
-        {sections.map((section) => (
-          <a
-            key={section.id}
-            href={`#${section.id}`}
-            className={activeSection === section.id ? 'active' : ''}
-            aria-current={activeSection === section.id ? 'location' : undefined}
-            onClick={() => setActiveSection(section.id)}
-          >
-            {section.label}
-          </a>
-        ))}
-      </nav>
+        <nav className="guideTabs" aria-label="Guideavsnitt">
+          {sections.map((section) => (
+            <a
+              key={section.id}
+              href={`#${section.id}`}
+              className={activeSection === section.id ? 'active' : ''}
+              aria-current={activeSection === section.id ? 'location' : undefined}
+              onClick={() => setActiveSection(section.id)}
+            >
+              {section.label}
+            </a>
+          ))}
+        </nav>
+      </div>
 
       <section id="kom-igang" className="guideSection">
         <div className="stepHeading"><span>1</span><h1>Fyll tanken</h1></div>
