@@ -71,14 +71,21 @@
   .productListCard .productVisual{min-height:176px}
   .productListCard h2{font-size:1.1rem}
 }
-/* Sticky product catalogue header */
+/* Fixed product catalogue header – reliable on iOS Safari */
+.productsPage{
+  padding-top:238px;
+  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+}
+
 .productsStickyHeader{
-  position:sticky;
+  position:fixed;
   top:0;
-  z-index:30;
-  margin:0 -20px 18px;
-  padding:20px 20px 8px;
-  background:rgba(244,244,241,.97);
+  left:50%;
+  transform:translateX(-50%);
+  z-index:80;
+  width:min(100%,760px);
+  padding:28px 20px 8px;
+  background:rgba(244,244,241,.985);
   -webkit-backdrop-filter:blur(14px);
   backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(21,25,27,.06);
@@ -101,7 +108,18 @@
   padding:0 20px 7px;
 }
 
-/* Keep product list comfortably clear of the fixed bottom navigation */
-.productsPage{
-  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+@media (max-width:520px){
+  .productsPage{
+    padding-top:236px;
+  }
+}
+
+@media (max-width:380px){
+  .productsPage{
+    padding-top:226px;
+  }
+
+  .productsStickyHeader{
+    padding-top:24px;
+  }
 }
