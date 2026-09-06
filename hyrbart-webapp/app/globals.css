@@ -123,3 +123,26 @@
     padding-top:24px;
   }
 }
+/* Products – remove old sticky-header workaround and keep only categories sticky */
+.productsPage{
+  padding-top:0 !important;
+  padding-bottom:calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
+}
+
+.productsPage .pageHeader{
+  position:static !important;
+  top:auto !important;
+  transform:none !important;
+  margin-top:0 !important;
+}
+
+.productsChips{
+  position:sticky;
+  top:0;
+  z-index:20;
+  margin:20px -20px 22px;
+  padding:10px 20px;
+  background:rgba(244,244,241,.94);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
