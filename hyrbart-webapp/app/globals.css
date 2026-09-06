@@ -406,6 +406,21 @@
 .karcherDetailPage .compactProductTitle h1{
   margin:0 !important;
 }
+/* Product detail – reduce empty space below Hygglo CTA */
+.karcherDetailPage{
+  padding-bottom:140px !important;
+}
+
+/* Remove any oversized spacer/margin after the booking CTA. */
+.karcherDetailPage .hyggloCta,
+.karcherDetailPage .bookingCta,
+.karcherDetailPage .bookButton{
+  margin-bottom:0 !important;
+}
+
+.karcherDetailPage > :last-child{
+  margin-bottom:0 !important;
+}
 
 /* Keep the product image from feeling glued to the sticky header. */
 .karcherDetailPage .detailProductVisual .productVisual.large{
