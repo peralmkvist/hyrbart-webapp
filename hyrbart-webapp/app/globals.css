@@ -335,3 +335,46 @@
   min-height:calc(100svh - 118px);
   scroll-margin-top:118px;
 }
+/* Guide – robust iOS sticky header.
+   Keep title row and tabs sticky separately instead of relying on a sticky wrapper. */
+
+.guideSticky{
+  position:static !important;
+  top:auto !important;
+  z-index:auto !important;
+  margin:0 -20px 22px !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
+}
+
+.guideSticky .guideTop{
+  position:sticky !important;
+  top:0 !important;
+  z-index:70 !important;
+  min-height:58px;
+  margin:0 !important;
+  padding:8px 20px 4px !important;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+
+.guideSticky .guideTabs{
+  position:sticky !important;
+  top:58px !important;
+  z-index:69 !important;
+  margin:0 !important;
+  padding:0 20px !important;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line) !important;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+
+/* Anchor targets must clear both sticky rows. */
+.guideSection{
+  scroll-margin-top:116px !important;
+}
