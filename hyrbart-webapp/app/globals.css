@@ -460,3 +460,43 @@
 .guidePage .guideSection{
   scroll-margin-top:116px !important;
 }
+/* Guide sticky header – structural fix.
+   The title row and tabs must be direct children of the scrolling page.
+   A sticky element is constrained by its parent; the previous short wrapper
+   caused both rows to stop sticking once that wrapper left the viewport. */
+
+.guidePage{
+  padding-top:0 !important;
+  padding-bottom:48px !important;
+  overflow:visible !important;
+}
+
+.guidePage .guideTop{
+  position:-webkit-sticky !important;
+  position:sticky !important;
+  top:0 !important;
+  z-index:100 !important;
+  min-height:58px !important;
+  margin:0 -20px !important;
+  padding:8px 20px 4px !important;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+}
+
+.guidePage .guideTabs{
+  position:-webkit-sticky !important;
+  position:sticky !important;
+  top:58px !important;
+  z-index:99 !important;
+  margin:0 -20px 22px !important;
+  padding:0 20px !important;
+  background:rgba(244,244,241,.98) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+  border-bottom:1px solid var(--line) !important;
+}
+
+.guidePage .guideSection{
+  scroll-margin-top:116px !important;
+}
