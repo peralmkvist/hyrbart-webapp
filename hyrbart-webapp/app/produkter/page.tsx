@@ -6,14 +6,37 @@ const categories = ['Alla', 'Rengöring', 'Sågning', 'Bygg', 'Bil & transport',
 
 export default function ProductsPage() {
   return <div className="pageShell productsPage">
-    <header className="pageHeader"><h1>PRODUKTER</h1><p>Klicka på produkten för mer info och tips vid användning.</p></header>
-    <div className="chips">{categories.map((c,i)=><button key={c} className={i===0?'chip active':'chip'}>{c}</button>)}</div>
-    <section className="productGrid">
-      {products.map((p, idx) => <article className="productCard" key={p.slug}>
-        <ProductVisual kind={idx===1?'saw':'cleaner'} accent={p.accent}/>
-        <h2>{p.brand}<br/>{p.name}</h2><p>{p.type}<br/>{p.price}</p>
-        <Link href={p.slug==='karcher-se-3-compact'?`/produkter/${p.slug}`:'#'} className="primaryButton compact">Mer info</Link>
-      </article>)}
+    <header className="pageHeader">
+      <h1>PRODUKTER</h1>
+      <p>Klicka på produkten för mer info och tips vid användning.</p>
+    </header>
+
+    <div className="chips productsChips" aria-label="Produktkategorier">
+      {categories.map((category, index) =>
+        <button key={category} className={index === 0 ? 'chip active' : 'chip'}>
+          {category}
+        </button>
+      )}
+    </div>
+
+    <section className="productGrid productList">
+      {products.map((product, index) =>
+        <article className="productCard productListCard" key={product.slug}>
+          <ProductVisual kind={index === 1 ? 'saw' : 'cleaner'} accent={product.accent}/>
+          <div className="productCardContent">
+            <div>
+              <h2>{product.brand}<br/>{product.name}</h2>
+              <p>{product.type}<br/>{product.price}</p>
+            </div>
+            <Link
+              href={product.slug === 'karcher-se-3-compact' ? `/produkter/${product.slug}` : '#'}
+              className="primaryButton compact"
+            >
+              Mer info
+            </Link>
+          </div>
+        </article>
+      )}
     </section>
   </div>;
 }
