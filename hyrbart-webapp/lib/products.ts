@@ -16,6 +16,8 @@ export type Product = {
   image?: string;
   badge?: ProductBadge;
   rentalPrices?: RentalPrice[];
+  rating?: number;
+  reviewCount?: number;
 };
 
 export const products: Product[] = [
@@ -29,6 +31,8 @@ export const products: Product[] = [
     accent: '#f4c300',
     image: '/images/products/karcher-se-3-compact.png',
     badge: 'very-popular',
+    rating: 4.9,
+    reviewCount: 28,
     rentalPrices: [
       { days: 1, price: 145 },
       { days: 3, price: 290 },
@@ -43,6 +47,8 @@ export const products: Product[] = [
     price: 'fr. 250 kr/dygn',
     category: 'Sågning',
     accent: '#0b7c8c',
+    rating: 4.8,
+    reviewCount: 17,
   },
   {
     slug: 'thule-motion-xt',
@@ -52,6 +58,8 @@ export const products: Product[] = [
     price: 'fr. 150 kr/dygn',
     category: 'Bil & transport',
     accent: '#222',
+    rating: 4.9,
+    reviewCount: 12,
   },
   {
     slug: 'metabo-asa-30-l-pc',
@@ -61,5 +69,7 @@ export const products: Product[] = [
     price: 'fr. 200 kr/dygn',
     category: 'Rengöring',
     accent: '#0c6b56',
+    rating: 4.8,
+    reviewCount: 9,
   },
 ];
