@@ -19,6 +19,12 @@ const mono = Roboto_Mono({
 export const metadata: Metadata = {
   title: 'Hyrbart',
   description: 'Det du behöver. När du behöver det.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Hyrbart',
+  },
 };
 
 export const viewport: Viewport = {
