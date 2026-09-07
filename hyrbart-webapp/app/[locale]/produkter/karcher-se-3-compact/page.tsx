@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import ProductVisual from '@/components/ProductVisual';
+import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
+import { products } from '@/lib/products';
 import { BackIcon, BookIcon, CheckIcon, InfoIcon, ListIcon } from '@/components/Icons';
 
 export default async function ProductPage({
@@ -9,6 +11,7 @@ export default async function ProductPage({
 }) {
   const { locale } = await params;
   const en = locale === 'en';
+  const product = products.find((item) => item.slug === 'karcher-se-3-compact');
 
   const included = en
     ? ['Universal nozzle', 'Upholstery nozzle', 'Shoe nozzle', 'Cleaning detergent – 1 dose included']
@@ -35,13 +38,14 @@ export default async function ProductPage({
         </header>
       </div>
 
-      <div className="detailProductVisual">
-  <ProductVisual
-    large
-    imageSrc="/images/products/karcher-se-3-compact.png"
-    imageAlt="Kärcher SE 3 Compact med tillbehör"
-  />
-</div>
+      <div className="detailProductVisual productDetailPhotoWrap">
+        <ProductVisual
+          large
+          imageSrc={product?.image}
+          imageAlt="Kärcher SE 3 Compact med tillbehör"
+        />
+        <ProductBadgeLabel badge={product?.badge} locale={locale} />
+      </div>
 
       <section className="included">
         <h2>{en ? 'Included' : 'Det här ingår'}</h2>
@@ -89,6 +93,8 @@ export default async function ProductPage({
           <CheckIcon /><span>{en ? 'Before returning' : 'Innan återlämning'}</span><b>›</b>
         </Link>
       </div>
+
+      <RentalPriceGrid prices={product?.rentalPrices} locale={locale} />
 
       <a className="primaryButton wide" href="https://www.hygglo.se" target="_blank" rel="noreferrer">
         {en ? 'Book on Hygglo' : 'Boka på Hygglo'} <span>↗</span>
