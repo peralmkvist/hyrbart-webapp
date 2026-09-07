@@ -7,7 +7,7 @@
   --line: #d9dcda;
   --info: #1976d2;
   --radius: 18px;
-  --nav-h: 74px;
+  --nav-h: 62px;
 }
 
 * { box-sizing: border-box; }
@@ -386,49 +386,6 @@ main {
   padding-bottom: 140px;
 }
 
-.karcherDetailPage .productContextRow {
-  position: sticky;
-  top: 0;
-  z-index: 72;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 56px;
-  margin: 0 -20px;
-  padding: 8px 20px 4px;
-  background: rgba(244,244,241,.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.karcherDetailPage .productContextRow .backLink {
-  position: static;
-  margin: 0;
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.karcherDetailPage .productContextRow > span {
-  color: var(--muted);
-  font-size: 17px;
-  line-height: 1.25;
-  font-weight: 500;
-}
-
-.karcherDetailPage .compactProductTitle {
-  position: sticky;
-  top: 56px;
-  z-index: 71;
-  margin: 0 -20px 18px;
-  padding: 8px 20px 12px;
-  background: rgba(244,244,241,.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--line);
-}
-
 .karcherDetailPage .compactProductTitle h1 { margin: 0; }
 
 .karcherDetailPage .detailProductVisual .productVisual.large {
@@ -547,24 +504,6 @@ main {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 var(--line);
-}
-
-.guideTop {
-  display: grid;
-  grid-template-columns: 42px 1fr;
-  align-items: center;
-  text-align: center;
-  min-height: 58px;
-  margin: 0;
-  padding: 8px 20px 4px;
-}
-
-.guideTop a {
-  display: inline-grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  margin: 0;
 }
 
 .guideTabs {
@@ -710,66 +649,58 @@ main {
   line-height: 1.5;
 }
 
-/* Bottom navigation */
+/* Bottom navigation — structural base */
 .liquidNav {
   position: fixed;
-  z-index: 100;
+  z-index: 200;
   left: 50%;
-  bottom: max(12px,env(safe-area-inset-bottom));
+  bottom: max(8px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  width: min(calc(100% - 40px),720px);
+  width: min(calc(100% - 32px), 620px);
   height: var(--nav-h);
   display: grid;
-  grid-template-columns: repeat(3,1fr);
-  border: 1px solid rgba(255,255,255,.66);
-  border-radius: 26px;
-  background: rgba(242,244,242,.67);
-  backdrop-filter: blur(13px) saturate(1.22);
-  -webkit-backdrop-filter: blur(13px) saturate(1.22);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 6px 22px rgba(15,20,20,.09);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .navItem {
   position: relative;
+  min-width: 0;
+  height: 100%;
+  padding: 5px 4px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  font-size: .78rem;
-  color: #1e2325;
+  gap: 1px;
+  font-size: .69rem;
+  line-height: 1.05;
   isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .navIcon {
-  width: 24px;
-  height: 24px;
   position: relative;
   z-index: 2;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
 }
 
 .navItem > span:last-child {
   position: relative;
   z-index: 2;
-}
-
-.navItem.active {
-  color: var(--accent);
-  font-weight: 800;
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 .activeLens {
   position: absolute;
   z-index: 1;
-  inset: 2px 0;
-  border-radius: 24px;
-  background: rgba(255,255,255,.14);
-  backdrop-filter: blur(2px) brightness(1.035);
-  -webkit-backdrop-filter: blur(2px) brightness(1.035);
-  box-shadow: inset 1px 0 rgba(255,255,255,.48), inset -1px 0 rgba(255,255,255,.18);
+  inset: 3px;
+  border-radius: 999px;
   opacity: 0;
-  transition: opacity .2s ease;
 }
 
 .navItem.active .activeLens { opacity: 1; }
@@ -1118,99 +1049,6 @@ main {
   .rentalPriceGrid.compact .rentalPriceBox strong { font-size: .72rem; }
   .rentalPriceGrid.compact .rentalPriceBox span { font-size: .6rem; }
 }
-/* Product popularity badge + rental prices */
-.productCardVisualWrap,
-.productDetailPhotoWrap { position: relative; }
-
-.productPopularityBadge {
-  position: absolute;
-  z-index: 4;
-  top: 10px;
-  left: 10px;
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #111;
-  font-size: .72rem;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: .015em;
-  white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(0,0,0,.08);
-}
-
-.productDetailPhotoWrap .productPopularityBadge {
-  top: 20px;
-  left: 8px;
-  min-height: 34px;
-  padding: 7px 12px;
-  font-size: .78rem;
-}
-
-.rentalPriceGrid {
-  display: grid;
-  grid-template-columns: repeat(3,minmax(0,1fr));
-  gap: 9px;
-  margin: 18px 0 0;
-}
-
-.rentalPriceBox {
-  min-width: 0;
-  padding: 15px 6px 13px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.025);
-}
-
-.rentalPriceBox strong {
-  display: block;
-  color: var(--ink);
-  font-size: 1.16rem;
-  line-height: 1.1;
-  font-weight: 850;
-  white-space: nowrap;
-}
-
-.rentalPriceBox span {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: .79rem;
-  line-height: 1.15;
-  white-space: nowrap;
-}
-
-.rentalPriceGrid.compact { gap: 5px; margin-top: 10px; }
-.rentalPriceGrid.compact .rentalPriceBox { padding: 9px 2px 8px; border-radius: 10px; }
-.rentalPriceGrid.compact .rentalPriceBox strong { font-size: .78rem; }
-.rentalPriceGrid.compact .rentalPriceBox span { margin-top: 3px; font-size: .64rem; }
-
-.karcherDetailPage > .rentalPriceGrid + .primaryButton.wide { margin-top: 12px; }
-
-@media (max-width: 380px) {
-  .rentalPriceGrid.compact { gap: 4px; }
-  .rentalPriceGrid.compact .rentalPriceBox strong { font-size: .72rem; }
-  .rentalPriceGrid.compact .rentalPriceBox span { font-size: .6rem; }
-}
-/* Prices + popularity */
-.productCardVisualWrap,.productDetailPhotoWrap{position:relative}
-.productPopularityBadge{position:absolute;z-index:4;top:10px;left:10px;display:inline-flex;align-items:center;min-height:30px;padding:6px 10px;border-radius:8px;background:var(--accent);color:#111;font-size:.72rem;line-height:1;font-weight:900;white-space:nowrap}
-.productDetailPhotoWrap .productPopularityBadge{top:20px;left:8px;min-height:34px;padding:7px 12px;font-size:.78rem}
-.rentalPriceGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0 0}
-.rentalPriceBox{min-width:0;padding:15px 6px 13px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-align:center}
-.rentalPriceBox strong{display:block;color:var(--ink);font-size:1.16rem;line-height:1.1;font-weight:850;white-space:nowrap}
-.rentalPriceBox span{display:block;margin-top:5px;color:var(--muted);font-size:.79rem;line-height:1.15;white-space:nowrap}
-.rentalPriceGrid.compact{gap:5px;margin-top:10px}
-.rentalPriceGrid.compact .rentalPriceBox{padding:9px 2px 8px;border-radius:10px}
-.rentalPriceGrid.compact .rentalPriceBox strong{font-size:.78rem}
-.rentalPriceGrid.compact .rentalPriceBox span{margin-top:3px;font-size:.64rem}
-.karcherDetailPage>.rentalPriceGrid+.primaryButton.wide{margin-top:12px}
-
 /* ============================================================
    REVIEWS + GUIDE CARDS
    ============================================================ */
@@ -1295,90 +1133,6 @@ main {
   color: #363c3f;
   font-size: 1rem;
   line-height: 1.5;
-}
-
-/* ============================================================
-   TYPOGRAFI — inspirerad av den tidiga designskissen
-   Barlow Condensed ≈ DIN Condensed, Inter = brödtext,
-   Roboto Mono = tekniska/specifika värden
-   ============================================================ */
-
-:root {
-  --font-heading-stack: var(--font-heading), "Arial Narrow", sans-serif;
-  --font-body-stack: var(--font-body), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-}
-
-body {
-  font-family: var(--font-body-stack);
-}
-
-/* Stora rubriker och produktnamn */
-h1,
-h2,
-.pageHeader h1,
-.productTitle h1,
-.compactProductTitle h1,
-.productListCard h2,
-.stepHeading h1,
-.stepHeading h2 {
-  font-family: var(--font-heading-stack);
-  font-weight: 800;
-  letter-spacing: -.025em;
-}
-
-/* Kärchers stora produkttitel – mer affisch/DIN-känsla */
-.compactProductTitle h1 {
-  font-weight: 900;
-  line-height: .9;
-  letter-spacing: -.02em;
-}
-
-/* Produktkortens namn */
-.productListCard h2 {
-  font-size: 1.42rem;
-  line-height: .92;
-  letter-spacing: -.015em;
-}
-
-/* Kategorier och brödtext ska fortsatt vara lättlästa */
-.productCardType,
-.productCardPrice,
-.productDetailRating,
-.productCardRating,
-.chip,
-.guideTabs,
-.guideSection p,
-.includedGrid,
-.specDropdown,
-.productBackRow,
-.guideBackRow,
-.bottomNav,
-.primaryButton {
-  font-family: var(--font-body-stack);
-}
-
-/* CTA-knappar får samma kompakta rubrikkänsla som skissen */
-.primaryButton,
-.darkAction,
-.productPopularityBadge {
-  font-family: var(--font-heading-stack);
-  font-weight: 800;
-  letter-spacing: .01em;
-}
-
-/* Tekniska data/specifikationer */
-.specBody > div span,
-.specBody > div b,
-.rentalPriceBox strong {
-  font-family: var(--font-mono-stack);
-  letter-spacing: -.02em;
-}
-
-/* Guide-stegens siffra */
-.stepHeading > span {
-  font-family: var(--font-heading-stack);
-  font-weight: 900;
 }
 
 /* ============================================================
@@ -1552,92 +1306,6 @@ h1,
   white-space: nowrap;
 }
 
-/* ============================================================
-   GUIDE HEADER — MATCHA PRODUKTSIDAN
-   ============================================================ */
-
-.guideHeaderSticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 120;
-  margin: 0 -20px 22px;
-  background: rgba(244, 244, 241, .98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.guideBackRow {
-  min-height: 54px;
-  padding: 8px 64px 2px 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink);
-  font-size: .9rem;
-  line-height: 1.2;
-  font-weight: 650;
-  text-align: left;
-}
-
-.guideBackRow svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-}
-
-.guideCategoryRow {
-  padding: 1px 20px 7px;
-  color: var(--ink);
-  font-size: 17px;
-  line-height: 1.25;
-  font-weight: 500;
-  text-align: left;
-}
-
-.guideIdentityRow {
-  margin: 0;
-  padding: 6px 20px 12px;
-}
-
-.guideIdentityRow h1 {
-  margin: 0;
-  font-family: var(--font-heading-stack);
-  font-size: clamp(2rem, 8vw, 3.8rem);
-  font-weight: 900;
-  line-height: .94;
-  letter-spacing: -.045em;
-}
-
-.guideIdentityRow h1 span {
-  display: block;
-  white-space: nowrap;
-}
-
-.guideTabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0;
-  padding: 0 20px;
-}
-
-.guideTabs a {
-  min-width: 0;
-  padding: 13px 2px;
-  text-align: center;
-  font-size: .82rem;
-  white-space: nowrap;
-}
-
-.guideTabs a.active {
-  font-weight: 800;
-  box-shadow: inset 0 -3px var(--accent);
-}
-
-.guideSection {
-  min-height: calc(100svh - 205px);
-  scroll-margin-top: 205px;
-}
 /* HYRBART — GUIDEHEADER SOM PRODUKTSIDAN
    Lägg HELA detta block allra sist i app/globals.css. */
 
@@ -1729,54 +1397,6 @@ h1,
 
 .karcherDetailPage {
   padding-top: 0;
-}
-/* PRODUKTLISTA — TÄCK SAFE AREA OVANFÖR STICKY KATEGORIER
-   Lägg detta allra sist i hyrbart-webapp/app/globals.css */
-
-.productsPage::before {
-  height: calc(58px + env(safe-area-inset-top));
-  background: rgba(244, 244, 241, .98);
-}
-
-.productsPage .productsChips {
-  top: calc(58px + env(safe-area-inset-top));
-}
-/* ============================================================
-   IOS SAFE AREA — PRODUKTLISTAN
-   Lägg detta block allra sist i app/globals.css.
-   ============================================================ */
-
-/* Ett faktiskt fast "lock" över safe area.
-   Den tidigare ::before-regeln saknade content/position och kunde därför
-   inte täcka statusfältet. */
-.productsPage::before {
-  content: "";
-  position: fixed;
-  z-index: 79;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top);
-  background: var(--bg);
-  pointer-events: none;
-}
-
-/* Kategoriflikarna börjar direkt under iPhones safe area när appen körs
-   edge-to-edge. */
-.productsPage .productsChips {
-  top: env(safe-area-inset-top);
-  z-index: 78;
-}
-
-/* Om webbläsaren rapporterar 0px safe area fungerar sidan som tidigare. */
-@supports not (padding-top: env(safe-area-inset-top)) {
-  .productsPage::before {
-    display: none;
-  }
-
-  .productsPage .productsChips {
-    top: 0;
-  }
 }
 /* ============================================================
    PRODUKTLISTA — FAST TOPPLÄGE + MINDRE BOTTENLUFT
@@ -2082,281 +1702,6 @@ h1,
 .guidePage .guideHeaderSticky {
   position: sticky;
   z-index: 120;
-}
-/* ============================================================
-   HYRBART — COMPACT LIQUID GLASS BOTTOM NAV
-   Lägg HELA detta block ALLRA SIST i app/globals.css.
-   Bygger på befintliga .liquidNav / .navItem / .activeLens.
-   ============================================================ */
-
-:root {
-  --nav-h: 62px;
-}
-
-.liquidNav {
-  position: fixed;
-  z-index: 200;
-  left: 50%;
-  bottom: max(8px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-
-  width: min(calc(100% - 32px), 620px);
-  height: var(--nav-h);
-
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-
-  /* Transparent glass base — content behind remains visible */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, .30) 0%,
-      rgba(255, 255, 255, .17) 48%,
-      rgba(255, 255, 255, .22) 100%
-    );
-
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(108%);
-  backdrop-filter: blur(28px) saturate(180%) contrast(108%);
-
-  border: 1px solid rgba(255, 255, 255, .72);
-  border-radius: 999px;
-  overflow: hidden;
-
-  box-shadow:
-    0 9px 28px rgba(0, 0, 0, .14),
-    inset 0 1px 0 rgba(255, 255, 255, .92),
-    inset 0 -1px 0 rgba(255, 255, 255, .20);
-}
-
-/* Glass highlight / refraction layer */
-.liquidNav::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-
-  background:
-    radial-gradient(
-      110% 70% at 50% -10%,
-      rgba(255, 255, 255, .42) 0%,
-      rgba(255, 255, 255, .10) 46%,
-      rgba(255, 255, 255, 0) 72%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, .10),
-      rgba(255, 255, 255, 0) 24%,
-      rgba(255, 255, 255, .08) 76%,
-      rgba(255, 255, 255, .12)
-    );
-}
-
-/* Thin lower edge gives the capsule a glass thickness */
-.liquidNav::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  left: 18px;
-  right: 18px;
-  bottom: 1px;
-  height: 1px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .40);
-  pointer-events: none;
-}
-
-.liquidNav .navItem {
-  position: relative;
-  z-index: 1;
-
-  min-width: 0;
-  height: 100%;
-  padding: 5px 4px 4px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-
-  /* Keep labels readable on both photos and light pages */
-  color: #15191b;
-  font-family: var(--font-body-stack);
-  font-size: .69rem;
-  line-height: 1.05;
-  font-weight: 600;
-
-  isolation: isolate;
-  -webkit-tap-highlight-color: transparent;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, .28);
-}
-
-.liquidNav .navIcon {
-  position: relative;
-  z-index: 2;
-  width: 21px;
-  height: 21px;
-  flex: 0 0 auto;
-  stroke-width: 2;
-}
-
-.liquidNav .navItem > span:last-child {
-  position: relative;
-  z-index: 2;
-  max-width: 100%;
-  white-space: nowrap;
-}
-
-/* Neutral glass lens — lime is reserved for icon + label */
-.liquidNav .activeLens {
-  position: absolute;
-  z-index: 1;
-  inset: 3px;
-  border-radius: 999px;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, .42),
-      rgba(255, 255, 255, .24)
-    );
-
-  -webkit-backdrop-filter: blur(10px) saturate(150%) brightness(1.06);
-  backdrop-filter: blur(10px) saturate(150%) brightness(1.06);
-
-  border: 1px solid rgba(255, 255, 255, .40);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .72),
-    0 2px 9px rgba(0, 0, 0, .045);
-
-  opacity: 0;
-  transition: opacity .18s ease;
-}
-
-.liquidNav .navItem.active .activeLens {
-  opacity: 1;
-}
-
-.liquidNav .navItem.active {
-  color: var(--accent);
-  font-weight: 800;
-  text-shadow:
-    0 1px 1px rgba(0, 0, 0, .10),
-    0 0 1px rgba(0, 0, 0, .18);
-}
-
-/* Keyboard accessibility */
-.liquidNav .navItem:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -5px;
-  border-radius: 999px;
-}
-
-/* Slightly tighter on narrow iPhones */
-@media (max-width: 380px) {
-  .liquidNav {
-    width: calc(100% - 24px);
-    height: 60px;
-  }
-
-  .liquidNav .navItem {
-    font-size: .66rem;
-  }
-
-  .liquidNav .navIcon {
-    width: 20px;
-    height: 20px;
-  }
-}
-/* ============================================================
-   HYRBART BOTTOM NAV — DARK LIQUID GLASS CONTRAST PATCH
-   Lägg HELA detta block allra sist i app/globals.css.
-   Behåller nuvarande storlek/geometri och ändrar främst glas,
-   kontrast och färger.
-   ============================================================ */
-
-/* Själva glaskapseln */
-.bottomNav {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(42, 46, 46, .68) 0%,
-      rgba(12, 15, 15, .72) 100%
-    ) !important;
-
-  -webkit-backdrop-filter: blur(30px) saturate(185%) brightness(.82) !important;
-  backdrop-filter: blur(30px) saturate(185%) brightness(.82) !important;
-
-  border: 1px solid rgba(255, 255, 255, .48) !important;
-
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, .24),
-    inset 0 1px 0 rgba(255, 255, 255, .42),
-    inset 0 -1px 0 rgba(255, 255, 255, .08) !important;
-}
-
-/* Inaktiva menyval: hög kontrast mot det mörka glaset */
-.bottomNav a,
-.bottomNav button {
-  color: rgba(255, 255, 255, .96) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .28);
-}
-
-.bottomNav a svg,
-.bottomNav button svg {
-  color: rgba(255, 255, 255, .96) !important;
-  stroke: currentColor !important;
-}
-
-/*
-  Aktiv flik:
-  neutral mörk glaspuck + Hyrbart-lime på ikon och text.
-  Flera vanliga active-markeringar stöds så patchen kan ligga ovanpå
-  den befintliga BottomNav-komponenten utan React-ändringar.
-*/
-.bottomNav a.active,
-.bottomNav button.active,
-.bottomNav [aria-current="page"] {
-  color: #c6f000 !important;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, .18),
-      rgba(255, 255, 255, .08)
-    ) !important;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .32),
-    0 2px 12px rgba(0, 0, 0, .12) !important;
-
-  text-shadow: none;
-}
-
-.bottomNav a.active svg,
-.bottomNav button.active svg,
-.bottomNav [aria-current="page"] svg {
-  color: #c6f000 !important;
-  stroke: currentColor !important;
-}
-
-/* Extra optisk highlight i överkant, som glasreflex snarare än vit yta */
-.bottomNav::before {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  inset: 1px 10px auto 10px;
-  height: 42%;
-  border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, .13),
-    rgba(255, 255, 255, 0)
-  );
-  opacity: .8;
 }
 /* ============================================================
    HYRBART — DARK LIQUID GLASS BOTTOM NAV
