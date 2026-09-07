@@ -69,6 +69,7 @@ export const products: Product[] = [
     price: 'fr. 120 kr/dygn',
     category: 'Bygg',
     accent: '#0b7c8c',
+    image: '/images/products/bosch-gbh-18v-22.png',
     rentalPrices: [
       { days: 1, price: 120 },
       { days: 3, price: 240 },
