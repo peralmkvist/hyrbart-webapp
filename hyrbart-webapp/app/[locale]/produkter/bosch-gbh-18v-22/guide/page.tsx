@@ -1,13 +1,122 @@
+'use client';
+
 import Link from 'next/link';
+import { use, useEffect, useState } from 'react';
 import { BackIcon } from '@/components/Icons';
 
-export default async function BoschGuidePage({
+const ids = ['kom-igang', 'anvandning', 'vanliga-fel', 'aterlamning'];
+
+export default function BoschGuidePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale } = use(params);
   const en = locale === 'en';
+
+  const sections = ids.map((id, i) => ({
+    id,
+    label: (en
+      ? ['Get started', 'Use', 'Common issues', 'Return']
+      : ['Kom igång', 'Användning', 'Vanliga fel', 'Återlämning'])[i],
+  }));
+
+  const [activeSection, setActiveSection] = useState('kom-igang');
+
+  useEffect(() => {
+    const update = () => {
+      const header = document.querySelector('.guideHeaderSticky');
+      const headerBottom =
+        header?.getBoundingClientRect().bottom ?? 205;
+
+      let current = ids[0];
+
+      for (const id of ids) {
+        const el = document.getElementById(id);
+
+        if (el && el.getBoundingClientRect().top <= headerBottom + 1) {
+          current = id;
+        } else if (el) {
+          break;
+        }
+      }
+
+      setActiveSection(current);
+    };
+
+    const scrollToHash = () => {
+      const hash = window.location.hash.slice(1);
+
+      if (!ids.includes(hash)) {
+        update();
+        return;
+      }
+
+      setActiveSection(hash);
+
+      requestAnimationFrame(() => {
+        const header = document.querySelector('.guideHeaderSticky');
+        const target = document.getElementById(hash);
+
+        if (!target) return;
+
+        const headerHeight =
+          header?.getBoundingClientRect().height ?? 205;
+
+        const top =
+          target.getBoundingClientRect().top +
+          window.scrollY -
+          headerHeight -
+          8;
+
+        window.scrollTo({
+          top,
+          behavior: 'smooth',
+        });
+      });
+    };
+
+    scrollToHash();
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    window.addEventListener('hashchange', scrollToHash);
+
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('hashchange', scrollToHash);
+    };
+  }, []);
+
+  const handleTabClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    id: string
+  ) => {
+    event.preventDefault();
+
+    const header = document.querySelector('.guideHeaderSticky');
+    const target = document.getElementById(id);
+
+    if (!target) return;
+
+    setActiveSection(id);
+    window.history.replaceState(null, '', `#${id}`);
+
+    const headerHeight =
+      header?.getBoundingClientRect().height ?? 205;
+
+    const top =
+      target.getBoundingClientRect().top +
+      window.scrollY -
+      headerHeight -
+      8;
+
+    window.scrollTo({
+      top,
+      behavior: 'smooth',
+    });
+  };
 
   return (
     <div className="pageShell guidePage">
@@ -18,7 +127,9 @@ export default async function BoschGuidePage({
           aria-label={en ? 'Back to product page' : 'Tillbaka till produktsidan'}
         >
           <BackIcon />
-          <span>{en ? 'Back to product page' : 'Tillbaka till produktsidan'}</span>
+          <span>
+            {en ? 'Back to product page' : 'Tillbaka till produktsidan'}
+          </span>
         </Link>
 
         <div className="guideCategoryRow">
@@ -32,11 +143,23 @@ export default async function BoschGuidePage({
           </h1>
         </header>
 
-        <nav className="guideTabs" aria-label={en ? 'Guide sections' : 'Guideavsnitt'}>
-          <a href="#kom-igang" className="active">{en ? 'Get started' : 'Kom igång'}</a>
-          <a href="#anvandning">{en ? 'Use' : 'Användning'}</a>
-          <a href="#vanliga-fel">{en ? 'Problems' : 'Vanliga fel'}</a>
-          <a href="#aterlamning">{en ? 'Return' : 'Återlämning'}</a>
+        <nav
+          className="guideTabs"
+          aria-label={en ? 'Guide sections' : 'Guideavsnitt'}
+        >
+          {sections.map((section) => (
+            <a
+              key={section.id}
+              href={`#${section.id}`}
+              className={activeSection === section.id ? 'active' : ''}
+              aria-current={
+                activeSection === section.id ? 'location' : undefined
+              }
+              onClick={(event) => handleTabClick(event, section.id)}
+            >
+              {section.label}
+            </a>
+          ))}
         </nav>
       </div>
 
@@ -109,7 +232,9 @@ export default async function BoschGuidePage({
         </div>
 
         <div className="guideTextCard">
-          <strong>{en ? 'The machine does not start' : 'Maskinen startar inte'}</strong>
+          <strong>
+            {en ? 'The machine does not start' : 'Maskinen startar inte'}
+          </strong>
           <p>
             {en
               ? 'Check that the battery is charged and fully inserted. If necessary, try the second battery.'
@@ -118,7 +243,11 @@ export default async function BoschGuidePage({
         </div>
 
         <div className="guideTextCard">
-          <strong>{en ? 'Drilling is unusually slow' : 'Det går ovanligt långsamt att borra'}</strong>
+          <strong>
+            {en
+              ? 'Drilling is unusually slow'
+              : 'Det går ovanligt långsamt att borra'}
+          </strong>
           <p>
             {en
               ? 'Check that hammer drilling is selected and that the drill bit is suitable for the material.'
