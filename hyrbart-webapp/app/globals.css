@@ -801,6 +801,12 @@ main {
   /* Sticky mobile headers should still start at the viewport top. */
   .guidePage { padding-top: 0; }
 }
+
+/* ============================================================
+   CURRENT APP OVERRIDES — CONSOLIDATED
+   ============================================================ */
+
+/* Product-card metadata */
 .productListCard .productCardType {
   margin: 0 0 7px;
   color: var(--muted);
@@ -816,6 +822,7 @@ main {
   line-height: 1.3;
 }
 
+/* Product description */
 .karcherDetailPage .productDescriptionDropdown {
   margin-bottom: 10px;
 }
@@ -829,7 +836,6 @@ main {
   color: #363c3f;
   line-height: 1.55;
 }
-
 
 /* Language switch */
 .languageSwitch {
@@ -848,36 +854,26 @@ main {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.languageSwitch svg { display: block; width: 100%; height: 100%; object-fit: cover; }
-.languageSwitch:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-.productContextRow { padding-right: 64px !important; }
-.guideTop { padding-right: 64px !important; }
-.productsChips { padding-right: 64px; }
-/* Product overview: reserve a clean top-right language row above categories */
-.productsPage {
-  padding-top: 72px;
+
+.languageSwitch svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* Keep the category row below the language switch when it becomes sticky. */
-.productsPage .productsChips {
-  top: 52px;
-  padding-right: 20px;
+.languageSwitch:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
-/* The language button remains in the top-right corner. */
-.languageSwitch {
-  z-index: 180;
-}
-/* Product overview polish:
-   1) Give the language-switch row an opaque/frosted surface while scrolling.
-   2) Reduce excessive space below the final product card. */
-
+/* Product catalogue top area */
 .productsPage {
   position: relative;
+  padding-top: 72px;
   padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));
 }
 
-/* Solid/frosted top strip behind the fixed language switch. */
 .productsPage::before {
   content: "";
   position: fixed;
@@ -886,154 +882,23 @@ main {
   left: 0;
   right: 0;
   height: 58px;
-  background: rgba(244, 244, 241, .98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 1px 0 rgba(0,0,0,.04);
-  pointer-events: none;
-}
-
-/* Keep the switch above the strip. */
-.languageSwitch {
-  z-index: 180;
-}
-
-/* Keep the categories directly below the language row. */
-.productsPage .productsChips {
-  top: 58px;
-}
-
-/* Tighten the catalogue ending without risking overlap with bottom nav. */
-.productsPage .productGrid.productList {
-  margin-bottom: 0;
-}
-
-.productsPage .productCard:last-child {
-  margin-bottom: 0;
-}
-/* Remove separator lines under sticky surfaces */
-.productsPage::before {
-  box-shadow: none !important;
-}
-
-.karcherDetailPage .compactProductTitle {
-  border-bottom: 0 !important;
-  box-shadow: none !important;
-}
-/* Guide-first navigation update */
-
-/* Product page: one stable sticky header with navigation, category and product name. */
-.karcherDetailPage .productHeaderSticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 120;
-  margin: 0 -20px 18px;
   background: rgba(244,244,241,.98);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  pointer-events: none;
 }
 
-.karcherDetailPage .productBackRow {
-  min-height: 52px;
-  padding: 8px 64px 2px 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--ink);
-  font-size: .92rem;
-  font-weight: 650;
+.productsPage .productsChips {
+  top: 58px;
+  padding-right: 20px;
 }
 
-.karcherDetailPage .productBackRow svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
+.productsPage .productGrid.productList,
+.productsPage .productCard:last-child {
+  margin-bottom: 0;
 }
 
-.karcherDetailPage .productCategoryRow {
-  padding: 0 20px 6px;
-  color: var(--muted);
-  font-size: 17px;
-  line-height: 1.25;
-  font-weight: 500;
-}
-
-.karcherDetailPage .productHeaderSticky .compactProductTitle {
-  position: static !important;
-  top: auto !important;
-  z-index: auto !important;
-  margin: 0 !important;
-  padding: 6px 20px 12px !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Disable the old separate sticky product row. */
-.karcherDetailPage .productContextRow {
-  position: static !important;
-}
-
-/* Guide is now a primary entry point, so reserve room for bottom navigation. */
-.guidePage {
-  padding-bottom: calc(var(--nav-h) + 52px + env(safe-area-inset-bottom)) !important;
-}
-
-/* Guide header: back action first, product identity below, then section tabs. */
-.guideHeaderSticky {
-  margin-bottom: 22px;
-  box-shadow: none !important;
-}
-
-.guideBackRow {
-  min-height: 52px;
-  padding: 8px 64px 2px 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--ink);
-  font-size: .92rem;
-  font-weight: 650;
-}
-
-.guideBackRow svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-}
-
-.guideProductRow {
-  min-height: 42px;
-  padding: 2px 20px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.guideProductRow strong {
-  font-size: 1.05rem;
-  line-height: 1.15;
-  letter-spacing: -.01em;
-}
-
-.guideTabs {
-  padding: 0 20px;
-}
-
-.guideSection {
-  min-height: calc(100svh - 154px);
-  scroll-margin-top: 154px;
-}
-
-/* ============================================================
-   Guide-first navigation / product + guide headers
-   ============================================================ */
-
-/* PRODUCT DETAIL:
-   One combined sticky area: back action -> category -> product name. */
+/* Kärcher product page: one sticky navigation/identity header */
 .karcherDetailPage .productHeaderSticky {
   position: -webkit-sticky;
   position: sticky;
@@ -1074,27 +939,25 @@ main {
 }
 
 .karcherDetailPage .productHeaderSticky .compactProductTitle {
-  position: static !important;
-  top: auto !important;
-  z-index: auto !important;
-  margin: 0 !important;
-  padding: 6px 20px 12px !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-bottom: 0 !important;
-  box-shadow: none !important;
+  position: static;
+  top: auto;
+  z-index: auto;
+  margin: 0;
+  padding: 6px 20px 12px;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
 }
 
-/* GUIDE:
-   QR visitors arrive here first, so show explicit product navigation
-   and retain the global bottom navigation. */
+/* Guide-first navigation */
 .guidePage {
-  padding-bottom: calc(var(--nav-h) + 46px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(var(--nav-h) + 46px + env(safe-area-inset-bottom));
 }
 
 .guideHeaderSticky {
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 .guideBackRow {
@@ -1151,12 +1014,10 @@ main {
   object-position: center;
 }
 
-/* Keep the transparent cutout visually generous in the catalogue card. */
 .productListCard .productPhotoVisual .productPhoto {
   padding: 10px;
 }
 
-/* Larger, cleaner presentation on the product detail page. */
 .detailProductVisual .productPhotoVisual .productPhoto {
   padding: 4px;
 }
