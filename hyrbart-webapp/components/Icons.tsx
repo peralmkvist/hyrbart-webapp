@@ -8,7 +8,7 @@ const common = {
   stroke: 'currentColor',
   strokeWidth: 1.9,
   strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
+  strokeLinejoin: 'round' as const
 };
 
 export function HomeIcon(props: SVGProps<SVGSVGElement>) {
@@ -18,8 +18,8 @@ export function HomeIcon(props: SVGProps<SVGSVGElement>) {
 export function PersonIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...common} {...props}>
-      <circle cx="12" cy="7.5" r="3.2" />
-      <path d="M5.5 20c.5-4 2.8-6.2 6.5-6.2s6 2.2 6.5 6.2" />
+      <circle cx="12" cy="7.3" r="3.2" />
+      <path d="M5.7 20c.55-4 2.85-6.2 6.3-6.2s5.75 2.2 6.3 6.2" />
     </svg>
   );
 }
