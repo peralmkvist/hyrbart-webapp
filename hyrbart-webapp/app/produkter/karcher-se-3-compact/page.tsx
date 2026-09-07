@@ -38,7 +38,7 @@ export default function ProductPage() {
       <details className="specDropdown productDescriptionDropdown">
         <summary>
           <InfoIcon />
-          <span>Produktbeskrivningar</span>
+          <span>Produktbeskrivning</span>
           <span className="specChevron" aria-hidden="true">⌄</span>
         </summary>
         <div className="specBody productDescriptionBody">
@@ -49,7 +49,7 @@ export default function ProductPage() {
       <details className="specDropdown">
         <summary>
           <ListIcon />
-          <span>Specifikationer</span>
+          <span>Produktspecifikationer</span>
           <span className="specChevron" aria-hidden="true">⌄</span>
         </summary>
         <div className="specBody">
