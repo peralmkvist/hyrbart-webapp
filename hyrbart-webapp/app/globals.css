@@ -911,3 +911,12 @@ main {
 .productsPage .productCard:last-child {
   margin-bottom: 0;
 }
+/* Remove separator lines under sticky surfaces */
+.productsPage::before {
+  box-shadow: none !important;
+}
+
+.karcherDetailPage .compactProductTitle {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
