@@ -1,77 +1,53 @@
 import Link from 'next/link';
-import { products } from '@/lib/products';
-import ProductVisual from '@/components/ProductVisual';
-import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
+import styles from './page.module.css';
 
-const svCategories = ['Alla', 'Rengöring', 'Sågning', 'Bygg', 'Bil & transport', 'Trädgård', 'Barn & familj'];
-const enCategories = ['All', 'Cleaning', 'Sawing', 'Construction', 'Car & transport', 'Garden', 'Children & family'];
-
-const typeEn: Record<string, string> = {
-  'Textiltvätt': 'Carpet & upholstery cleaner',
-  'Kap-/gersåg': 'Mitre saw',
-  'Takbox': 'Roof box',
-  'Grovdamm­sugare': 'Wet & dry vacuum',
-};
-
-export default async function ProductsPage({
+export default async function HomePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   const en = locale === 'en';
-  const categories = en ? enCategories : svCategories;
 
   return (
-    <div className="pageShell productsPage">
-      <div className="chips productsChips" aria-label={en ? 'Product categories' : 'Produktkategorier'}>
-        {categories.map((category, index) => (
-          <button key={category} className={index === 0 ? 'chip active' : 'chip'}>
-            {category}
-          </button>
-        ))}
-      </div>
+    <div className={styles.page}>
+      <div className={styles.backdrop} aria-hidden="true" />
 
-      <section className="productGrid productList">
-        {products.map((product, index) => (
-          <Link
-            href={`/${locale}/produkter/${product.slug}`}
-            className="productCard productListCard productCardLink"
-            key={product.slug}
-            aria-label={`${product.brand} ${product.name}`}
-          >
-            <div className="productCardVisualWrap">
-              <ProductVisual
-                kind={index === 1 ? 'saw' : 'cleaner'}
-                accent={product.accent}
-                imageSrc={product.image}
-                imageAlt={`${product.brand} ${product.name}`}
-              />
-              <ProductBadgeLabel badge={product.badge} locale={locale} />
-            </div>
+      <section className={styles.content}>
+        <div className={styles.copy}>
+          <h1>{en ? 'Welcome' : 'Välkommen hit'}</h1>
+          <p>
+            {en
+              ? 'I’m a hands-on family man who likes high-quality products.'
+              : 'Jag är en händig familjefar som gillar produkter med hög kvalitet.'}
+          </p>
+          <p>
+            {en
+              ? 'I rent out my machines and tools so they get used instead of gathering dust – and so you don’t have to buy expensive equipment for something you only need temporarily.'
+              : 'Jag hyr ut mina maskiner och verktyg för att de ska användas istället för att samla damm – och för att du som behöver dem inte ska behöva köpa dyra maskiner för en tillfällig användning.'}
+          </p>
+          <p>
+            {en
+              ? 'I use all the products myself on a regular basis and reinvest the rental income in new equipment.'
+              : 'Jag använder regelbundet alla produkter och återinvesterar intäkterna från uthyrningen i nya produkter.'}
+          </p>
+          <p>
+            {en
+              ? 'This site is here to make it easy to rent and understand how to use the products in the best possible way.'
+              : 'Den här sidan är till för att göra det enkelt att hyra och förstå hur man använder produkterna på bästa sätt.'}
+          </p>
 
-            <div className="productCardContent">
-              <div>
-                <p className="productCardType">
-                  {en ? (typeEn[product.type] ?? product.type) : product.type}
-                </p>
-                <h2>{product.brand}<br />{product.name}</h2>
+          <p className={styles.statement}>
+            {en
+              ? 'What you need, but only when you need it.'
+              : 'Det du behöver, men bara när du behöver det.'}
+          </p>
 
-                {product.rentalPrices?.length ? (
-                  <RentalPriceGrid prices={product.rentalPrices} locale={locale} compact />
-                ) : (
-                  <p className="productCardPrice">
-                    {en ? product.price.replace('fr.', 'from') : product.price}
-                  </p>
-                )}
-              </div>
-
-              <span className="primaryButton compact productCardCta" aria-hidden="true">
-                {en ? 'More info' : 'Mer info'}
-              </span>
-            </div>
+          <Link href={`/${locale}/produkter`} className={styles.cta}>
+            <span>{en ? 'See all my rental items' : 'Se alla mina hyresobjekt'}</span>
+            <span aria-hidden="true">→</span>
           </Link>
-        ))}
+        </div>
       </section>
     </div>
   );
