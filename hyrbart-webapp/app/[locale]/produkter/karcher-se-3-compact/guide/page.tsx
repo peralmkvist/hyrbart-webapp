@@ -1,135 +1,104 @@
-'use client';
-
 import Link from 'next/link';
-import { useEffect, useState, use } from 'react';
-import { BackIcon, InfoIcon } from '@/components/Icons';
+import ProductVisual from '@/components/ProductVisual';
+import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
+import { products } from '@/lib/products';
+import { BackIcon, BookIcon, CheckIcon, InfoIcon, ListIcon } from '@/components/Icons';
 
-const ids = ['kom-igang', 'anvandning', 'vanliga-fel', 'aterlamning'];
-
-const StepImage = ({ type }: { type: number }) => (
-  <div className={`guideImage guideImage${type}`}>
-    <div className="tank"><div className="fill" /></div>
-    {type === 1 ? <div className="pour">↘</div> : <div className="bottle">RM 519</div>}
-  </div>
-);
-
-export default function GuidePage({
+export default async function ProductPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = use(params);
+  const { locale } = await params;
   const en = locale === 'en';
+  const product = products.find((item) => item.slug === 'karcher-se-3-compact');
 
-  const sections = ids.map((id, i) => ({
-    id,
-    label: (en
-      ? ['Get started', 'Use', 'Common issues', 'Return']
-      : ['Kom igång', 'Användning', 'Vanliga fel', 'Återlämning'])[i],
-  }));
-
-  const [activeSection, setActiveSection] = useState('kom-igang');
-
-  useEffect(() => {
-    const update = () => {
-      let current = ids[0];
-
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 154) current = id;
-        else if (el) break;
-      }
-
-      setActiveSection(current);
-    };
-
-    const hash = () => {
-      const h = window.location.hash.slice(1);
-      if (ids.includes(h)) setActiveSection(h);
-      requestAnimationFrame(update);
-    };
-
-    hash();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    window.addEventListener('hashchange', hash);
-
-    return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-      window.removeEventListener('hashchange', hash);
-    };
-  }, []);
+  const included = en
+    ? ['Universal nozzle', 'Upholstery nozzle', 'Shoe nozzle', 'Cleaning detergent – 1 dose included']
+    : ['Universalmunstycke', 'Möbelmunstycke', 'Skomunstycke', 'Rengöringsmedel – 1 dos ingår'];
 
   return (
-    <div className="guidePage pageShell">
-      <div className="guideHeaderSticky">
+    <div className="pageShell detailPage karcherDetailPage">
+      <div className="productHeaderSticky">
         <Link
-          href={`/${locale}/produkter/karcher-se-3-compact`}
-          className="guideBackRow"
-          aria-label={en ? 'Back to product page' : 'Tillbaka till produktsidan'}
+          href={`/${locale}/produkter`}
+          className="productBackRow"
+          aria-label={en ? 'Back to all rental products' : 'Tillbaka till alla hyresprodukter'}
         >
           <BackIcon />
-          <span>{en ? 'Back to product page' : 'Tillbaka till produktsidan'}</span>
+          <span>{en ? 'Back to all rental products' : 'Tillbaka till alla hyresprodukter'}</span>
         </Link>
 
-        <div className="guideProductRow">
-          <strong>KÄRCHER SE 3 COMPACT</strong>
+        <div className="productCategoryRow">
+          {en ? 'Carpet & upholstery cleaner' : 'Textil- och möbeltvätt'}
         </div>
 
-        <nav className="guideTabs" aria-label={en ? 'Guide sections' : 'Guideavsnitt'}>
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className={activeSection === s.id ? 'active' : ''}
-              aria-current={activeSection === s.id ? 'location' : undefined}
-              onClick={() => setActiveSection(s.id)}
-            >
-              {s.label}
-            </a>
-          ))}
-        </nav>
+        <header className="productTitle compactProductTitle">
+          <h1>KÄRCHER<br />SE 3 COMPACT</h1>
+        </header>
       </div>
 
-      <section id="kom-igang" className="guideSection">
-        <div className="stepHeading"><span>1</span><h1>{en ? 'Fill the tank' : 'Fyll tanken'}</h1></div>
-        <p>{en
-          ? 'One dose of detergent has already been added. Only add warm water up to the mark.'
-          : 'En dos rengöringsmedel är redan tillsatt. Fyll endast på varmt vatten till markeringen.'}</p>
-        <StepImage type={1} />
-        <div className="infoBox">
-          <InfoIcon />
-          <div>
-            <b>{en ? 'IMPORTANT' : 'VIKTIGT'}</b>
-            <p>{en
-              ? 'Do not add more detergent for the first fill.'
-              : 'Tillsätt inte ytterligare rengöringsmedel vid första fyllningen.'}</p>
-          </div>
+      <div className="detailProductVisual productDetailPhotoWrap">
+        <ProductVisual
+          large
+          imageSrc={product?.image ?? '/images/products/karcher-se-3-compact.png'}
+          imageAlt="Kärcher SE 3 Compact med tillbehör"
+        />
+        <ProductBadgeLabel badge={product?.badge} locale={locale} />
+      </div>
+
+      <section className="included">
+        <h2>{en ? 'Included' : 'Det här ingår'}</h2>
+        <div className="includedGrid">
+          {included.map((item) => (
+            <div key={item}>
+              <span className="checkCircle"><CheckIcon /></span>
+              <span>{item}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section id="anvandning" className="guideSection">
-        <div className="stepHeading"><span>2</span><h2>{en ? 'Use the right detergent' : 'Använd rätt medel'}</h2></div>
-        <p>{en
-          ? 'Only use detergent intended for carpet and upholstery cleaners.'
-          : 'Använd endast rengöringsmedel anpassat för textiltvätt. Andra medel kan skada maskinen eller ge sämre resultat.'}</p>
-        <StepImage type={2} />
-      </section>
+      <details className="specDropdown productDescriptionDropdown">
+        <summary>
+          <InfoIcon />
+          <span>{en ? 'Product description' : 'Produktbeskrivning'}</span>
+          <span className="specChevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div className="specBody productDescriptionBody">
+          <p>{en ? 'Add the product description from Hygglo here.' : 'Lägg in produktbeskrivningen från Hygglo här.'}</p>
+        </div>
+      </details>
 
-      <section id="vanliga-fel" className="guideSection">
-        <div className="stepHeading"><span>3</span><h2>{en ? 'When the dirty-water tank is full' : 'När smutsvattentanken är full'}</h2></div>
-        <p>{en
-          ? 'If the machine suddenly sounds like a vacuum nozzle stuck to dense material, the dirty-water tank may be full. Switch it off and empty the tank.'
-          : 'Om maskinen plötsligt låter som när ett dammsugarmunstycke fastnar mot ett tätt material kan smutsvattentanken vara full. Stäng av och töm tanken.'}</p>
-      </section>
+      <details className="specDropdown">
+        <summary>
+          <ListIcon />
+          <span>{en ? 'Technical specifications' : 'Tekniska specifikationer'}</span>
+          <span className="specChevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div className="specBody">
+          <div><b>{en ? 'Tank capacity' : 'Tankvolym'}</b><span>1,7 / 2,9 l</span></div>
+          <div><b>{en ? 'Weight' : 'Vikt'}</b><span>4,6 kg</span></div>
+        </div>
+      </details>
 
-      <section id="aterlamning" className="guideSection">
-        <div className="stepHeading"><span>4</span><h2>{en ? 'Before returning' : 'Innan återlämning'}</h2></div>
-        <p>{en
-          ? 'Wipe down the machine and flush the system with clean water so the hose and nozzle are left clean.'
-          : 'Torka av maskinen och skölj igenom systemet med rent vatten så att slang och munstycke lämnas rena.'}</p>
-      </section>
+      <div className="stackedActions">
+        <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#kom-igang`} className="darkAction">
+          <BookIcon /><span>{en ? 'User guide' : 'Användarguide'}</span><b>›</b>
+        </Link>
+        <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#vanliga-fel`} className="darkAction">
+          <InfoIcon /><span>{en ? 'Common problems' : 'Vanliga problem'}</span><b>›</b>
+        </Link>
+        <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#aterlamning`} className="darkAction">
+          <CheckIcon /><span>{en ? 'Before returning' : 'Innan återlämning'}</span><b>›</b>
+        </Link>
+      </div>
+
+      <RentalPriceGrid prices={product?.rentalPrices} locale={locale} />
+
+      <a className="primaryButton wide" href="https://www.hygglo.se" target="_blank" rel="noreferrer">
+        {en ? 'Book on Hygglo' : 'Boka på Hygglo'} <span>↗</span>
+      </a>
     </div>
   );
 }
