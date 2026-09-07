@@ -1514,3 +1514,40 @@ h1,
   font-family: var(--font-mono-stack);
   letter-spacing: -.02em;
 }
+
+/* ============================================================
+   FLAGGOR + PRODUKTRUBRIKER
+   Lägg detta allra sist i globals.css.
+   ============================================================ */
+
+/* Runda språkflaggor */
+.languageSwitch {
+  border-radius: 50%;
+  overflow: hidden;
+  padding: 0;
+  background: transparent;
+}
+
+.languageSwitch svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+/* Produktkategori på detaljsidan ska vara svart */
+.karcherDetailPage .productCategoryRow {
+  color: var(--ink);
+}
+
+/*
+   Regel för produktnamn:
+   rad 1 = varumärke
+   rad 2 = modell
+   <br> i befintlig markup styr radbrytningen,
+   nowrap hindrar modellen från att delas på två rader.
+*/
+.productListCard h2,
+.karcherDetailPage .compactProductTitle h1 {
+  white-space: nowrap;
+}
