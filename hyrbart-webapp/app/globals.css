@@ -2083,3 +2083,191 @@ h1,
   position: sticky;
   z-index: 120;
 }
+/* ============================================================
+   HYRBART — COMPACT LIQUID GLASS BOTTOM NAV
+   Lägg HELA detta block ALLRA SIST i app/globals.css.
+   Bygger på befintliga .liquidNav / .navItem / .activeLens.
+   ============================================================ */
+
+:root {
+  --nav-h: 62px;
+}
+
+.liquidNav {
+  position: fixed;
+  z-index: 200;
+  left: 50%;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+
+  width: min(calc(100% - 32px), 620px);
+  height: var(--nav-h);
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  /* Transparent glass base — content behind remains visible */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, .30) 0%,
+      rgba(255, 255, 255, .17) 48%,
+      rgba(255, 255, 255, .22) 100%
+    );
+
+  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(108%);
+  backdrop-filter: blur(28px) saturate(180%) contrast(108%);
+
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 999px;
+  overflow: hidden;
+
+  box-shadow:
+    0 9px 28px rgba(0, 0, 0, .14),
+    inset 0 1px 0 rgba(255, 255, 255, .92),
+    inset 0 -1px 0 rgba(255, 255, 255, .20);
+}
+
+/* Glass highlight / refraction layer */
+.liquidNav::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      110% 70% at 50% -10%,
+      rgba(255, 255, 255, .42) 0%,
+      rgba(255, 255, 255, .10) 46%,
+      rgba(255, 255, 255, 0) 72%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, .10),
+      rgba(255, 255, 255, 0) 24%,
+      rgba(255, 255, 255, .08) 76%,
+      rgba(255, 255, 255, .12)
+    );
+}
+
+/* Thin lower edge gives the capsule a glass thickness */
+.liquidNav::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 18px;
+  right: 18px;
+  bottom: 1px;
+  height: 1px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .40);
+  pointer-events: none;
+}
+
+.liquidNav .navItem {
+  position: relative;
+  z-index: 1;
+
+  min-width: 0;
+  height: 100%;
+  padding: 5px 4px 4px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+
+  /* Keep labels readable on both photos and light pages */
+  color: #15191b;
+  font-family: var(--font-body-stack);
+  font-size: .69rem;
+  line-height: 1.05;
+  font-weight: 600;
+
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, .28);
+}
+
+.liquidNav .navIcon {
+  position: relative;
+  z-index: 2;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  stroke-width: 2;
+}
+
+.liquidNav .navItem > span:last-child {
+  position: relative;
+  z-index: 2;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+/* Neutral glass lens — lime is reserved for icon + label */
+.liquidNav .activeLens {
+  position: absolute;
+  z-index: 1;
+  inset: 3px;
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, .42),
+      rgba(255, 255, 255, .24)
+    );
+
+  -webkit-backdrop-filter: blur(10px) saturate(150%) brightness(1.06);
+  backdrop-filter: blur(10px) saturate(150%) brightness(1.06);
+
+  border: 1px solid rgba(255, 255, 255, .40);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .72),
+    0 2px 9px rgba(0, 0, 0, .045);
+
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
+.liquidNav .navItem.active .activeLens {
+  opacity: 1;
+}
+
+.liquidNav .navItem.active {
+  color: var(--accent);
+  font-weight: 800;
+  text-shadow:
+    0 1px 1px rgba(0, 0, 0, .10),
+    0 0 1px rgba(0, 0, 0, .18);
+}
+
+/* Keyboard accessibility */
+.liquidNav .navItem:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -5px;
+  border-radius: 999px;
+}
+
+/* Slightly tighter on narrow iPhones */
+@media (max-width: 380px) {
+  .liquidNav {
+    width: calc(100% - 24px);
+    height: 60px;
+  }
+
+  .liquidNav .navItem {
+    font-size: .66rem;
+  }
+
+  .liquidNav .navIcon {
+    width: 20px;
+    height: 20px;
+  }
+}
