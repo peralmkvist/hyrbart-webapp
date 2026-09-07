@@ -64,7 +64,7 @@ export default async function GenericProductPage({
   const specifications = product.specifications!;
 
   return (
-    <div className="pageShell detailPage karcherDetailPage">
+    <div className={`pageShell detailPage ${product.slug === 'bosch-gbh-18v-22' ? 'boschDetailPage' : 'karcherDetailPage'}`}>
       <div className="productHeaderSticky">
         <Link
           href={`/${locale}/produkter`}
