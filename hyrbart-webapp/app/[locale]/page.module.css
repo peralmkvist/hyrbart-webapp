@@ -1,6 +1,9 @@
 .page {
   position: relative;
   min-height: 100svh;
+  min-height: 100dvh;
+  margin-top: calc(-1 * env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
   color: #fff;
   overflow: hidden;
   isolation: isolate;
