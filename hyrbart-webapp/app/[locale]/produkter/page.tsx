@@ -10,15 +10,22 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
   const { locale } = await params;
   const en = locale === 'en';
   const categories = en ? enCategories : svCategories;
+
   return (
     <div className="pageShell productsPage">
       <div className="chips productsChips" aria-label={en ? 'Product categories' : 'Produktkategorier'}>
         {categories.map((category, index) => <button key={category} className={index === 0 ? 'chip active' : 'chip'}>{category}</button>)}
       </div>
+
       <section className="productGrid productList">
         {products.map((product, index) => (
           <Link href={`/${locale}/produkter/${product.slug}`} className="productCard productListCard productCardLink" key={product.slug} aria-label={`${product.brand} ${product.name}`}>
-            <ProductVisual kind={index === 1 ? 'saw' : 'cleaner'} accent={product.accent} />
+            <ProductVisual
+              kind={index === 1 ? 'saw' : 'cleaner'}
+              accent={product.accent}
+              imageSrc={product.slug === 'karcher-se-3-compact' ? '/images/products/karcher-se-3-compact.png' : undefined}
+              imageAlt={product.slug === 'karcher-se-3-compact' ? 'Kärcher SE 3 Compact med tillbehör' : `${product.brand} ${product.name}`}
+            />
             <div className="productCardContent">
               <div>
                 <p className="productCardType">{en ? (typeEn[product.type] ?? product.type) : product.type}</p>
