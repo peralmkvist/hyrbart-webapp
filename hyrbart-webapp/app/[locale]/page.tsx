@@ -1,23 +1,55 @@
 import Link from 'next/link';
 
-export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   const en = locale === 'en';
+
   return (
-    <div className="homePage">
-      <section className="hero">
-        <div className="heroContent">
-          <h1><span className="heroLine heroLinePrimary">{en ? 'What you need.' : 'Det du behöver.'}</span><span className="heroLine heroLineAccent">{en ? 'When you need it.' : 'När du behöver det.'}</span></h1>
-          <p>{en ? 'Rent tools, machines and equipment for your home, journey and next project.' : 'Hyr verktyg, maskiner och utrustning för hemmet, resan och nästa projekt.'}</p>
-          <Link className="primaryButton" href={`/${locale}/produkter`}>{en ? 'Explore products' : 'Utforska produkter'}</Link>
-        </div>
-      </section>
-      <section className="aboutCard">
-        <div className="avatar">P</div>
-        <div>
-          <h2>{en ? 'Hi, I’m Per.' : 'Hej, jag heter Per.'}</h2>
-          <p>{en ? 'I rent out machines and tools so more people can complete their projects without having to buy expensive equipment.' : 'Jag hyr ut maskiner och verktyg för att fler ska kunna förverkliga sina projekt – utan att behöva köpa dyr utrustning.'}</p>
-          <p>{en ? 'Hyrbart is my collection of guides, tips and instructions that make it easy to rent and use the right equipment.' : 'Hyrbart är min samling guider, tips och instruktioner som gör det enkelt att hyra och använda rätt utrustning.'}</p>
+    <div className="aboutLandingPage">
+      <div className="aboutLandingBackdrop" aria-hidden="true" />
+
+      <section className="aboutLandingContent">
+        <div className="aboutLandingText">
+          <h1>{en ? 'Welcome' : 'Välkommen hit'}</h1>
+
+          <p>
+            {en
+              ? 'I’m a hands-on family man who likes high-quality products.'
+              : 'Jag är en händig familjefar som gillar produkter med hög kvalitet.'}
+          </p>
+
+          <p>
+            {en
+              ? 'I rent out my machines and tools so they get used instead of gathering dust – and so you don’t have to buy expensive equipment for something you only need temporarily.'
+              : 'Jag hyr ut mina maskiner och verktyg för att de ska användas istället för att samla damm – och för att du som behöver dem inte ska behöva köpa dyra maskiner för en tillfällig användning.'}
+          </p>
+
+          <p>
+            {en
+              ? 'I use all the products myself on a regular basis and reinvest the rental income in new equipment.'
+              : 'Jag använder regelbundet alla produkter och återinvesterar intäkterna från uthyrningen i nya produkter.'}
+          </p>
+
+          <p>
+            {en
+              ? 'This site is here to make it easy to rent and understand how to use the products in the best possible way.'
+              : 'Den här sidan är till för att göra det enkelt att hyra och förstå hur man använder produkterna på bästa sätt.'}
+          </p>
+
+          <p className="aboutLandingStatement">
+            {en
+              ? 'What you need, but only when you need it.'
+              : 'Det du behöver, men bara när du behöver det.'}
+          </p>
+
+          <Link className="primaryButton aboutLandingCta" href={`/${locale}/produkter`}>
+            <span>{en ? 'See all my rental items' : 'Se alla mina hyresobjekt'}</span>
+            <span aria-hidden="true">→</span>
+          </Link>
         </div>
       </section>
     </div>
