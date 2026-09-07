@@ -1778,3 +1778,51 @@ h1,
     top: 0;
   }
 }
+/* ============================================================
+   PRODUKTLISTA — FAST TOPPLÄGE + MINDRE BOTTENLUFT
+   Lägg detta ALLRA SIST i app/globals.css.
+   ============================================================ */
+
+/*
+  Kategoriraden låg normalt vid 72px men fick sticky top:58px.
+  Därför hoppade den uppåt när scrollen började.
+
+  Vi lägger nu både normalposition och sticky-position på 112px.
+  Det placerar raden under statusfältet/språkflaggan och gör att
+  den inte flyttar sig när den blir sticky.
+*/
+.productsPage {
+  padding-top: 112px;
+  padding-bottom: 0;
+}
+
+.productsPage::before {
+  content: "";
+  position: fixed;
+  z-index: 77;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 112px;
+  background: rgba(244, 244, 241, .98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: none;
+}
+
+.productsPage .productsChips {
+  top: 112px;
+  z-index: 78;
+}
+
+/*
+  main har redan global bottenpadding för den fasta bottom-nav:en.
+  Produktsidan behöver därför ingen extra nav-höjd ovanpå den.
+*/
+.productsPage .productGrid.productList {
+  margin-bottom: 0;
+}
+
+.productsPage .productCard:last-child {
+  margin-bottom: 0;
+}
