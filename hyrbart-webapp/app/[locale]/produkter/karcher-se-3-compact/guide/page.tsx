@@ -13,7 +13,6 @@ export default function GuidePage({
 }) {
   const { locale } = use(params);
   const en = locale === 'en';
-
   const sections = ids.map((id, i) => ({
     id,
     label: (en
@@ -26,10 +25,9 @@ export default function GuidePage({
   useEffect(() => {
     const update = () => {
       let current = ids[0];
-
       for (const id of ids) {
         const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 150) current = id;
+        if (el && el.getBoundingClientRect().top <= 205) current = id;
         else if (el) break;
       }
 
@@ -45,7 +43,6 @@ export default function GuidePage({
         });
       }
     };
-
     applyHash();
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
@@ -69,9 +66,16 @@ export default function GuidePage({
           <span>{en ? 'Back to product page' : 'Tillbaka till produktsidan'}</span>
         </Link>
 
-        <div className="guideProductRow">
-          <strong>KÄRCHER SE 3 COMPACT</strong>
+        <div className="guideCategoryRow">
+          {en ? 'User guide' : 'Användarguide'}
         </div>
+
+        <header className="guideIdentityRow">
+          <h1>
+            <span>KÄRCHER</span>
+            <span>SE 3 COMPACT</span>
+          </h1>
+        </header>
 
         <nav className="guideTabs" aria-label={en ? 'Guide sections' : 'Guideavsnitt'}>
           {sections.map((section) => (
@@ -93,13 +97,11 @@ export default function GuidePage({
           <span>1</span>
           <h1>{en ? 'Get the machine ready' : 'Gör maskinen klar'}</h1>
         </div>
-
         <p>
           {en
             ? 'One dose of cleaning solution is already in the clean-water tank when you receive the machine. Fill only with warm water up to the marked line.'
             : 'En dos rengöringsmedel finns redan i renvattentanken när du får maskinen. Fyll endast på varmt vatten upp till markeringen.'}
         </p>
-
         <div className="guideTextCard">
           <strong>{en ? 'Two separate tanks' : 'Två separata tankar'}</strong>
           <p>
@@ -108,7 +110,6 @@ export default function GuidePage({
               : 'Maskinen har en tank för rent vatten och rengöringsmedel och en separat tank för smutsvattnet.'}
           </p>
         </div>
-
         <div className="infoBox">
           <InfoIcon />
           <div>
@@ -127,13 +128,11 @@ export default function GuidePage({
           <span>2</span>
           <h2>{en ? 'Use the machine' : 'Använd maskinen'}</h2>
         </div>
-
         <p>
           {en
             ? 'Plug the power cable into the wall and switch the machine on. The suction then runs continuously. Hold the trigger on the handle when you want to spray cleaning solution.'
             : 'Sätt strömkabeln i vägguttaget och slå på maskinen. Då går suget kontinuerligt. Håll in avtryckaren på handtaget när du vill spraya rengöringsvätska.'}
         </p>
-
         <div className="guideTextCard">
           <strong>{en ? 'Pretreating a stain' : 'Förbehandla en fläck'}</strong>
           <p>
@@ -142,7 +141,6 @@ export default function GuidePage({
               : 'Sprayfunktionen kan inte köras utan att suget samtidigt är igång. Vid förbehandling lyfter du därför munstycket från ytan och sprayar materialet från cirka 5–10 cm avstånd.'}
           </p>
         </div>
-
         <div className="guideTextCard">
           <strong>{en ? 'Extra detergent' : 'Extra rengöringsmedel'}</strong>
           <p>
@@ -158,13 +156,11 @@ export default function GuidePage({
           <span>3</span>
           <h2>{en ? 'When the dirty-water tank is full' : 'När smutsvattentanken är full'}</h2>
         </div>
-
         <p>
           {en
             ? 'When the dirty-water tank is full, a sensor can make the machine sound as if a vacuum nozzle is stuck to a dense surface. The sound usually increases in intensity.'
             : 'När smutsvattentanken är full kan en sensor göra att maskinen låter ungefär som när ett dammsugarmunstycke fastnar mot ett tätt material. Ljudet brukar öka i intensitet.'}
         </p>
-
         <div className="guideTextCard">
           <strong>{en ? 'It can happen before the tank looks completely full' : 'Det kan hända innan tanken ser helt full ut'}</strong>
           <p>
@@ -186,7 +182,6 @@ export default function GuidePage({
             ? 'Wipe the machine clean and rinse the internal system with clean water before returning it.'
             : 'Torka av maskinen och skölj igenom det interna systemet med rent vatten innan återlämning.'}
         </p>
-
         <div className="guideTextCard">
           <strong>{en ? 'Rinse the hose and nozzle' : 'Skölj slang och munstycke'}</strong>
           <p>
@@ -195,7 +190,6 @@ export default function GuidePage({
               : 'Fyll renvattentanken med endast vatten. Montera det smala munstycket, håll in sprayknappen och placera munstycket ned i rent vatten så att vattnet sugs genom slangarna. Fortsätt hålla inne knappen tills renvattentanken är tom.'}
           </p>
         </div>
-
         <div className="infoBox">
           <InfoIcon />
           <div>
