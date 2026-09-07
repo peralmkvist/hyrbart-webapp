@@ -1741,3 +1741,40 @@ h1,
 .productsPage .productsChips {
   top: calc(58px + env(safe-area-inset-top));
 }
+/* ============================================================
+   IOS SAFE AREA — PRODUKTLISTAN
+   Lägg detta block allra sist i app/globals.css.
+   ============================================================ */
+
+/* Ett faktiskt fast "lock" över safe area.
+   Den tidigare ::before-regeln saknade content/position och kunde därför
+   inte täcka statusfältet. */
+.productsPage::before {
+  content: "";
+  position: fixed;
+  z-index: 79;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: var(--bg);
+  pointer-events: none;
+}
+
+/* Kategoriflikarna börjar direkt under iPhones safe area när appen körs
+   edge-to-edge. */
+.productsPage .productsChips {
+  top: env(safe-area-inset-top);
+  z-index: 78;
+}
+
+/* Om webbläsaren rapporterar 0px safe area fungerar sidan som tidigare. */
+@supports not (padding-top: env(safe-area-inset-top)) {
+  .productsPage::before {
+    display: none;
+  }
+
+  .productsPage .productsChips {
+    top: 0;
+  }
+}
