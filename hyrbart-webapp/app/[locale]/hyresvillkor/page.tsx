@@ -53,7 +53,7 @@ export default async function TermsPage({
     <div className="pageShell termsPage">
       <header className="pageHeader termsHeaderSticky">
         <h1>HYRESVILLKOR</h1>
-        <p>Villkor för uthyrning via Hyrbart.</p>
+        <p>Villkor för uthyrning via Hygglo.</p>
       </header>
 
       <section className="termsCard">
