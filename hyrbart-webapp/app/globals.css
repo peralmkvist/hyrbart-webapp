@@ -1210,3 +1210,89 @@ main {
 .rentalPriceGrid.compact .rentalPriceBox strong{font-size:.78rem}
 .rentalPriceGrid.compact .rentalPriceBox span{margin-top:3px;font-size:.64rem}
 .karcherDetailPage>.rentalPriceGrid+.primaryButton.wide{margin-top:12px}
+
+/* ============================================================
+   REVIEWS + GUIDE CARDS
+   ============================================================ */
+
+.productCardRating {
+  position: absolute;
+  z-index: 5;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  min-height: 34px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--ink);
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  font-size: .78rem;
+  line-height: 1;
+}
+
+.productCardRating .ratingStar {
+  color: var(--accent);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.productCardRating strong {
+  font-size: .82rem;
+  font-weight: 850;
+}
+
+.productCardRating > span:last-child {
+  color: var(--muted);
+}
+
+.productDetailRating {
+  margin-top: 9px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--ink);
+  font-size: .88rem;
+  line-height: 1.2;
+}
+
+.productDetailRating .ratingStars {
+  color: var(--accent);
+  font-size: 1.08rem;
+  letter-spacing: .04em;
+}
+
+.productDetailRating strong {
+  font-weight: 850;
+}
+
+.productDetailRating > span:last-child {
+  color: var(--muted);
+}
+
+.guideTextCard {
+  margin: 18px 0;
+  padding: 17px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.guideTextCard strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.guideTextCard p {
+  margin: 0;
+  color: #363c3f;
+  font-size: 1rem;
+  line-height: 1.5;
+}
