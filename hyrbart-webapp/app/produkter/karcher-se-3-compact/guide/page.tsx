@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState, use } from 'react';
 import { BackIcon, InfoIcon } from '@/components/Icons';
 
-const ids = ['kom-igang', 'anvandning', 'vanliga-fel', 'aterlamning'];
-const HEADER_OFFSET = 154;
+const ids = ['kom-igang','anvandning','vanliga-fel','aterlamning'];
+const GUIDE_HEADER_OFFSET = 144;
 
 const StepImage = ({ type }: { type: number }) => (
   <div className={`guideImage guideImage${type}`}>
@@ -14,19 +14,15 @@ const StepImage = ({ type }: { type: number }) => (
   </div>
 );
 
-export default function GuidePage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function GuidePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
   const en = locale === 'en';
 
   const sections = ids.map((id, i) => ({
     id,
     label: (en
-      ? ['Get started', 'Use', 'Common issues', 'Return']
-      : ['Kom igång', 'Användning', 'Vanliga fel', 'Återlämning'])[i],
+      ? ['Get started','Use','Common issues','Return']
+      : ['Kom igång','Användning','Vanliga fel','Återlämning'])[i]
   }));
 
   const [activeSection, setActiveSection] = useState('kom-igang');
@@ -34,11 +30,13 @@ export default function GuidePage({
   useEffect(() => {
     const update = () => {
       let current = ids[0];
+
       for (const id of ids) {
         const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= HEADER_OFFSET) current = id;
+        if (el && el.getBoundingClientRect().top <= GUIDE_HEADER_OFFSET) current = id;
         else if (el) break;
       }
+
       setActiveSection(current);
     };
 
@@ -77,7 +75,7 @@ export default function GuidePage({
         </div>
 
         <nav className="guideTabs" aria-label={en ? 'Guide sections' : 'Guideavsnitt'}>
-          {sections.map((s) => (
+          {sections.map(s => (
             <a
               key={s.id}
               href={`#${s.id}`}
@@ -93,31 +91,46 @@ export default function GuidePage({
 
       <section id="kom-igang" className="guideSection">
         <div className="stepHeading"><span>1</span><h1>{en ? 'Fill the tank' : 'Fyll tanken'}</h1></div>
-        <p>{en ? 'One dose of detergent has already been added. Only add warm water up to the mark.' : 'En dos rengöringsmedel är redan tillsatt. Fyll endast på varmt vatten till markeringen.'}</p>
-        <StepImage type={1} />
+        <p>{en
+          ? 'One dose of detergent has already been added. Only add warm water up to the mark.'
+          : 'En dos rengöringsmedel är redan tillsatt. Fyll endast på varmt vatten till markeringen.'}
+        </p>
+        <StepImage type={1}/>
         <div className="infoBox">
-          <InfoIcon />
+          <InfoIcon/>
           <div>
             <b>{en ? 'IMPORTANT' : 'VIKTIGT'}</b>
-            <p>{en ? 'Do not add more detergent for the first fill.' : 'Tillsätt inte ytterligare rengöringsmedel vid första fyllningen.'}</p>
+            <p>{en
+              ? 'Do not add more detergent for the first fill.'
+              : 'Tillsätt inte ytterligare rengöringsmedel vid första fyllningen.'}
+            </p>
           </div>
         </div>
       </section>
 
       <section id="anvandning" className="guideSection">
         <div className="stepHeading"><span>2</span><h2>{en ? 'Use the right detergent' : 'Använd rätt medel'}</h2></div>
-        <p>{en ? 'Only use detergent intended for carpet and upholstery cleaners.' : 'Använd endast rengöringsmedel anpassat för textiltvätt. Andra medel kan skada maskinen eller ge sämre resultat.'}</p>
-        <StepImage type={2} />
+        <p>{en
+          ? 'Only use detergent intended for carpet and upholstery cleaners.'
+          : 'Använd endast rengöringsmedel anpassat för textiltvätt. Andra medel kan skada maskinen eller ge sämre resultat.'}
+        </p>
+        <StepImage type={2}/>
       </section>
 
       <section id="vanliga-fel" className="guideSection">
         <div className="stepHeading"><span>3</span><h2>{en ? 'When the dirty-water tank is full' : 'När smutsvattentanken är full'}</h2></div>
-        <p>{en ? 'If the machine suddenly sounds like a vacuum nozzle stuck to dense material, the dirty-water tank may be full. Switch it off and empty the tank.' : 'Om maskinen plötsligt låter som när ett dammsugarmunstycke fastnar mot ett tätt material kan smutsvattentanken vara full. Stäng av och töm tanken.'}</p>
+        <p>{en
+          ? 'If the machine suddenly sounds like a vacuum nozzle stuck to dense material, the dirty-water tank may be full. Switch it off and empty the tank.'
+          : 'Om maskinen plötsligt låter som när ett dammsugarmunstycke fastnar mot ett tätt material kan smutsvattentanken vara full. Stäng av och töm tanken.'}
+        </p>
       </section>
 
       <section id="aterlamning" className="guideSection">
         <div className="stepHeading"><span>4</span><h2>{en ? 'Before returning' : 'Innan återlämning'}</h2></div>
-        <p>{en ? 'Wipe down the machine and flush the system with clean water so the hose and nozzle are left clean.' : 'Torka av maskinen och skölj igenom systemet med rent vatten så att slang och munstycke lämnas rena.'}</p>
+        <p>{en
+          ? 'Wipe down the machine and flush the system with clean water so the hose and nozzle are left clean.'
+          : 'Torka av maskinen och skölj igenom systemet med rent vatten så att slang och munstycke lämnas rena.'}
+        </p>
       </section>
     </div>
   );
