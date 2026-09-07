@@ -801,3 +801,31 @@ main {
   /* Sticky mobile headers should still start at the viewport top. */
   .guidePage { padding-top: 0; }
 }
+.productListCard .productCardType {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-size: .92rem;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.productListCard .productCardPrice {
+  margin: 8px 0 0;
+  color: #404649;
+  font-size: .98rem;
+  line-height: 1.3;
+}
+
+.karcherDetailPage .productDescriptionDropdown {
+  margin-bottom: 10px;
+}
+
+.karcherDetailPage .productDescriptionDropdown + .specDropdown {
+  margin-top: 0;
+}
+
+.karcherDetailPage .productDescriptionBody p {
+  margin: 0;
+  color: #363c3f;
+  line-height: 1.55;
+}
