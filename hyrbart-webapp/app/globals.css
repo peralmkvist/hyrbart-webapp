@@ -1724,3 +1724,9 @@ h1,
   min-height: calc(100svh - 205px);
   scroll-margin-top: 205px;
 }
+/* PRODUKTSIDA — LÅS HEADERN FRÅN FÖRSTA PIXELN
+   Lägg detta allra sist i hyrbart-webapp/app/globals.css */
+
+.karcherDetailPage {
+  padding-top: 0;
+}
