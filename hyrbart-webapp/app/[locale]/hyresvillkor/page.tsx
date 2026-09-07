@@ -11,7 +11,7 @@ export default async function TermsPage({
       <div className="pageShell termsPage">
         <header className="pageHeader termsHeaderSticky">
           <h1>RENTAL TERMS</h1>
-          <p>Terms for rentals via Hyrbart.</p>
+          <p>Terms for rentals via Hygglo.</p>
         </header>
 
         <section className="termsCard">
