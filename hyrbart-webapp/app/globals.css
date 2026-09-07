@@ -1826,3 +1826,11 @@ h1,
 .productsPage .productCard:last-child {
   margin-bottom: 0;
 }
+/* PRODUKTSIDA — TA BORT DUBBEL BOTTENLUFT */
+.karcherDetailPage {
+  padding-bottom: 0;
+}
+
+.karcherDetailPage .primaryButton.wide {
+  margin-bottom: 0;
+}
