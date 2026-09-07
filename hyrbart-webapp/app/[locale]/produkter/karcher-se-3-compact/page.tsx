@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import ProductVisual from '@/components/ProductVisual';
-import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
+import ProductGallery from '@/components/ProductGallery';
+import { RentalPriceGrid } from '@/components/ProductPricing';
 import { products } from '@/lib/products';
 import { BackIcon, BookIcon, CheckIcon, InfoIcon, ListIcon } from '@/components/Icons';
 
@@ -17,6 +17,18 @@ export default async function ProductPage({
     ? ['Universal nozzle', 'Upholstery nozzle', 'Shoe nozzle', 'Cleaning detergent – 1 dose included']
     : ['Universalmunstycke', 'Möbelmunstycke', 'Skomunstycke', 'Rengöringsmedel – 1 dos ingår'];
 
+  /*
+   * Lägg till fler produktbilder här när de finns i /public/images/products/.
+   * Exempel:
+   * '/images/products/karcher-se-3-compact-2.jpg',
+   * '/images/products/karcher-se-3-compact-3.jpg',
+   *
+   * Med bara en bild visas varken pilar eller prickar.
+   */
+  const productImages = [
+    product?.image ?? '/images/products/karcher-se-3-compact.png',
+  ];
+
   return (
     <div className="pageShell detailPage karcherDetailPage">
       <div className="productHeaderSticky">
@@ -28,6 +40,7 @@ export default async function ProductPage({
           <BackIcon />
           <span>{en ? 'Back to product list' : 'Tillbaka till produktlistan'}</span>
         </Link>
+
         <div className="productCategoryRow">
           {en ? 'Carpet & upholstery cleaner' : 'Textil- och möbeltvätt'}
         </div>
@@ -48,14 +61,16 @@ export default async function ProductPage({
           )}
         </header>
       </div>
+
       <div className="detailProductVisual productDetailPhotoWrap">
-        <ProductVisual
-          large
-          imageSrc={product?.image ?? '/images/products/karcher-se-3-compact.png'}
-          imageAlt="Kärcher SE 3 Compact med tillbehör"
+        <ProductGallery
+          images={productImages}
+          alt="Kärcher SE 3 Compact med tillbehör"
+          badge={product?.badge}
+          locale={locale}
         />
-        <ProductBadgeLabel badge={product?.badge} locale={locale} />
       </div>
+
       <section className="included">
         <h2>{en ? 'Included' : 'Det här ingår'}</h2>
         <div className="includedGrid">
@@ -67,6 +82,7 @@ export default async function ProductPage({
           ))}
         </div>
       </section>
+
       <details className="specDropdown productDescriptionDropdown">
         <summary>
           <InfoIcon />
@@ -81,6 +97,7 @@ export default async function ProductPage({
           </p>
         </div>
       </details>
+
       <details className="specDropdown">
         <summary>
           <ListIcon />
@@ -92,6 +109,7 @@ export default async function ProductPage({
           <div><b>{en ? 'Weight' : 'Vikt'}</b><span>4,6 kg</span></div>
         </div>
       </details>
+
       <div className="stackedActions">
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#kom-igang`} className="darkAction">
           <BookIcon />
@@ -104,6 +122,7 @@ export default async function ProductPage({
           <span>{en ? 'Common problems' : 'Vanliga problem'}</span>
           <b>›</b>
         </Link>
+
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#aterlamning`} className="darkAction">
           <CheckIcon />
           <span>{en ? 'Before returning' : 'Innan återlämning'}</span>
@@ -112,6 +131,7 @@ export default async function ProductPage({
       </div>
 
       <RentalPriceGrid prices={product?.rentalPrices} locale={locale} />
+
       <a
         className="primaryButton wide"
         href="https://www.hygglo.se"
