@@ -1834,3 +1834,17 @@ h1,
 .karcherDetailPage .primaryButton.wide {
   margin-bottom: 0;
 }
+/* ============================================================
+   PRODUKT + GUIDE — ÅTERSTÄLL TOPPMARGINAL / SAFE AREA
+   ============================================================ */
+
+.karcherDetailPage,
+.guidePage {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Sticky-headern ska låsa sig UNDER statusfältet */
+.karcherDetailPage .productHeaderSticky,
+.guidePage .guideHeaderSticky {
+  top: env(safe-area-inset-top);
+}
