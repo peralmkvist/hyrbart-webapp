@@ -35,6 +35,19 @@ export default async function ProductPage({
 
         <header className="productTitle compactProductTitle">
           <h1>KÄRCHER<br />SE 3 COMPACT</h1>
+
+          {product?.rating != null && product?.reviewCount != null && (
+            <div
+              className="productDetailRating"
+              aria-label={`${product.rating} av 5, ${product.reviewCount} omdömen`}
+            >
+              <span className="ratingStars" aria-hidden="true">★★★★★</span>
+              <strong>{product.rating.toFixed(1).replace('.', ',')}</strong>
+              <span>
+                ({product.reviewCount} {en ? 'reviews' : 'omdömen'})
+              </span>
+            </div>
+          )}
         </header>
       </div>
 
@@ -68,8 +81,8 @@ export default async function ProductPage({
         <div className="specBody productDescriptionBody">
           <p>
             {en
-              ? 'Add the product description from Hygglo here.'
-              : 'Lägg in produktbeskrivningen från Hygglo här.'}
+              ? 'Compact spray-extraction cleaner for deep cleaning carpets, upholstery and other textile surfaces.'
+              : 'Kompakt textil- och möbeltvätt för djuprengöring av mattor, möbler och andra textila ytor.'}
           </p>
         </div>
       </details>
