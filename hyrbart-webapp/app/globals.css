@@ -1380,3 +1380,137 @@ h2,
   font-family: var(--font-heading-stack);
   font-weight: 900;
 }
+
+/* ============================================================
+   TYPOGRAFI — ARCHIVO ÖVER HELA HYRBART
+   Lägg detta allra sist i globals.css.
+   ============================================================ */
+
+:root {
+  --font-heading-stack: var(--font-archivo), Archivo, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body-stack: var(--font-archivo), Archivo, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-body-stack);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.pageHeader h1,
+.productTitle h1,
+.compactProductTitle h1,
+.productListCard h2,
+.stepHeading h1,
+.stepHeading h2,
+.primaryButton,
+.darkAction,
+.productPopularityBadge,
+.specDropdown summary,
+.guideProductRow strong,
+.guideTextCard strong,
+.included h2 {
+  font-family: var(--font-heading-stack);
+}
+
+h1,
+.pageHeader h1,
+.productTitle h1,
+.compactProductTitle h1 {
+  font-weight: 900;
+  letter-spacing: -.045em;
+}
+
+[class*="page_"] h1 {
+  font-family: var(--font-heading-stack);
+  font-weight: 900;
+  letter-spacing: -.05em;
+  line-height: .96;
+}
+
+.productListCard h2 {
+  font-family: var(--font-heading-stack);
+  font-weight: 850;
+  font-size: 1.34rem;
+  line-height: .98;
+  letter-spacing: -.035em;
+}
+
+.compactProductTitle h1 {
+  font-weight: 900;
+  line-height: .94;
+  letter-spacing: -.045em;
+}
+
+.productPopularityBadge {
+  font-family: var(--font-heading-stack);
+  font-weight: 850;
+  font-size: .76rem;
+  line-height: 1;
+  letter-spacing: -.01em;
+}
+
+.productDetailPhotoWrap .productPopularityBadge {
+  font-size: .82rem;
+}
+
+.primaryButton {
+  font-family: var(--font-heading-stack);
+  font-weight: 800;
+  letter-spacing: -.025em;
+}
+
+.karcherDetailPage .darkAction {
+  font-family: var(--font-heading-stack);
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.025em;
+}
+
+.specDropdown summary {
+  font-family: var(--font-heading-stack);
+  font-weight: 800;
+  letter-spacing: -.025em;
+}
+
+.stepHeading h1,
+.stepHeading h2,
+.guideProductRow strong {
+  font-family: var(--font-heading-stack);
+  font-weight: 850;
+  letter-spacing: -.035em;
+}
+
+.productCardType,
+.productCardPrice,
+.productDetailRating,
+.productCardRating,
+.chip,
+.guideTabs,
+.guideSection p,
+.includedGrid,
+.productBackRow,
+.guideBackRow,
+.navItem,
+.termsCard p,
+.guideTextCard p {
+  font-family: var(--font-body-stack);
+}
+
+.specBody > div span,
+.specBody > div b,
+.rentalPriceBox strong {
+  font-family: var(--font-mono-stack);
+  letter-spacing: -.02em;
+}
