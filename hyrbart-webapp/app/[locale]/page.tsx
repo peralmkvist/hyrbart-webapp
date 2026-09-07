@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import styles from './page.module.css';
 
-export default async function HomePage({
+export default async function AboutPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -16,21 +16,25 @@ export default async function HomePage({
       <section className={styles.content}>
         <div className={styles.copy}>
           <h1>{en ? 'Welcome' : 'Välkommen hit'}</h1>
+
           <p>
             {en
               ? 'I’m a hands-on family man who likes high-quality products.'
               : 'Jag är en händig familjefar som gillar produkter med hög kvalitet.'}
           </p>
+
           <p>
             {en
               ? 'I rent out my machines and tools so they get used instead of gathering dust – and so you don’t have to buy expensive equipment for something you only need temporarily.'
               : 'Jag hyr ut mina maskiner och verktyg för att de ska användas istället för att samla damm – och för att du som behöver dem inte ska behöva köpa dyra maskiner för en tillfällig användning.'}
           </p>
+
           <p>
             {en
               ? 'I use all the products myself on a regular basis and reinvest the rental income in new equipment.'
               : 'Jag använder regelbundet alla produkter och återinvesterar intäkterna från uthyrningen i nya produkter.'}
           </p>
+
           <p>
             {en
               ? 'This site is here to make it easy to rent and understand how to use the products in the best possible way.'
