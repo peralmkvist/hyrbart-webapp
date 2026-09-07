@@ -66,7 +66,11 @@ export default async function ProductPage({
           <span className="specChevron" aria-hidden="true">⌄</span>
         </summary>
         <div className="specBody productDescriptionBody">
-          <p>{en ? 'Add the product description from Hygglo here.' : 'Lägg in produktbeskrivningen från Hygglo här.'}</p>
+          <p>
+            {en
+              ? 'Add the product description from Hygglo here.'
+              : 'Lägg in produktbeskrivningen från Hygglo här.'}
+          </p>
         </div>
       </details>
 
@@ -84,13 +88,21 @@ export default async function ProductPage({
 
       <div className="stackedActions">
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#kom-igang`} className="darkAction">
-          <BookIcon /><span>{en ? 'User guide' : 'Användarguide'}</span><b>›</b>
+          <BookIcon />
+          <span>{en ? 'User guide' : 'Användarguide'}</span>
+          <b>›</b>
         </Link>
+
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#vanliga-fel`} className="darkAction">
-          <InfoIcon /><span>{en ? 'Common problems' : 'Vanliga problem'}</span><b>›</b>
+          <InfoIcon />
+          <span>{en ? 'Common problems' : 'Vanliga problem'}</span>
+          <b>›</b>
         </Link>
+
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#aterlamning`} className="darkAction">
-          <CheckIcon /><span>{en ? 'Before returning' : 'Innan återlämning'}</span><b>›</b>
+          <CheckIcon />
+          <span>{en ? 'Before returning' : 'Innan återlämning'}</span>
+          <b>›</b>
         </Link>
       </div>
 
