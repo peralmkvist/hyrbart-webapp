@@ -2,17 +2,13 @@ import Link from 'next/link';
 import ProductVisual from '@/components/ProductVisual';
 import { BackIcon, BookIcon, CheckIcon, InfoIcon, ListIcon } from '@/components/Icons';
 
-export default async function ProductPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function ProductPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const en = locale === 'en';
 
   const included = en
-    ? ['Universal nozzle', 'Upholstery nozzle', 'Shoe nozzle', 'Cleaning detergent – 1 dose included']
-    : ['Universalmunstycke', 'Möbelmunstycke', 'Skomunstycke', 'Rengöringsmedel – 1 dos ingår'];
+    ? ['Universal nozzle','Upholstery nozzle','Shoe nozzle','Cleaning detergent – 1 dose included']
+    : ['Universalmunstycke','Möbelmunstycke','Skomunstycke','Rengöringsmedel – 1 dos ingår'];
 
   return (
     <div className="pageShell detailPage karcherDetailPage">
@@ -40,7 +36,7 @@ export default async function ProductPage({
       <section className="included">
         <h2>{en ? 'Included' : 'Det här ingår'}</h2>
         <div className="includedGrid">
-          {included.map((item) => (
+          {included.map(item => (
             <div key={item}>
               <span className="checkCircle"><CheckIcon /></span>
               <span>{item}</span>
