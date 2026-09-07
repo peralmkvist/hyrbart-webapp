@@ -1730,3 +1730,14 @@ h1,
 .karcherDetailPage {
   padding-top: 0;
 }
+/* PRODUKTLISTA — TÄCK SAFE AREA OVANFÖR STICKY KATEGORIER
+   Lägg detta allra sist i hyrbart-webapp/app/globals.css */
+
+.productsPage::before {
+  height: calc(58px + env(safe-area-inset-top));
+  background: rgba(244, 244, 241, .98);
+}
+
+.productsPage .productsChips {
+  top: calc(58px + env(safe-area-inset-top));
+}
