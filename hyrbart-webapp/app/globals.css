@@ -1992,3 +1992,37 @@ h1,
     font-size: 1.8rem;
   }
 }
+/* ============================================================
+   HYRESVILLKOR — SAFE AREA + STICKY TOPPDEL
+   Lägg hela blocket ALLRA SIST i app/globals.css.
+   ============================================================ */
+
+.termsPage {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Hela rubrikblocket, inklusive underraden, ligger kvar när sidan scrollas. */
+.termsHeaderSticky {
+  position: sticky;
+  top: env(safe-area-inset-top);
+  z-index: 80;
+  margin: 0 -20px 18px;
+  padding: 18px 20px 16px;
+  background: rgba(244, 244, 241, .98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Behåll samma typografi som sidan redan använder. */
+.termsHeaderSticky h1 {
+  margin: 0;
+}
+
+.termsHeaderSticky p {
+  margin: 8px 0 0;
+}
+
+/* Första innehållssektionen ska inte få extra luft ovanpå sticky-headerns marginal. */
+.termsHeaderSticky + .termsCard {
+  padding-top: 20px;
+}
