@@ -35,7 +35,13 @@ export default async function ProductPage({
         </header>
       </div>
 
-      <div className="detailProductVisual"><ProductVisual large /></div>
+      <div className="detailProductVisual">
+  <ProductVisual
+    large
+    imageSrc="/images/products/karcher-se-3-compact.png"
+    imageAlt="Kärcher SE 3 Compact med tillbehör"
+  />
+</div>
 
       <section className="included">
         <h2>{en ? 'Included' : 'Det här ingår'}</h2>
