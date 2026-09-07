@@ -853,3 +853,18 @@ main {
 .productContextRow { padding-right: 64px !important; }
 .guideTop { padding-right: 64px !important; }
 .productsChips { padding-right: 64px; }
+/* Product overview: reserve a clean top-right language row above categories */
+.productsPage {
+  padding-top: 72px;
+}
+
+/* Keep the category row below the language switch when it becomes sticky. */
+.productsPage .productsChips {
+  top: 52px;
+  padding-right: 20px;
+}
+
+/* The language button remains in the top-right corner. */
+.languageSwitch {
+  z-index: 180;
+}
