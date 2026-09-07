@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import styles from './page.module.css';
 
 export default async function HomePage({
   params,
@@ -9,11 +10,11 @@ export default async function HomePage({
   const en = locale === 'en';
 
   return (
-    <div className="aboutLandingPage">
-      <div className="aboutLandingBackdrop" aria-hidden="true" />
+    <div className={styles.page}>
+      <div className={styles.backdrop} aria-hidden="true" />
 
-      <section className="aboutLandingContent">
-        <div className="aboutLandingText">
+      <section className={styles.content}>
+        <div className={styles.copy}>
           <h1>{en ? 'Welcome' : 'Välkommen hit'}</h1>
 
           <p>
@@ -40,13 +41,13 @@ export default async function HomePage({
               : 'Den här sidan är till för att göra det enkelt att hyra och förstå hur man använder produkterna på bästa sätt.'}
           </p>
 
-          <p className="aboutLandingStatement">
+          <p className={styles.statement}>
             {en
               ? 'What you need, but only when you need it.'
               : 'Det du behöver, men bara när du behöver det.'}
           </p>
 
-          <Link className="primaryButton aboutLandingCta" href={`/${locale}/produkter`}>
+          <Link href={`/${locale}/produkter`} className={styles.cta}>
             <span>{en ? 'See all my rental items' : 'Se alla mina hyresobjekt'}</span>
             <span aria-hidden="true">→</span>
           </Link>
