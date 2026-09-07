@@ -1027,3 +1027,115 @@ main {
   min-height: calc(100svh - 154px);
   scroll-margin-top: 154px;
 }
+
+/* ============================================================
+   Guide-first navigation / product + guide headers
+   ============================================================ */
+
+/* PRODUCT DETAIL:
+   One combined sticky area: back action -> category -> product name. */
+.karcherDetailPage .productHeaderSticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  margin: 0 -20px 18px;
+  background: rgba(244,244,241,.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.karcherDetailPage .productBackRow {
+  min-height: 54px;
+  padding: 8px 64px 2px 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: .9rem;
+  line-height: 1.2;
+  font-weight: 650;
+  text-align: left;
+}
+
+.karcherDetailPage .productBackRow svg {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.karcherDetailPage .productCategoryRow {
+  padding: 1px 20px 7px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 500;
+  text-align: left;
+}
+
+.karcherDetailPage .productHeaderSticky .compactProductTitle {
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+  margin: 0 !important;
+  padding: 6px 20px 12px !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+/* GUIDE:
+   QR visitors arrive here first, so show explicit product navigation
+   and retain the global bottom navigation. */
+.guidePage {
+  padding-bottom: calc(var(--nav-h) + 46px + env(safe-area-inset-bottom)) !important;
+}
+
+.guideHeaderSticky {
+  box-shadow: none !important;
+}
+
+.guideBackRow {
+  min-height: 54px;
+  padding: 8px 64px 2px 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: .9rem;
+  line-height: 1.2;
+  font-weight: 650;
+  text-align: left;
+}
+
+.guideBackRow svg {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.guideProductRow {
+  min-height: 36px;
+  padding: 0 20px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.guideProductRow strong {
+  font-size: 1.02rem;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+}
+
+.guideTabs {
+  padding: 0 20px;
+}
+
+.guideSection {
+  min-height: calc(100svh - 144px);
+  scroll-margin-top: 144px;
+}
