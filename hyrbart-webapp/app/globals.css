@@ -868,3 +868,46 @@ main {
 .languageSwitch {
   z-index: 180;
 }
+/* Product overview polish:
+   1) Give the language-switch row an opaque/frosted surface while scrolling.
+   2) Reduce excessive space below the final product card. */
+
+.productsPage {
+  position: relative;
+  padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));
+}
+
+/* Solid/frosted top strip behind the fixed language switch. */
+.productsPage::before {
+  content: "";
+  position: fixed;
+  z-index: 150;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 58px;
+  background: rgba(244, 244, 241, .98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  pointer-events: none;
+}
+
+/* Keep the switch above the strip. */
+.languageSwitch {
+  z-index: 180;
+}
+
+/* Keep the categories directly below the language row. */
+.productsPage .productsChips {
+  top: 58px;
+}
+
+/* Tighten the catalogue ending without risking overlap with bottom nav. */
+.productsPage .productGrid.productList {
+  margin-bottom: 0;
+}
+
+.productsPage .productCard:last-child {
+  margin-bottom: 0;
+}
