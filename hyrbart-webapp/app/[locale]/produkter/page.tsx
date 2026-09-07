@@ -55,6 +55,7 @@ export default async function ProductsPage({
                 <p className="productCardType">
                   {en ? (typeEn[product.type] ?? product.type) : product.type}
                 </p>
+
                 <h2>{product.brand}<br />{product.name}</h2>
 
                 {product.rentalPrices?.length ? (
