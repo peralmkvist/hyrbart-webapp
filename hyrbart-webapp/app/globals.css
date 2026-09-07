@@ -1139,3 +1139,24 @@ main {
   min-height: calc(100svh - 144px);
   scroll-margin-top: 144px;
 }
+
+/* Real product photography */
+.productPhotoVisual {
+  position: relative;
+  overflow: hidden;
+}
+
+.productPhotoVisual .productPhoto {
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Keep the transparent cutout visually generous in the catalogue card. */
+.productListCard .productPhotoVisual .productPhoto {
+  padding: 10px;
+}
+
+/* Larger, cleaner presentation on the product detail page. */
+.detailProductVisual .productPhotoVisual .productPhoto {
+  padding: 4px;
+}
