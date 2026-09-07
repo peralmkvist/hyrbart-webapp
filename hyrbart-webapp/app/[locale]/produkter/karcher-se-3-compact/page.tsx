@@ -23,19 +23,17 @@ export default async function ProductPage({
         <Link
           href={`/${locale}/produkter`}
           className="productBackRow"
-          aria-label={en ? 'Back to all rental products' : 'Tillbaka till alla hyresprodukter'}
+          aria-label={en ? 'Back to product list' : 'Tillbaka till produktlistan'}
         >
           <BackIcon />
-          <span>{en ? 'Back to all rental products' : 'Tillbaka till alla hyresprodukter'}</span>
+          <span>{en ? 'Back to product list' : 'Tillbaka till produktlistan'}</span>
         </Link>
-
         <div className="productCategoryRow">
           {en ? 'Carpet & upholstery cleaner' : 'Textil- och möbeltvätt'}
         </div>
 
         <header className="productTitle compactProductTitle">
           <h1>KÄRCHER<br />SE 3 COMPACT</h1>
-
           {product?.rating != null && product?.reviewCount != null && (
             <div
               className="productDetailRating"
@@ -50,7 +48,6 @@ export default async function ProductPage({
           )}
         </header>
       </div>
-
       <div className="detailProductVisual productDetailPhotoWrap">
         <ProductVisual
           large
@@ -59,7 +56,6 @@ export default async function ProductPage({
         />
         <ProductBadgeLabel badge={product?.badge} locale={locale} />
       </div>
-
       <section className="included">
         <h2>{en ? 'Included' : 'Det här ingår'}</h2>
         <div className="includedGrid">
@@ -71,7 +67,6 @@ export default async function ProductPage({
           ))}
         </div>
       </section>
-
       <details className="specDropdown productDescriptionDropdown">
         <summary>
           <InfoIcon />
@@ -86,7 +81,6 @@ export default async function ProductPage({
           </p>
         </div>
       </details>
-
       <details className="specDropdown">
         <summary>
           <ListIcon />
@@ -98,7 +92,6 @@ export default async function ProductPage({
           <div><b>{en ? 'Weight' : 'Vikt'}</b><span>4,6 kg</span></div>
         </div>
       </details>
-
       <div className="stackedActions">
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#kom-igang`} className="darkAction">
           <BookIcon />
@@ -111,7 +104,6 @@ export default async function ProductPage({
           <span>{en ? 'Common problems' : 'Vanliga problem'}</span>
           <b>›</b>
         </Link>
-
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#aterlamning`} className="darkAction">
           <CheckIcon />
           <span>{en ? 'Before returning' : 'Innan återlämning'}</span>
@@ -120,7 +112,6 @@ export default async function ProductPage({
       </div>
 
       <RentalPriceGrid prices={product?.rentalPrices} locale={locale} />
-
       <a
         className="primaryButton wide"
         href="https://www.hygglo.se"
