@@ -2271,3 +2271,90 @@ h1,
     height: 20px;
   }
 }
+/* ============================================================
+   HYRBART BOTTOM NAV — DARK LIQUID GLASS CONTRAST PATCH
+   Lägg HELA detta block allra sist i app/globals.css.
+   Behåller nuvarande storlek/geometri och ändrar främst glas,
+   kontrast och färger.
+   ============================================================ */
+
+/* Själva glaskapseln */
+.bottomNav {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(42, 46, 46, .68) 0%,
+      rgba(12, 15, 15, .72) 100%
+    ) !important;
+
+  -webkit-backdrop-filter: blur(30px) saturate(185%) brightness(.82) !important;
+  backdrop-filter: blur(30px) saturate(185%) brightness(.82) !important;
+
+  border: 1px solid rgba(255, 255, 255, .48) !important;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, .24),
+    inset 0 1px 0 rgba(255, 255, 255, .42),
+    inset 0 -1px 0 rgba(255, 255, 255, .08) !important;
+}
+
+/* Inaktiva menyval: hög kontrast mot det mörka glaset */
+.bottomNav a,
+.bottomNav button {
+  color: rgba(255, 255, 255, .96) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .28);
+}
+
+.bottomNav a svg,
+.bottomNav button svg {
+  color: rgba(255, 255, 255, .96) !important;
+  stroke: currentColor !important;
+}
+
+/*
+  Aktiv flik:
+  neutral mörk glaspuck + Hyrbart-lime på ikon och text.
+  Flera vanliga active-markeringar stöds så patchen kan ligga ovanpå
+  den befintliga BottomNav-komponenten utan React-ändringar.
+*/
+.bottomNav a.active,
+.bottomNav button.active,
+.bottomNav [aria-current="page"] {
+  color: #c6f000 !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, .18),
+      rgba(255, 255, 255, .08)
+    ) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .32),
+    0 2px 12px rgba(0, 0, 0, .12) !important;
+
+  text-shadow: none;
+}
+
+.bottomNav a.active svg,
+.bottomNav button.active svg,
+.bottomNav [aria-current="page"] svg {
+  color: #c6f000 !important;
+  stroke: currentColor !important;
+}
+
+/* Extra optisk highlight i överkant, som glasreflex snarare än vit yta */
+.bottomNav::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 1px 10px auto 10px;
+  height: 42%;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, .13),
+    rgba(255, 255, 255, 0)
+  );
+  opacity: .8;
+}
