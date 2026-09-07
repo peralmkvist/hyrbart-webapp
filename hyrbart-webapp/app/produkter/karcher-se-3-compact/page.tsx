@@ -1,12 +1,6 @@
 import Link from 'next/link';
 import ProductVisual from '@/components/ProductVisual';
-import {
-  BackIcon,
-  BookIcon,
-  CheckIcon,
-  InfoIcon,
-  ListIcon,
-} from '@/components/Icons';
+import { BackIcon, BookIcon, CheckIcon, InfoIcon, ListIcon } from '@/components/Icons';
 
 const included = [
   'Universalmunstycke',
@@ -19,9 +13,7 @@ export default function ProductPage() {
   return (
     <div className="pageShell detailPage karcherDetailPage">
       <div className="productContextRow">
-        <Link href="/produkter" className="backLink" aria-label="Till produkter">
-          <BackIcon />
-        </Link>
+        <Link href="/produkter" className="backLink" aria-label="Till produkter"><BackIcon /></Link>
         <span>Textil- och möbeltvätt</span>
       </div>
 
@@ -29,9 +21,7 @@ export default function ProductPage() {
         <h1>KÄRCHER<br />SE 3 COMPACT</h1>
       </header>
 
-      <div className="detailProductVisual">
-        <ProductVisual large />
-      </div>
+      <div className="detailProductVisual"><ProductVisual large /></div>
 
       <section className="included">
         <h2>Det här ingår</h2>
@@ -44,6 +34,17 @@ export default function ProductPage() {
           ))}
         </div>
       </section>
+
+      <details className="specDropdown productDescriptionDropdown">
+        <summary>
+          <InfoIcon />
+          <span>Produktbeskrivningar</span>
+          <span className="specChevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div className="specBody productDescriptionBody">
+          <p>Lägg in produktbeskrivningen från Hygglo här.</p>
+        </div>
+      </details>
 
       <details className="specDropdown">
         <summary>
