@@ -1,25 +1,36 @@
 import Link from 'next/link';
-import { ArrowIcon } from '@/components/Icons';
+import { products } from '@/lib/products';
+import ProductVisual from '@/components/ProductVisual';
 
-export default function HomePage() {
-  return <div className="homePage">
-    <section className="hero">
-      <div className="heroContent">
-        <h1>
-          <span className="heroLine heroLinePrimary">Det du behöver.</span>
-          <span className="heroLine heroLineAccent">När du behöver det.</span>
-        </h1>
-        <p>Hyr verktyg, maskiner och utrustning för hemmet, resan och nästa projekt.</p>
-        <Link className="primaryButton" href="/produkter">Utforska produkter <ArrowIcon /></Link>
+const categories = ['Alla', 'Rengöring', 'Sågning', 'Bygg', 'Bil & transport', 'Trädgård', 'Barn & familj'];
+
+export default function ProductsPage() {
+  return (
+    <div className="pageShell productsPage">
+      <div className="chips productsChips" aria-label="Produktkategorier">
+        {categories.map((category, index) => (
+          <button key={category} className={index === 0 ? 'chip active' : 'chip'}>
+            {category}
+          </button>
+        ))}
       </div>
-    </section>
-    <section className="aboutCard">
-      <div className="avatar">P</div>
-      <div>
-        <h2>Hej, jag heter Per.</h2>
-        <p>Jag hyr ut maskiner och verktyg för att fler ska kunna förverkliga sina projekt – utan att behöva köpa dyr utrustning.</p>
-        <p>Hyrbart är min samling guider, tips och instruktioner som gör det enkelt att hyra och använda rätt utrustning.</p>
-      </div>
-    </section>
-  </div>;
+
+      <section className="productGrid productList">
+        {products.map((product, index) => (
+          <Link href={`/produkter/${product.slug}`} className="productCard productListCard productCardLink"
+            key={product.slug} aria-label={`${product.brand} ${product.name} – mer info`}>
+            <ProductVisual kind={index === 1 ? 'saw' : 'cleaner'} accent={product.accent} />
+            <div className="productCardContent">
+              <div>
+                <p className="productCardType">{product.type}</p>
+                <h2>{product.brand}<br />{product.name}</h2>
+                <p className="productCardPrice">{product.price}</p>
+              </div>
+              <span className="primaryButton compact productCardCta" aria-hidden="true">Mer info</span>
+            </div>
+          </Link>
+        ))}
+      </section>
+    </div>
+  );
 }
