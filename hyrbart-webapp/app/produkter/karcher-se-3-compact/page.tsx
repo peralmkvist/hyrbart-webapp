@@ -4,7 +4,11 @@ import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing'
 import { products } from '@/lib/products';
 import { BackIcon, BookIcon, CheckIcon, InfoIcon, ListIcon } from '@/components/Icons';
 
-export default async function ProductPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   const en = locale === 'en';
   const product = products.find((item) => item.slug === 'karcher-se-3-compact');
@@ -16,22 +20,35 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   return (
     <div className="pageShell detailPage karcherDetailPage">
       <div className="productHeaderSticky">
-        <Link href={`/${locale}/produkter`} className="productBackRow" aria-label={en ? 'Back to all rental products' : 'Tillbaka till alla hyresprodukter'}>
+        <Link
+          href={`/${locale}/produkter`}
+          className="productBackRow"
+          aria-label={en ? 'Back to product list' : 'Tillbaka till produktlistan'}
+        >
           <BackIcon />
-          <span>{en ? 'Back to all rental products' : 'Tillbaka till alla hyresprodukter'}</span>
+          <span>{en ? 'Back to product list' : 'Tillbaka till produktlistan'}</span>
         </Link>
 
-        <div className="productCategoryRow">{en ? 'Carpet & upholstery cleaner' : 'Textil- och möbeltvätt'}</div>
+        <div className="productCategoryRow">
+          {en ? 'Carpet & upholstery cleaner' : 'Textil- och möbeltvätt'}
+        </div>
 
         <header className="productTitle compactProductTitle">
           <h1>KÄRCHER<br />SE 3 COMPACT</h1>
+          {product?.rating != null && product?.reviewCount != null && (
+            <div className="productDetailRating">
+              <span className="ratingStars" aria-hidden="true">★★★★★</span>
+              <strong>{product.rating.toFixed(1).replace('.', ',')}</strong>
+              <span>({product.reviewCount} {en ? 'reviews' : 'omdömen'})</span>
+            </div>
+          )}
         </header>
       </div>
 
       <div className="detailProductVisual productDetailPhotoWrap">
         <ProductVisual
           large
-          imageSrc={product?.image}
+          imageSrc={product?.image ?? '/images/products/karcher-se-3-compact.png'}
           imageAlt="Kärcher SE 3 Compact med tillbehör"
         />
         <ProductBadgeLabel badge={product?.badge} locale={locale} />
@@ -56,7 +73,11 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           <span className="specChevron" aria-hidden="true">⌄</span>
         </summary>
         <div className="specBody productDescriptionBody">
-          <p>{en ? 'Add the product description from Hygglo here.' : 'Lägg in produktbeskrivningen från Hygglo här.'}</p>
+          <p>
+            {en
+              ? 'Compact spray-extraction cleaner for deep cleaning carpets, upholstery and other textile surfaces.'
+              : 'Kompakt textil- och möbeltvätt för djuprengöring av mattor, möbler och andra textila ytor.'}
+          </p>
         </div>
       </details>
 
@@ -74,19 +95,32 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
       <div className="stackedActions">
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#kom-igang`} className="darkAction">
-          <BookIcon /><span>{en ? 'User guide' : 'Användarguide'}</span><b>›</b>
+          <BookIcon />
+          <span>{en ? 'User guide' : 'Användarguide'}</span>
+          <b>›</b>
         </Link>
+
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#vanliga-fel`} className="darkAction">
-          <InfoIcon /><span>{en ? 'Common problems' : 'Vanliga problem'}</span><b>›</b>
+          <InfoIcon />
+          <span>{en ? 'Common problems' : 'Vanliga problem'}</span>
+          <b>›</b>
         </Link>
+
         <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#aterlamning`} className="darkAction">
-          <CheckIcon /><span>{en ? 'Before returning' : 'Innan återlämning'}</span><b>›</b>
+          <CheckIcon />
+          <span>{en ? 'Before returning' : 'Innan återlämning'}</span>
+          <b>›</b>
         </Link>
       </div>
 
       <RentalPriceGrid prices={product?.rentalPrices} locale={locale} />
 
-      <a className="primaryButton wide" href="https://www.hygglo.se" target="_blank" rel="noreferrer">
+      <a
+        className="primaryButton wide"
+        href="https://www.hygglo.se"
+        target="_blank"
+        rel="noreferrer"
+      >
         {en ? 'Book on Hygglo' : 'Boka på Hygglo'} <span>↗</span>
       </a>
     </div>
