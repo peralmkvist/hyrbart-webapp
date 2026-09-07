@@ -2448,3 +2448,51 @@ h1,
   position: relative;
   z-index: 2;
 }
+/* ============================================================
+   HYRESVILLKOR — FIX FÖR INNEHÅLL SOM SYNS OVANFÖR STICKY TOPP
+   Lägg HELA detta block allra sist i app/globals.css.
+   ============================================================ */
+
+/*
+  Skapar ett fast bakgrundslager över området ovanför den sticky
+  hyresvillkors-headern. Då kan sektionerna inte längre "läcka upp"
+  bakom statusfältet när sidan scrollas.
+*/
+
+.termsPage::before {
+  content: "";
+  position: fixed;
+  z-index: 118;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  /*
+    Safe area + den fria ytan ovanför HYRESVILLKOR-rubriken.
+    118px är anpassat till nuvarande iPhone-layout.
+  */
+  height: calc(env(safe-area-inset-top) + 82px);
+
+  background: rgba(244, 244, 241, .99);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  pointer-events: none;
+}
+
+/* Säkerställ att den sticky toppdelen ligger ovanför täcklagret */
+.termsPage .termsHeaderSticky {
+  position: sticky;
+  z-index: 120;
+}
+
+/*
+  Språkknappen ska alltid ligga över täcklagret.
+  Stöd både nuvarande och vanliga klassnamn utan att ändra komponenten.
+*/
+.termsPage .languageSwitch,
+.termsPage [class*="languageSwitch"],
+.termsPage [class*="LanguageSwitch"] {
+  position: relative;
+  z-index: 122;
+}
