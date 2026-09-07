@@ -1296,3 +1296,87 @@ main {
   font-size: 1rem;
   line-height: 1.5;
 }
+
+/* ============================================================
+   TYPOGRAFI — inspirerad av den tidiga designskissen
+   Barlow Condensed ≈ DIN Condensed, Inter = brödtext,
+   Roboto Mono = tekniska/specifika värden
+   ============================================================ */
+
+:root {
+  --font-heading-stack: var(--font-heading), "Arial Narrow", sans-serif;
+  --font-body-stack: var(--font-body), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+body {
+  font-family: var(--font-body-stack);
+}
+
+/* Stora rubriker och produktnamn */
+h1,
+h2,
+.pageHeader h1,
+.productTitle h1,
+.compactProductTitle h1,
+.productListCard h2,
+.stepHeading h1,
+.stepHeading h2 {
+  font-family: var(--font-heading-stack);
+  font-weight: 800;
+  letter-spacing: -.025em;
+}
+
+/* Kärchers stora produkttitel – mer affisch/DIN-känsla */
+.compactProductTitle h1 {
+  font-weight: 900;
+  line-height: .9;
+  letter-spacing: -.02em;
+}
+
+/* Produktkortens namn */
+.productListCard h2 {
+  font-size: 1.42rem;
+  line-height: .92;
+  letter-spacing: -.015em;
+}
+
+/* Kategorier och brödtext ska fortsatt vara lättlästa */
+.productCardType,
+.productCardPrice,
+.productDetailRating,
+.productCardRating,
+.chip,
+.guideTabs,
+.guideSection p,
+.includedGrid,
+.specDropdown,
+.productBackRow,
+.guideBackRow,
+.bottomNav,
+.primaryButton {
+  font-family: var(--font-body-stack);
+}
+
+/* CTA-knappar får samma kompakta rubrikkänsla som skissen */
+.primaryButton,
+.darkAction,
+.productPopularityBadge {
+  font-family: var(--font-heading-stack);
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+/* Tekniska data/specifikationer */
+.specBody > div span,
+.specBody > div b,
+.rentalPriceBox strong {
+  font-family: var(--font-mono-stack);
+  letter-spacing: -.02em;
+}
+
+/* Guide-stegens siffra */
+.stepHeading > span {
+  font-family: var(--font-heading-stack);
+  font-weight: 900;
+}
