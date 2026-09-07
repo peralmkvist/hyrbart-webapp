@@ -2026,3 +2026,60 @@ h1,
 .termsHeaderSticky + .termsCard {
   padding-top: 20px;
 }
+/* ============================================================
+   STICKY TOP — TÄCK INNEHÅLL SOM SCROLLAR BAKOM HEADERN
+   Gäller Kärcher-produktsidan och användarguiden.
+   Lägg HELA detta block allra sist i app/globals.css.
+   ============================================================ */
+
+/*
+  Problemet:
+  Sticky-headern ligger korrekt, men själva sidan fortsätter scrolla bakom den.
+  Eftersom området ovanför sticky-blocket inte har ett eget fast bakgrundslager
+  kan tidigare innehåll synas i statusfält/safe-area.
+
+  Lösningen:
+  - skapa ett fast bakgrundslager från skärmens topp ned till sticky-headerns botten
+  - låt headern ligga ovanpå lagret
+  - påverka inte sidans innehåll, mått eller sticky-position
+*/
+
+/* Produktdetaljsidan */
+.karcherDetailPage::before {
+  content: "";
+  position: fixed;
+  z-index: 118;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(env(safe-area-inset-top) + 215px);
+  background: rgba(244, 244, 241, .985);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: none;
+}
+
+.karcherDetailPage .productHeaderSticky {
+  position: sticky;
+  z-index: 120;
+}
+
+/* Användarguiden */
+.guidePage::before {
+  content: "";
+  position: fixed;
+  z-index: 118;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(env(safe-area-inset-top) + 260px);
+  background: rgba(244, 244, 241, .985);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: none;
+}
+
+.guidePage .guideHeaderSticky {
+  position: sticky;
+  z-index: 120;
+}
