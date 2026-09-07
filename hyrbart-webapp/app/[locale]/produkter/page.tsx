@@ -13,6 +13,26 @@ const typeEn: Record<string, string> = {
   'Grovdamm­sugare': 'Wet & dry vacuum',
 };
 
+function ProductRating({
+  rating,
+  reviewCount,
+  locale,
+}: {
+  rating?: number;
+  reviewCount?: number;
+  locale: string;
+}) {
+  if (rating == null || reviewCount == null) return null;
+
+  return (
+    <div className="productCardRating" aria-label={`${rating} av 5, ${reviewCount} omdömen`}>
+      <span className="ratingStar" aria-hidden="true">★</span>
+      <strong>{rating.toFixed(1).replace('.', ',')}</strong>
+      <span>({reviewCount})</span>
+    </div>
+  );
+}
+
 export default async function ProductsPage({
   params,
 }: {
@@ -48,6 +68,11 @@ export default async function ProductsPage({
                 imageAlt={`${product.brand} ${product.name}`}
               />
               <ProductBadgeLabel badge={product.badge} locale={locale} />
+              <ProductRating
+                rating={product.rating}
+                reviewCount={product.reviewCount}
+                locale={locale}
+              />
             </div>
 
             <div className="productCardContent">
