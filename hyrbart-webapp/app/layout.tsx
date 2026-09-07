@@ -1,18 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { Barlow_Condensed, Inter, Roboto_Mono } from 'next/font/google';
+import { Archivo, Roboto_Mono } from 'next/font/google';
 import './globals.css';
 import BottomNav from '@/components/BottomNav';
 
-const inter = Inter({
+const archivo = Archivo({
   subsets: ['latin'],
-  variable: '--font-body',
-  display: 'swap',
-});
-
-const heading = Barlow_Condensed({
-  subsets: ['latin'],
-  weight: ['600', '700', '800', '900'],
-  variable: '--font-heading',
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-archivo',
   display: 'swap',
 });
 
@@ -38,7 +32,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="sv" className={`${inter.variable} ${heading.variable} ${mono.variable}`}>
+    <html lang="sv" className={`${archivo.variable} ${mono.variable}`}>
       <body>
         <main>{children}</main>
         <BottomNav />
