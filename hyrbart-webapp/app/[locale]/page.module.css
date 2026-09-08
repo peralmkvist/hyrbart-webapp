@@ -68,11 +68,51 @@
 
 @media (max-width: 560px) {
   .backdrop {
-    background-position: 33% center;
+    background-position: 50% center;
+  }
+
+  .backdrop::after {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .content {
+    align-items: flex-end;
+    justify-content: center;
+    padding:
+      max(76px, calc(env(safe-area-inset-top) + 58px))
+      16px
+      calc(var(--nav-h) + 50px + env(safe-area-inset-bottom));
   }
 
   .copy {
-    width: 55%;
+    width: 100%;
+    max-width: none;
+    padding: 18px 20px 17px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.80);
+    color: #15191b;
+    text-shadow: none;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .copy h1 {
+    margin: 0 0 12px;
+    font-size: clamp(1.65rem, 7.7vw, 2.15rem);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .copy p {
+    margin: 0 0 11px;
+    font-size: clamp(.76rem, 3.35vw, .92rem);
+    line-height: 1.34;
+  }
+
+  .copy p:last-child {
+    margin-bottom: 0;
   }
 }
 
@@ -83,17 +123,16 @@
   }
 
   .copy {
-    width: 57%;
+    padding: 17px 18px 16px;
   }
 
   .copy h1 {
-    font-size: clamp(1.65rem, 7vw, 2.15rem);
-    margin-bottom: 16px;
+    font-size: clamp(1.55rem, 7.3vw, 2rem);
   }
 
   .copy p {
-    font-size: clamp(.78rem, 3.45vw, .95rem);
-    line-height: 1.36;
-    margin-bottom: 11px;
+    font-size: clamp(.74rem, 3.2vw, .88rem);
+    line-height: 1.32;
+    margin-bottom: 10px;
   }
 }
