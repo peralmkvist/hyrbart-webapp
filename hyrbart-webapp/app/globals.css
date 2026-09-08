@@ -1390,7 +1390,12 @@ h1,
 
 .guideSection {
   min-height: calc(100svh - 205px);
-  scroll-margin-top: 205px;
+  /*
+    Fallback för direkta hash-länkar innan GuideTabs har hunnit mäta
+    den verkliga sticky-headern. Klick i tabbmenyn använder dynamisk
+    höjdmätning i components/GuideTabs.tsx.
+  */
+  scroll-margin-top: calc(env(safe-area-inset-top) + 240px);
 }
 /* PRODUKTSIDA — LÅS HEADERN FRÅN FÖRSTA PIXELN
    Lägg detta allra sist i hyrbart-webapp/app/globals.css */
