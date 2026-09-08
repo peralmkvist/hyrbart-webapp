@@ -25,8 +25,7 @@ export default function ProductGallery({
   const goTo = (index: number) => {
     if (!trackRef.current || cleanImages.length === 0) return;
 
-    const nextIndex =
-      (index + cleanImages.length) % cleanImages.length;
+    const nextIndex = (index + cleanImages.length) % cleanImages.length;
 
     trackRef.current.scrollTo({
       left: trackRef.current.clientWidth * nextIndex,
@@ -62,13 +61,18 @@ export default function ProductGallery({
           const sanityImage = src.includes('cdn.sanity.io');
 
           return (
-            <div className={`productGallerySlide ${sanityImage ? 'sanityProductVisual' : ''}`} key={`${src}-${index}`}>
+            <div
+              className="productGallerySlide"
+              key={`${src}-${index}`}
+              style={sanityImage && !hasMultiple ? { height: 300 } : undefined}
+            >
               <Image
                 src={src}
                 alt={index === 0 ? alt : `${alt} – ${index + 1}`}
                 fill
                 sizes="(max-width: 760px) 100vw, 760px"
-                className={`productGalleryImage ${sanityImage ? 'sanityProductImage' : ''}`}
+                className="productGalleryImage"
+                style={sanityImage ? { transform: 'scale(1.2)' } : undefined}
                 priority={index === 0}
               />
             </div>
