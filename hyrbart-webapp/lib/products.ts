@@ -51,8 +51,8 @@ export const products: Product[] = [
     accent: '#f4c300',
     image: '/images/products/karcher-se-3-compact.png',
     badge: 'very-popular',
-    rating: 4.9,
-    reviewCount: 28,
+    rating: 5.0,
+    reviewCount: 19,
     rentalPrices: [
       { days: 1, price: 145 },
       { days: 3, price: 290 },
