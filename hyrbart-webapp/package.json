@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sanity/assist": "latest",
     "next": "15.5.24",
+    "next-sanity": "latest",
     "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react-dom": "19.1.1",
+    "sanity": "latest",
+    "styled-components": "latest"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
