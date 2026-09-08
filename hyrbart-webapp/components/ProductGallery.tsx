@@ -81,7 +81,7 @@ export default function ProductGallery({
         ))}
       </div>
 
-      <ProductBadgeLabel badge={badge} locale={locale} />
+      <ProductBadgeLabel badge={badge} locale={locale} large />
 
       {hasMultiple && (
         <>
