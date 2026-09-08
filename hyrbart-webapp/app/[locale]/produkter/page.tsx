@@ -1,26 +1,17 @@
 import Link from 'next/link';
-import { products } from '@/lib/products';
+import { getProducts } from '@/lib/sanity-products';
 import ProductVisual from '@/components/ProductVisual';
 import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
 
 const svCategories = ['Alla', 'Rengöring', 'Sågning', 'Bygg', 'Bil & transport', 'Trädgård', 'Barn & familj'];
 const enCategories = ['All', 'Cleaning', 'Sawing', 'Construction', 'Car & transport', 'Garden', 'Children & family'];
 
-const typeEn: Record<string, string> = {
-  'Textiltvätt': 'Carpet & upholstery cleaner',
-  'Kap-/gersåg': 'Mitre saw',
-  'Takbox': 'Roof box',
-  'Grovdamm­sugare': 'Wet & dry vacuum',
-};
-
 function ProductRating({
   rating,
   reviewCount,
-  locale,
 }: {
   rating?: number;
   reviewCount?: number;
-  locale: string;
 }) {
   if (rating == null || reviewCount == null) return null;
 
@@ -41,6 +32,7 @@ export default async function ProductsPage({
   const { locale } = await params;
   const en = locale === 'en';
   const categories = en ? enCategories : svCategories;
+  const products = await getProducts();
 
   return (
     <div className="pageShell productsPage">
@@ -53,7 +45,7 @@ export default async function ProductsPage({
       </div>
 
       <section className="productGrid productList">
-        {products.map((product, index) => (
+        {products.map((product) => (
           <Link
             href={`/${locale}/produkter/${product.slug}`}
             className="productCard productListCard productCardLink"
@@ -62,7 +54,7 @@ export default async function ProductsPage({
           >
             <div className="productCardVisualWrap">
               <ProductVisual
-                kind={index === 1 ? 'saw' : 'cleaner'}
+                kind="cleaner"
                 accent={product.accent}
                 imageSrc={product.image}
                 imageAlt={`${product.brand} ${product.name}`}
@@ -71,14 +63,13 @@ export default async function ProductsPage({
               <ProductRating
                 rating={product.rating}
                 reviewCount={product.reviewCount}
-                locale={locale}
               />
             </div>
 
             <div className="productCardContent">
               <div>
                 <p className="productCardType">
-                  {en ? (typeEn[product.type] ?? product.type) : product.type}
+                  {en ? (product.typeEn ?? product.type) : product.type}
                 </p>
 
                 <h2>{product.brand}<br />{product.name}</h2>
