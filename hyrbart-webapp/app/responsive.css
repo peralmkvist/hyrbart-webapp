@@ -17,6 +17,16 @@ html {
   background: transparent;
 }
 
+/* Popularitetsstämplar: lägre profil och exakt centrerad text. */
+.productListCard .productPopularityBadge {
+  display: inline-grid;
+  place-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  line-height: 1;
+  text-align: center;
+}
+
 @media (max-width: 480px) {
   .pageShell {
     width: 100%;
