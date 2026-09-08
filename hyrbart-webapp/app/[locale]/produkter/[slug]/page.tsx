@@ -64,7 +64,7 @@ export default async function GenericProductPage({
   const specifications = product.specifications!;
 
   return (
-    <div className={`pageShell detailPage ${product.slug === 'bosch-gbh-18v-22' ? 'boschDetailPage' : 'karcherDetailPage'}`}>
+    <div className="pageShell detailPage karcherDetailPage">
       <div className="productHeaderSticky">
         <Link
           href={`/${locale}/produkter`}
@@ -161,19 +161,7 @@ export default async function GenericProductPage({
             <span>{en ? 'User guide' : 'Användarguide'}</span>
             <b>›</b>
           </Link>
-
-          <Link href={`/${locale}/produkter/${product.slug}/guide#vanliga-fel`} className="darkAction">
-            <InfoIcon />
-            <span>{en ? 'Common problems' : 'Vanliga problem'}</span>
-            <b>›</b>
-          </Link>
-
-          <Link href={`/${locale}/produkter/${product.slug}/guide#aterlamning`} className="darkAction">
-            <CheckIcon />
-            <span>{en ? 'Before returning' : 'Innan återlämning'}</span>
-            <b>›</b>
-          </Link>
-        </div>
+      </div>
       )}
 
       <RentalPriceGrid prices={product.rentalPrices} locale={locale} />
