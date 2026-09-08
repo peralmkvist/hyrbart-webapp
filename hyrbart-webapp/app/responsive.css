@@ -1,0 +1,128 @@
+/* Cross-device responsive normalization */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 480px) {
+  .pageShell {
+    width: 100%;
+    max-width: none;
+    padding-left: clamp(16px, 4.5vw, 20px);
+    padding-right: clamp(16px, 4.5vw, 20px);
+  }
+
+  .liquidNav {
+    width: min(calc(100% - 28px), 620px);
+    height: clamp(58px, 15vw, 64px);
+  }
+
+  .navItem {
+    font-size: clamp(.66rem, 2.8vw, .72rem);
+  }
+
+  .productsPage {
+    padding-top: clamp(96px, 26vw, 112px);
+  }
+
+  .productsPage::before {
+    height: clamp(96px, 26vw, 112px);
+  }
+
+  .productsPage .productsChips {
+    top: clamp(96px, 26vw, 112px);
+  }
+
+  .productsChips .chip {
+    font-size: clamp(.88rem, 3.8vw, 1rem);
+    padding: 8px 12px;
+  }
+
+  .productListCard {
+    grid-template-columns: minmax(112px, 39%) minmax(0, 1fr);
+    gap: clamp(10px, 3vw, 14px);
+    padding: clamp(10px, 3vw, 12px);
+  }
+
+  .productListCard .productVisual {
+    min-height: clamp(170px, 48vw, 190px);
+  }
+
+  .productListCard h2 {
+    font-size: clamp(1.08rem, 5vw, 1.28rem);
+  }
+
+  .productListCard .productCardType {
+    font-size: clamp(.8rem, 3.6vw, .92rem);
+  }
+
+  .rentalPriceGrid.compact .rentalPriceBox strong {
+    font-size: clamp(.68rem, 3.2vw, .78rem);
+  }
+
+  .rentalPriceGrid.compact .rentalPriceBox span {
+    font-size: clamp(.58rem, 2.65vw, .64rem);
+  }
+
+  .productDetailPage .compactProductTitle h1,
+  .guideIdentityRow h1 {
+    font-size: clamp(2rem, 9.2vw, 2.8rem);
+  }
+
+  .productDetailPage .productCategoryRow,
+  .guideCategoryRow {
+    font-size: clamp(.95rem, 4.2vw, 1.05rem);
+  }
+
+  .included h2 {
+    font-size: clamp(1.35rem, 6vw, 1.7rem);
+  }
+
+  .includedGrid {
+    gap: 10px;
+  }
+
+  .includedGrid > div {
+    font-size: clamp(.86rem, 3.8vw, .95rem);
+    min-width: 0;
+  }
+
+  .specDropdown summary,
+  .darkAction,
+  .primaryButton {
+    font-size: clamp(.95rem, 4vw, 1.05rem);
+  }
+
+  .termsHeaderSticky h1,
+  .termsPage .pageHeader h1 {
+    font-size: clamp(2rem, 9.5vw, 2.7rem);
+  }
+
+  .termsHeaderSticky p,
+  .termsPage .pageHeader p {
+    font-size: clamp(.95rem, 4vw, 1.05rem);
+  }
+
+  .termsCard h2 {
+    font-size: clamp(1.45rem, 6.5vw, 1.85rem);
+    line-height: 1.08;
+  }
+
+  .termsCard p {
+    font-size: clamp(.96rem, 4vw, 1.03rem);
+    line-height: 1.55;
+  }
+}
+
+@media (max-width: 360px) {
+  .productListCard {
+    grid-template-columns: 38% minmax(0, 1fr);
+  }
+
+  .productPopularityBadge {
+    max-width: calc(100% - 12px);
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: .68rem;
+  }
+}
