@@ -1,59 +1,21 @@
-'use client';
-
 import Link from 'next/link';
-import { use, useEffect, useState } from 'react';
+import GuideTabs from '@/components/GuideTabs';
 import { BackIcon, InfoIcon } from '@/components/Icons';
 
-const ids = ['kom-igang', 'anvandning', 'vanliga-fel', 'aterlamning'];
-
-export default function GuidePage({
+export default async function GuidePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = use(params);
+  const { locale } = await params;
   const en = locale === 'en';
-  const sections = ids.map((id, i) => ({
-    id,
-    label: (en
-      ? ['Get started', 'Use', 'Common issues', 'Return']
-      : ['Kom igång', 'Användning', 'Vanliga fel', 'Återlämning'])[i],
-  }));
 
-  const [activeSection, setActiveSection] = useState('kom-igang');
-
-  useEffect(() => {
-    const update = () => {
-      let current = ids[0];
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 205) current = id;
-        else if (el) break;
-      }
-
-      setActiveSection(current);
-    };
-
-    const applyHash = () => {
-      const hash = window.location.hash.slice(1);
-      if (ids.includes(hash)) {
-        setActiveSection(hash);
-        requestAnimationFrame(() => {
-          document.getElementById(hash)?.scrollIntoView();
-        });
-      }
-    };
-    applyHash();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    window.addEventListener('hashchange', applyHash);
-
-    return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-      window.removeEventListener('hashchange', applyHash);
-    };
-  }, []);
+  const sections = [
+    { id: 'kom-igang', label: en ? 'Get started' : 'Kom igång' },
+    { id: 'anvandning', label: en ? 'Use' : 'Användning' },
+    { id: 'vanliga-fel', label: en ? 'Common issues' : 'Vanliga fel' },
+    { id: 'aterlamning', label: en ? 'Return' : 'Återlämning' },
+  ];
 
   return (
     <div className="guidePage pageShell">
@@ -77,19 +39,10 @@ export default function GuidePage({
           </h1>
         </header>
 
-        <nav className="guideTabs" aria-label={en ? 'Guide sections' : 'Guideavsnitt'}>
-          {sections.map((section) => (
-            <a
-              key={section.id}
-              href={`#${section.id}`}
-              className={activeSection === section.id ? 'active' : ''}
-              aria-current={activeSection === section.id ? 'location' : undefined}
-              onClick={() => setActiveSection(section.id)}
-            >
-              {section.label}
-            </a>
-          ))}
-        </nav>
+        <GuideTabs
+          sections={sections}
+          ariaLabel={en ? 'Guide sections' : 'Guideavsnitt'}
+        />
       </div>
 
       <section id="kom-igang" className="guideSection">
