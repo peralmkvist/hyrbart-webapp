@@ -78,7 +78,7 @@ function mapProduct(item: SanityProduct): Product {
 
 async function sanityQuery<T>(query: string): Promise<T> {
   const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
-  const response = await fetch(url, { next: { revalidate: 60 } });
+  const response = await fetch(url, { cache: 'no-store' });
 
   if (!response.ok) {
     throw new Error(`Sanity request failed: ${response.status}`);
