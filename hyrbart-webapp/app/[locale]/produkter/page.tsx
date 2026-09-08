@@ -107,6 +107,14 @@ export default async function ProductsPage({
 
                 <h2>{product.brand}<br />{product.name}</h2>
 
+                {product.cardHighlight && (
+                  <p className="productCardType" style={{ color: 'var(--ink)' }}>
+                    {en ? product.cardHighlight.en : product.cardHighlight.sv}
+                  </p>
+                )}
+              </div>
+
+              <div style={{ marginTop: 'auto' }}>
                 {product.rentalPrices?.length ? (
                   <RentalPriceGrid prices={product.rentalPrices} locale={locale} compact />
                 ) : (
@@ -114,11 +122,11 @@ export default async function ProductsPage({
                     {en ? product.price.replace('fr.', 'from') : product.price}
                   </p>
                 )}
-              </div>
 
-              <span className="primaryButton compact productCardCta" aria-hidden="true">
-                {en ? 'More info' : 'Mer info'}
-              </span>
+                <span className="primaryButton compact productCardCta" aria-hidden="true">
+                  {en ? 'More info' : 'Mer info'}
+                </span>
+              </div>
             </div>
           </Link>
         ))}
