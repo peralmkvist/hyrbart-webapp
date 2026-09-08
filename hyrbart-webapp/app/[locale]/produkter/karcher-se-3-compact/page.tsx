@@ -116,18 +116,6 @@ export default async function ProductPage({
           <span>{en ? 'User guide' : 'Användarguide'}</span>
           <b>›</b>
         </Link>
-
-        <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#vanliga-fel`} className="darkAction">
-          <InfoIcon />
-          <span>{en ? 'Common problems' : 'Vanliga problem'}</span>
-          <b>›</b>
-        </Link>
-
-        <Link href={`/${locale}/produkter/karcher-se-3-compact/guide#aterlamning`} className="darkAction">
-          <CheckIcon />
-          <span>{en ? 'Before returning' : 'Innan återlämning'}</span>
-          <b>›</b>
-        </Link>
       </div>
 
       <RentalPriceGrid prices={product?.rentalPrices} locale={locale} />
