@@ -30,6 +30,7 @@ export type Product = {
   rentalPrices?: RentalPrice[];
   rating?: number;
   reviewCount?: number;
+  cardHighlight?: LocalizedText;
 
   detailCategory?: LocalizedText;
   included?: LocalizedText[];
@@ -53,6 +54,7 @@ export const products: Product[] = [
     badge: 'very-popular',
     rating: 5.0,
     reviewCount: 19,
+    cardHighlight: { sv: 'Munstycken ingår', en: 'Nozzles included' },
     rentalPrices: [
       { days: 1, price: 145 },
       { days: 3, price: 290 },
