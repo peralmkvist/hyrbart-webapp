@@ -17,9 +17,14 @@ export default async function GenericProductPage({
 
   if (!product) notFound();
 
-  const hasFullDetails = product.description && product.specifications?.length;
+  const hasProductContent =
+    Boolean(product.description) ||
+    Boolean(product.specifications?.length) ||
+    Boolean(product.included?.length) ||
+    Boolean(product.rentalPrices?.length) ||
+    Boolean(product.hyggloUrl);
 
-  if (!hasFullDetails) {
+  if (!hasProductContent) {
     return (
       <div className="pageShell genericProductPage">
         <Link href={`/${locale}/produkter`} className="backLink">
@@ -53,9 +58,6 @@ export default async function GenericProductPage({
       </div>
     );
   }
-
-  const description = product.description!;
-  const specifications = product.specifications!;
 
   return (
     <div className="pageShell detailPage productDetailPage">
@@ -121,32 +123,36 @@ export default async function GenericProductPage({
         </section>
       )}
 
-      <details className="specDropdown productDescriptionDropdown">
-        <summary>
-          <InfoIcon />
-          <span>{en ? 'Product description' : 'Produktbeskrivning'}</span>
-          <span className="specChevron" aria-hidden="true">⌄</span>
-        </summary>
-        <div className="specBody productDescriptionBody">
-          <p>{en ? description.en : description.sv}</p>
-        </div>
-      </details>
+      {product.description && (
+        <details className="specDropdown productDescriptionDropdown">
+          <summary>
+            <InfoIcon />
+            <span>{en ? 'Product description' : 'Produktbeskrivning'}</span>
+            <span className="specChevron" aria-hidden="true">⌄</span>
+          </summary>
+          <div className="specBody productDescriptionBody">
+            <p>{en ? product.description.en : product.description.sv}</p>
+          </div>
+        </details>
+      )}
 
-      <details className="specDropdown">
-        <summary>
-          <ListIcon />
-          <span>{en ? 'Technical specifications' : 'Tekniska specifikationer'}</span>
-          <span className="specChevron" aria-hidden="true">⌄</span>
-        </summary>
-        <div className="specBody">
-          {specifications.map((spec) => (
-            <div key={spec.label.sv}>
-              <b>{en ? spec.label.en : spec.label.sv}</b>
-              <span>{spec.value}</span>
-            </div>
-          ))}
-        </div>
-      </details>
+      {product.specifications && product.specifications.length > 0 && (
+        <details className="specDropdown">
+          <summary>
+            <ListIcon />
+            <span>{en ? 'Technical specifications' : 'Tekniska specifikationer'}</span>
+            <span className="specChevron" aria-hidden="true">⌄</span>
+          </summary>
+          <div className="specBody">
+            {product.specifications.map((spec) => (
+              <div key={spec.label.sv}>
+                <b>{en ? spec.label.en : spec.label.sv}</b>
+                <span>{spec.value}</span>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
 
       {product.guideAvailable && (
         <div className="stackedActions">
@@ -158,7 +164,9 @@ export default async function GenericProductPage({
         </div>
       )}
 
-      <RentalPriceGrid prices={product.rentalPrices} locale={locale} />
+      {product.rentalPrices?.length ? (
+        <RentalPriceGrid prices={product.rentalPrices} locale={locale} />
+      ) : null}
 
       <a
         className="primaryButton wide"
