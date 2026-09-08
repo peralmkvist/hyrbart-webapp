@@ -6,7 +6,7 @@ export function ProductBadgeLabel({ badge, locale = 'sv' }: { badge?: ProductBad
   const label = badge === 'very-popular'
     ? (en ? 'VERY POPULAR' : 'JÄTTEPOPULÄR')
     : (en ? 'POPULAR' : 'POPULÄR');
-  return <span className="productPopularityBadge">{label}</span>;
+  return <span className="productPopularityBadge" style={{ maxWidth: '60%' }}>{label}</span>;
 }
 
 export function RentalPriceGrid({ prices, locale = 'sv', compact = false }: {
