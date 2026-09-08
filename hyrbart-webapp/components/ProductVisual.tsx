@@ -17,13 +17,14 @@ export default function ProductVisual({
     const sanityImage = imageSrc.includes('cdn.sanity.io');
 
     return (
-      <div className={`productVisual productPhotoVisual ${sanityImage ? 'sanityProductVisual' : ''} ${large ? 'large' : ''}`}>
+      <div className={`productVisual productPhotoVisual ${large ? 'large' : ''}`}>
         <Image
           src={imageSrc}
           alt={imageAlt}
           fill
           sizes={large ? '(max-width: 760px) 90vw, 680px' : '(max-width: 760px) 38vw, 280px'}
-          className={`productPhoto ${sanityImage ? 'sanityProductImage' : ''}`}
+          className="productPhoto"
+          style={sanityImage ? { transform: 'scale(1.28)' } : undefined}
           priority={large}
         />
       </div>
