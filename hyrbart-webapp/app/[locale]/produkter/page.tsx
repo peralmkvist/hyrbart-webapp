@@ -3,8 +3,45 @@ import { getProducts } from '@/lib/sanity-products';
 import ProductVisual from '@/components/ProductVisual';
 import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
 
-const svCategories = ['Alla', 'Rengöring', 'Sågning', 'Bygg', 'Bil & transport', 'Trädgård', 'Barn & familj'];
-const enCategories = ['All', 'Cleaning', 'Sawing', 'Construction', 'Car & transport', 'Garden', 'Children & family'];
+const svCategories = [
+  'Alla',
+  'Arbetsbelysning',
+  'Barnsaker',
+  'Biltillbehör',
+  'Borrning & Skruvning',
+  'Handverktyg',
+  'Hem & hushåll',
+  'Håltagning',
+  'Kompressorer',
+  'Kontor',
+  'Mätinstrument',
+  'Slipa & Såga',
+  'Spika',
+  'Städa',
+  'Trädgård',
+  'Tvätta',
+  'Varmluftspistol',
+];
+
+const enCategories = [
+  'All',
+  'Car accessories',
+  'Children’s items',
+  'Cleaning',
+  'Compressors',
+  'Drilling & Screwdriving',
+  'Garden',
+  'Hand tools',
+  'Heat guns',
+  'Hole making',
+  'Home & household',
+  'Measuring instruments',
+  'Office',
+  'Sanding & Sawing',
+  'Stapling & Nailing',
+  'Washing',
+  'Work lights',
+];
 
 function ProductRating({
   rating,
