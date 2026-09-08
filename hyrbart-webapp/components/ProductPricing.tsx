@@ -1,12 +1,31 @@
 import type { ProductBadge, RentalPrice } from '@/lib/products';
 
-export function ProductBadgeLabel({ badge, locale = 'sv' }: { badge?: ProductBadge; locale?: string }) {
+export function ProductBadgeLabel({
+  badge,
+  locale = 'sv',
+  large = false,
+}: {
+  badge?: ProductBadge;
+  locale?: string;
+  large?: boolean;
+}) {
   if (!badge) return null;
   const en = locale === 'en';
   const label = badge === 'very-popular'
     ? (en ? 'VERY POPULAR' : 'JÄTTEPOPULÄR')
     : (en ? 'POPULAR' : 'POPULÄR');
-  return <span className="productPopularityBadge" style={{ maxWidth: '60%' }}>{label}</span>;
+
+  return (
+    <span
+      className="productPopularityBadge"
+      style={{
+        maxWidth: '60%',
+        fontSize: large ? undefined : 'clamp(.44rem, 1.7vw, .76rem)',
+      }}
+    >
+      {label}
+    </span>
+  );
 }
 
 export function RentalPriceGrid({ prices, locale = 'sv', compact = false }: {
