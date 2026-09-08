@@ -382,18 +382,18 @@ main {
 }
 
 /* Kärcher product detail */
-.karcherDetailPage {
+.productDetailPage {
   padding-bottom: 140px;
 }
 
-.karcherDetailPage .compactProductTitle h1 { margin: 0; }
+.productDetailPage .compactProductTitle h1 { margin: 0; }
 
-.karcherDetailPage .detailProductVisual .productVisual.large {
+.productDetailPage .detailProductVisual .productVisual.large {
   height: 230px;
   margin: 14px 0 22px;
 }
 
-.karcherDetailPage .included { margin-top: 0; }
+.productDetailPage .included { margin-top: 0; }
 
 .included h2 {
   margin-top: 0;
@@ -455,11 +455,11 @@ main {
   padding: 7px 0;
 }
 
-.karcherDetailPage .specDropdown summary .specChevron {
+.productDetailPage .specDropdown summary .specChevron {
   transition: transform .18s ease;
 }
 
-.karcherDetailPage .specDropdown[open] summary .specChevron {
+.productDetailPage .specDropdown[open] summary .specChevron {
   transform: rotate(180deg);
 }
 
@@ -484,8 +484,8 @@ main {
 .darkAction svg { width: 21px; }
 .darkAction b { font-size: 24px; font-weight: 400; }
 
-.karcherDetailPage .primaryButton.wide { min-height: 58px; }
-.karcherDetailPage > :last-child { margin-bottom: 0; }
+.productDetailPage .primaryButton.wide { min-height: 58px; }
+.productDetailPage > :last-child { margin-bottom: 0; }
 
 /* Guide */
 .guidePage {
@@ -754,15 +754,15 @@ main {
 }
 
 /* Product description */
-.karcherDetailPage .productDescriptionDropdown {
+.productDetailPage .productDescriptionDropdown {
   margin-bottom: 10px;
 }
 
-.karcherDetailPage .productDescriptionDropdown + .specDropdown {
+.productDetailPage .productDescriptionDropdown + .specDropdown {
   margin-top: 0;
 }
 
-.karcherDetailPage .productDescriptionBody p {
+.productDetailPage .productDescriptionBody p {
   margin: 0;
   color: #363c3f;
   line-height: 1.55;
@@ -830,7 +830,7 @@ main {
 }
 
 /* Kärcher product page: one sticky navigation/identity header */
-.karcherDetailPage .productHeaderSticky {
+.productDetailPage .productHeaderSticky {
   position: -webkit-sticky;
   position: sticky;
   top: 0;
@@ -841,7 +841,7 @@ main {
   -webkit-backdrop-filter: blur(16px);
 }
 
-.karcherDetailPage .productBackRow {
+.productDetailPage .productBackRow {
   min-height: 54px;
   padding: 8px 64px 2px 20px;
   display: flex;
@@ -854,13 +854,13 @@ main {
   text-align: left;
 }
 
-.karcherDetailPage .productBackRow svg {
+.productDetailPage .productBackRow svg {
   width: 24px;
   height: 24px;
   flex: 0 0 auto;
 }
 
-.karcherDetailPage .productCategoryRow {
+.productDetailPage .productCategoryRow {
   padding: 1px 20px 7px;
   color: var(--muted);
   font-size: 17px;
@@ -869,7 +869,7 @@ main {
   text-align: left;
 }
 
-.karcherDetailPage .productHeaderSticky .compactProductTitle {
+.productDetailPage .productHeaderSticky .compactProductTitle {
   position: static;
   top: auto;
   z-index: auto;
@@ -1040,7 +1040,7 @@ main {
   font-size: .64rem;
 }
 
-.karcherDetailPage > .rentalPriceGrid + .primaryButton.wide {
+.productDetailPage > .rentalPriceGrid + .primaryButton.wide {
   margin-top: 12px;
 }
 
@@ -1224,7 +1224,7 @@ h1,
   letter-spacing: -.025em;
 }
 
-.karcherDetailPage .darkAction {
+.productDetailPage .darkAction {
   font-family: var(--font-heading-stack);
   font-size: 1.08rem;
   font-weight: 800;
@@ -1290,7 +1290,7 @@ h1,
 }
 
 /* Produktkategori på detaljsidan ska vara svart */
-.karcherDetailPage .productCategoryRow {
+.productDetailPage .productCategoryRow {
   color: var(--ink);
 }
 
@@ -1302,7 +1302,7 @@ h1,
    nowrap hindrar modellen från att delas på två rader.
 */
 .productListCard h2,
-.karcherDetailPage .compactProductTitle h1 {
+.productDetailPage .compactProductTitle h1 {
   white-space: nowrap;
 }
 
@@ -1395,7 +1395,7 @@ h1,
 /* PRODUKTSIDA — LÅS HEADERN FRÅN FÖRSTA PIXELN
    Lägg detta allra sist i hyrbart-webapp/app/globals.css */
 
-.karcherDetailPage {
+.productDetailPage {
   padding-top: 0;
 }
 /* ============================================================
@@ -1447,24 +1447,24 @@ h1,
   margin-bottom: 0;
 }
 /* PRODUKTSIDA — TA BORT DUBBEL BOTTENLUFT */
-.karcherDetailPage {
+.productDetailPage {
   padding-bottom: 0;
 }
 
-.karcherDetailPage .primaryButton.wide {
+.productDetailPage .primaryButton.wide {
   margin-bottom: 0;
 }
 /* ============================================================
    PRODUKT + GUIDE — ÅTERSTÄLL TOPPMARGINAL / SAFE AREA
    ============================================================ */
 
-.karcherDetailPage,
+.productDetailPage,
 .guidePage {
   padding-top: env(safe-area-inset-top);
 }
 
 /* Sticky-headern ska låsa sig UNDER statusfältet */
-.karcherDetailPage .productHeaderSticky,
+.productDetailPage .productHeaderSticky,
 .guidePage .guideHeaderSticky {
   top: env(safe-area-inset-top);
 }
@@ -1665,7 +1665,7 @@ h1,
 */
 
 /* Produktdetaljsidan */
-.karcherDetailPage::before {
+.productDetailPage::before {
   content: "";
   position: fixed;
   z-index: 119;
@@ -1677,7 +1677,7 @@ h1,
   pointer-events: none;
 }
 
-.karcherDetailPage .productHeaderSticky {
+.productDetailPage .productHeaderSticky {
   position: sticky;
   z-index: 120;
 }
@@ -1686,14 +1686,12 @@ h1,
 .guidePage::before {
   content: "";
   position: fixed;
-  z-index: 118;
+  z-index: 119;
   top: 0;
   left: 0;
   right: 0;
-  height: calc(env(safe-area-inset-top) + 260px);
-  background: rgba(244, 244, 241, .985);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  height: env(safe-area-inset-top);
+  background: var(--bg);
   pointer-events: none;
 }
 
@@ -1839,173 +1837,3 @@ h1,
   position: relative;
   z-index: 122;
 }
-
-/* ============================================================
-   BOSCH GBH 18V-22 — PRODUKTSIDA
-   Isolerad korrigering: påverkar inte Kärcher eller övriga sidor.
-   ============================================================ */
-
-.boschDetailPage {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: 0;
-}
-
-.boschDetailPage .productHeaderSticky {
-  position: sticky;
-  top: env(safe-area-inset-top);
-  z-index: 120;
-  margin: 0 -20px 18px;
-  background: rgba(244, 244, 241, .98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.boschDetailPage .productBackRow {
-  min-height: 54px;
-  padding: 8px 64px 2px 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink);
-  font-size: .9rem;
-  line-height: 1.2;
-  font-weight: 650;
-  text-align: left;
-}
-
-.boschDetailPage .productBackRow svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-}
-
-.boschDetailPage .productCategoryRow {
-  padding: 1px 20px 7px;
-  color: var(--ink);
-  font-size: 17px;
-  line-height: 1.25;
-  font-weight: 500;
-  text-align: left;
-}
-
-.boschDetailPage .productHeaderSticky .compactProductTitle {
-  position: static;
-  top: auto;
-  z-index: auto;
-  margin: 0;
-  padding: 6px 20px 12px;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 0;
-  box-shadow: none;
-}
-
-.boschDetailPage .compactProductTitle h1 {
-  margin: 0;
-  white-space: nowrap;
-}
-
-.boschDetailPage .detailProductVisual .productVisual.large {
-  height: 230px;
-  margin: 14px 0 22px;
-}
-
-.boschDetailPage .included {
-  margin-top: 0;
-}
-
-.boschDetailPage .specDropdown summary .specChevron {
-  transition: transform .18s ease;
-}
-
-.boschDetailPage .specDropdown[open] summary .specChevron {
-  transform: rotate(180deg);
-}
-
-.boschDetailPage .productDescriptionDropdown {
-  margin-bottom: 10px;
-}
-
-.boschDetailPage .productDescriptionDropdown + .specDropdown {
-  margin-top: 0;
-}
-
-.boschDetailPage .productDescriptionBody p {
-  margin: 0;
-  color: #363c3f;
-  line-height: 1.55;
-}
-
-.boschDetailPage .darkAction {
-  font-family: var(--font-heading-stack);
-  font-size: 1.08rem;
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -.025em;
-}
-
-.boschDetailPage .primaryButton.wide {
-  min-height: 58px;
-  margin-bottom: 0;
-}
-
-.boschDetailPage > .rentalPriceGrid + .primaryButton.wide {
-  margin-top: 12px;
-}
-
-/* ============================================================
-   BOSCH GBH 18V-22 — SAFE AREA OVANFÖR STICKY HEADER
-   Täcker endast statusfält/safe-area. Påverkar inte produktbilden.
-   ============================================================ */
-
-.boschDetailPage::before {
-  content: "";
-  position: fixed;
-  z-index: 119;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top);
-  background: var(--bg);
-  pointer-events: none;
-}
-
-.boschDetailPage .productHeaderSticky {
-  z-index: 120;
-}
-
-/* ============================================================
-   THULE MOTION 3 XXL — BRED PRODUKTBILD
-   ============================================================ */
-
-.thuleDetailPage .detailProductVisual {
-  margin-top: 4px;
-}
-
-.thuleDetailPage .productGallerySlide {
-  height: 250px;
-}
-
-.thuleDetailPage .productGalleryImage {
-  padding: 8px 0;
-}
-
-.thuleDetailPage .thuleHighlights {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-  color: #363c3f;
-  line-height: 1.45;
-}
-
-.thuleDetailPage .thuleHighlights > div {
-  display: block;
-}
-
-@media (max-width: 430px) {
-  .thuleDetailPage .productGallerySlide {
-    height: 220px;
-  }
-}
-
