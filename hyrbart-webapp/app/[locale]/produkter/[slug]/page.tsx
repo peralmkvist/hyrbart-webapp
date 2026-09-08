@@ -18,7 +18,6 @@ export default async function GenericProductPage({
   if (!product) notFound();
 
   const hasFullDetails =
-    product.included?.length &&
     product.description &&
     product.specifications?.length;
 
@@ -59,12 +58,11 @@ export default async function GenericProductPage({
     );
   }
 
-  const included = product.included!;
   const description = product.description!;
   const specifications = product.specifications!;
 
   return (
-    <div className="pageShell detailPage karcherDetailPage">
+    <div className="pageShell detailPage productDetailPage">
       <div className="productHeaderSticky">
         <Link
           href={`/${locale}/produkter`}
@@ -91,9 +89,7 @@ export default async function GenericProductPage({
             >
               <span className="ratingStars" aria-hidden="true">★★★★★</span>
               <strong>{product.rating.toFixed(1).replace('.', ',')}</strong>
-              <span>
-                ({product.reviewCount} {en ? 'reviews' : 'omdömen'})
-              </span>
+              <span>({product.reviewCount} {en ? 'reviews' : 'omdömen'})</span>
             </div>
           )}
         </header>
@@ -112,20 +108,22 @@ export default async function GenericProductPage({
         )}
       </div>
 
-      <section className="included">
-        <h2>{en ? 'Included' : 'Det här ingår'}</h2>
-        <div className="includedGrid">
-          {included.map((item) => {
-            const text = en ? item.en : item.sv;
-            return (
-              <div key={text}>
-                <span className="checkCircle"><CheckIcon /></span>
-                <span>{text}</span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      {product.included && product.included.length > 0 && (
+        <section className="included">
+          <h2>{en ? 'Included' : 'Det här ingår'}</h2>
+          <div className="includedGrid">
+            {product.included.map((item) => {
+              const text = en ? item.en : item.sv;
+              return (
+                <div key={text}>
+                  <span className="checkCircle"><CheckIcon /></span>
+                  <span>{text}</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <details className="specDropdown productDescriptionDropdown">
         <summary>
@@ -156,12 +154,15 @@ export default async function GenericProductPage({
 
       {product.guideAvailable && (
         <div className="stackedActions">
-          <Link href={`/${locale}/produkter/${product.slug}/guide#kom-igang`} className="darkAction">
+          <Link
+            href={`/${locale}/produkter/${product.slug}/guide#kom-igang`}
+            className="darkAction"
+          >
             <BookIcon />
             <span>{en ? 'User guide' : 'Användarguide'}</span>
             <b>›</b>
           </Link>
-      </div>
+        </div>
       )}
 
       <RentalPriceGrid prices={product.rentalPrices} locale={locale} />
