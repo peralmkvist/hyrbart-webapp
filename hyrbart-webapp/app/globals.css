@@ -1956,3 +1956,24 @@ h1,
   margin-top: 12px;
 }
 
+/* ============================================================
+   BOSCH GBH 18V-22 — SAFE AREA OVANFÖR STICKY HEADER
+   Täcker endast statusfält/safe-area. Påverkar inte produktbilden.
+   ============================================================ */
+
+.boschDetailPage::before {
+  content: "";
+  position: fixed;
+  z-index: 119;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.boschDetailPage .productHeaderSticky {
+  z-index: 120;
+}
+
