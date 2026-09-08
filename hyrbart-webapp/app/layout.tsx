@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: 'Hyrbart',
   description: 'Det du behöver. När du behöver det.',
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
