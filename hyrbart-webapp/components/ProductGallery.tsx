@@ -50,6 +50,16 @@ export default function ProductGallery({
   return (
     <div
       className={`productGallery ${hasMultiple ? 'hasMultiple' : 'singleImage'}`}
+      style={
+        hasMultiple
+          ? {
+              background: 'transparent',
+              border: '0',
+              borderRadius: 0,
+              boxShadow: 'none',
+            }
+          : undefined
+      }
       aria-label={locale === 'en' ? 'Product images' : 'Produktbilder'}
     >
       <div
