@@ -4,6 +4,19 @@ html {
   text-size-adjust: 100%;
 }
 
+/* Productkort: låt hela bildkolumnen bära den grå bildbakgrunden. */
+.productListCard .productCardVisualWrap {
+  min-height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f7f7f6, #e9eceb);
+}
+
+.productListCard .productVisual,
+.productListCard .productPhotoVisual {
+  background: transparent;
+}
+
 @media (max-width: 480px) {
   .pageShell {
     width: 100%;
