@@ -12,7 +12,8 @@ const productProjection = `{
   typeEn,
   category,
   accent,
-  "imageUrl": image.asset->url,
+  "imageUrls": coalesce(images[].asset->url, select(defined(image.asset) => [image.asset->url], [])),
+  "imageUrl": coalesce(images[0].asset->url, image.asset->url),
   legacyImagePath,
   badge,
   rating,
@@ -36,6 +37,7 @@ type SanityProduct = {
   category: string;
   accent?: string;
   imageUrl?: string;
+  imageUrls?: string[];
   legacyImagePath?: string;
   badge?: Product['badge'];
   rating?: number;
@@ -52,6 +54,8 @@ type SanityProduct = {
 
 function mapProduct(item: SanityProduct): Product {
   const oneDayPrice = item.rentalPrices?.find((price) => price.days === 1)?.price;
+  const images = item.imageUrls?.filter(Boolean) ?? [];
+  const mainImage = images[0] || item.imageUrl || item.legacyImagePath;
 
   return {
     slug: item.slug,
@@ -62,7 +66,8 @@ function mapProduct(item: SanityProduct): Product {
     price: oneDayPrice ? `fr. ${oneDayPrice} kr/dygn` : '',
     category: item.category,
     accent: item.accent || '#c6f000',
-    image: item.imageUrl || item.legacyImagePath,
+    image: mainImage,
+    images: images.length ? images : mainImage ? [mainImage] : undefined,
     badge: item.badge || undefined,
     rating: item.rating ?? undefined,
     reviewCount: item.reviewCount ?? undefined,
@@ -80,20 +85,14 @@ async function sanityQuery<T>(query: string): Promise<T> {
   const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
   const response = await fetch(url, { cache: 'no-store' });
 
-  if (!response.ok) {
-    throw new Error(`Sanity request failed: ${response.status}`);
-  }
-
+  if (!response.ok) throw new Error(`Sanity request failed: ${response.status}`);
   const payload = (await response.json()) as { result: T };
   return payload.result;
 }
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    const result = await sanityQuery<SanityProduct[]>(
-      `*[_type == "product" && defined(slug.current)] | order(sortOrder asc) ${productProjection}`,
-    );
-
+    const result = await sanityQuery<SanityProduct[]>(`*[_type == "product" && defined(slug.current)] | order(sortOrder asc) ${productProjection}`);
     return result.length ? result.map(mapProduct) : fallbackProducts;
   } catch (error) {
     console.error('Could not load products from Sanity. Using local fallback.', error);
@@ -104,10 +103,7 @@ export async function getProducts(): Promise<Product[]> {
 export async function getProduct(slug: string): Promise<Product | undefined> {
   try {
     const safeSlug = JSON.stringify(slug);
-    const result = await sanityQuery<SanityProduct | null>(
-      `*[_type == "product" && slug.current == ${safeSlug}][0] ${productProjection}`,
-    );
-
+    const result = await sanityQuery<SanityProduct | null>(`*[_type == "product" && slug.current == ${safeSlug}][0] ${productProjection}`);
     return result ? mapProduct(result) : undefined;
   } catch (error) {
     console.error(`Could not load ${slug} from Sanity. Using local fallback.`, error);
