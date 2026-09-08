@@ -68,7 +68,7 @@
 
 @media (max-width: 560px) {
   .backdrop {
-    background-position: 50% center;
+    background-position: 43% center;
   }
 
   .backdrop::after {
@@ -81,7 +81,7 @@
     padding:
       max(76px, calc(env(safe-area-inset-top) + 58px))
       16px
-      calc(var(--nav-h) + 50px + env(safe-area-inset-bottom));
+      calc(var(--nav-h) + 20px + env(safe-area-inset-bottom));
   }
 
   .copy {
