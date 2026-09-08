@@ -1668,14 +1668,12 @@ h1,
 .karcherDetailPage::before {
   content: "";
   position: fixed;
-  z-index: 118;
+  z-index: 119;
   top: 0;
   left: 0;
   right: 0;
-  height: calc(env(safe-area-inset-top) + 215px);
-  background: rgba(244, 244, 241, .985);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  height: env(safe-area-inset-top);
+  background: var(--bg);
   pointer-events: none;
 }
 
