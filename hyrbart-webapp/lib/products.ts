@@ -30,7 +30,6 @@ export type Product = {
   rating?: number;
   reviewCount?: number;
 
-  // Used by the full product-detail template.
   detailCategory?: LocalizedText;
   included?: LocalizedText[];
   description?: LocalizedText;
@@ -57,6 +56,24 @@ export const products: Product[] = [
       { days: 1, price: 145 },
       { days: 3, price: 290 },
       { days: 7, price: 580 },
+    ],
+    detailCategory: {
+      sv: 'Textil- och möbeltvätt',
+      en: 'Carpet & upholstery cleaner',
+    },
+    included: [
+      { sv: 'Universalmunstycke', en: 'Universal nozzle' },
+      { sv: 'Möbelmunstycke', en: 'Upholstery nozzle' },
+      { sv: 'Skomunstycke', en: 'Shoe nozzle' },
+      { sv: 'Rengöringsmedel – 1 dos ingår', en: 'Cleaning detergent – 1 dose included' },
+    ],
+    description: {
+      sv: 'Kompakt textil- och möbeltvätt för djuprengöring av mattor, möbler och andra textila ytor.',
+      en: 'Compact spray-extraction cleaner for deep cleaning carpets, upholstery and other textile surfaces.',
+    },
+    specifications: [
+      { label: { sv: 'Tankvolym', en: 'Tank capacity' }, value: '1,7 / 2,9 l' },
+      { label: { sv: 'Vikt', en: 'Weight' }, value: '4,6 kg' },
     ],
     guideAvailable: true,
     hyggloUrl: 'https://www.hygglo.se/i/0b7-textiltvatt-karcher-se-3-compact',
@@ -122,6 +139,26 @@ export const products: Product[] = [
       { days: 1, price: 130 },
       { days: 3, price: 395 },
       { days: 7, price: 586 },
+    ],
+    detailCategory: {
+      sv: 'Takbox',
+      en: 'Roof box',
+    },
+    description: {
+      sv: 'Rymlig takbox med 600 liters packvolym för skidresor, familjesemester och längre bilresor. Den har plats för skidor upp till 215 cm, kan öppnas från båda sidor och monteras snabbt utan verktyg. Jag hjälper gärna till med monteringen vid hämtning. Efter normal användning behöver du inte tvätta eller städa boxen före återlämning.',
+      en: 'A spacious 600-litre roof box for ski trips, family holidays and longer journeys. It has room for skis up to 215 cm, opens from both sides and mounts quickly without tools. I am happy to help with installation when you collect it. After normal use, you do not need to wash or clean the box before returning it.',
+    },
+    specifications: [
+      { label: { sv: 'Volym', en: 'Volume' }, value: '600 liter' },
+      { label: { sv: 'Längd', en: 'Length' }, value: '232 cm' },
+      { label: { sv: 'Bredd', en: 'Width' }, value: '92 cm' },
+      { label: { sv: 'Höjd', en: 'Height' }, value: '46 cm' },
+      { label: { sv: 'Höjd över lasthållarrör', en: 'Height above load bars' }, value: '41 mm' },
+      { label: { sv: 'Innermått', en: 'Internal dimensions' }, value: '220 × 77 × 40 cm' },
+      { label: { sv: 'Vikt', en: 'Weight' }, value: '25 kg' },
+      { label: { sv: 'Maxlast', en: 'Maximum load' }, value: '75 kg' },
+      { label: { sv: 'Maxbredd lasthållarrör', en: 'Maximum load-bar width' }, value: '90 mm' },
+      { label: { sv: 'Maxlängd skidor', en: 'Maximum ski length' }, value: '215 cm' },
     ],
     hyggloUrl: 'https://www.hygglo.se/i/132-takbox-thule-motion-3-xxl',
   },
