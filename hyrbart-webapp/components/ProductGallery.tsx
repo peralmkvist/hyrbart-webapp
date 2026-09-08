@@ -57,27 +57,18 @@ export default function ProductGallery({
         className="productGalleryTrack"
         onScroll={handleScroll}
       >
-        {cleanImages.map((src, index) => {
-          const sanityImage = src.includes('cdn.sanity.io');
-
-          return (
-            <div
-              className="productGallerySlide"
-              key={`${src}-${index}`}
-              style={sanityImage && !hasMultiple ? { height: 300 } : undefined}
-            >
-              <Image
-                src={src}
-                alt={index === 0 ? alt : `${alt} – ${index + 1}`}
-                fill
-                sizes="(max-width: 760px) 100vw, 760px"
-                className="productGalleryImage"
-                style={sanityImage ? { transform: 'scale(1.2)' } : undefined}
-                priority={index === 0}
-              />
-            </div>
-          );
-        })}
+        {cleanImages.map((src, index) => (
+          <div className="productGallerySlide" key={`${src}-${index}`}>
+            <Image
+              src={src}
+              alt={index === 0 ? alt : `${alt} – ${index + 1}`}
+              fill
+              sizes="(max-width: 760px) 100vw, 760px"
+              className="productGalleryImage"
+              priority={index === 0}
+            />
+          </div>
+        ))}
       </div>
 
       <ProductBadgeLabel badge={badge} locale={locale} />
