@@ -68,7 +68,7 @@
 
 @media (max-width: 560px) {
   .backdrop {
-    background-position: 43% center;
+    background-position: 32% center;
   }
 
   .backdrop::after {
