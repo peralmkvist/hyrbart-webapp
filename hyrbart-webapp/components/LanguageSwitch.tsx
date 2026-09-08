@@ -61,7 +61,7 @@ export default function LanguageSwitch() {
       aria-label={label}
       title={label}
     >
-      {isEnglish ? <SwedishFlag /> : <BritishFlag />}
+      {isEnglish ? <BritishFlag /> : <SwedishFlag />}
     </button>
   );
 }
