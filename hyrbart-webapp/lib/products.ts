@@ -114,6 +114,9 @@ export const products: Product[] = [
     category: 'Bil & transport',
     accent: '#222',
     image: '/images/products/thule-motion-3-xxl.png',
+    badge: 'very-popular',
+    rating: 5.0,
+    reviewCount: 10,
     rentalPrices: [
       { days: 1, price: 130 },
       { days: 3, price: 395 },
