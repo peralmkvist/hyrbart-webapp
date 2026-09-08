@@ -59,6 +59,7 @@ export const products: Product[] = [
       { days: 7, price: 580 },
     ],
     guideAvailable: true,
+    hyggloUrl: 'https://www.hygglo.se/i/0b7-textiltvatt-karcher-se-3-compact',
   },
   {
     slug: 'bosch-gbh-18v-22',
@@ -102,7 +103,7 @@ export const products: Product[] = [
       { label: { sv: 'Vikt utan batteri', en: 'Weight without battery' }, value: '2,3 kg' },
     ],
     guideAvailable: true,
-    hyggloUrl: 'https://www.hygglo.se',
+    hyggloUrl: 'https://www.hygglo.se/i/bfa-borrhammare-bosch-18v-inkl-utsug-borrar-mejslar',
   },
   {
     slug: 'thule-motion-3-xxl',
@@ -122,6 +123,7 @@ export const products: Product[] = [
       { days: 3, price: 395 },
       { days: 7, price: 586 },
     ],
+    hyggloUrl: 'https://www.hygglo.se/i/132-takbox-thule-motion-3-xxl',
   },
   {
     slug: 'metabo-asa-30-l-pc',
