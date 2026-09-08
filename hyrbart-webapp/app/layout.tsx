@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Archivo, Roboto_Mono } from 'next/font/google';
 import './globals.css';
+import './responsive.css';
 import BottomNav from '@/components/BottomNav';
 
 const archivo = Archivo({
