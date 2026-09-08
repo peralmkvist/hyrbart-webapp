@@ -18,6 +18,7 @@ const productProjection = `{
   badge,
   rating,
   reviewCount,
+  cardHighlight{sv, en},
   rentalPrices[]{days, price},
   detailCategory{sv, en},
   included[]{sv, en},
@@ -42,6 +43,7 @@ type SanityProduct = {
   badge?: Product['badge'];
   rating?: number;
   reviewCount?: number;
+  cardHighlight?: Product['cardHighlight'];
   rentalPrices?: Product['rentalPrices'];
   detailCategory?: Product['detailCategory'];
   included?: Product['included'];
@@ -71,6 +73,7 @@ function mapProduct(item: SanityProduct): Product {
     badge: item.badge || undefined,
     rating: item.rating ?? undefined,
     reviewCount: item.reviewCount ?? undefined,
+    cardHighlight: item.cardHighlight,
     rentalPrices: item.rentalPrices,
     detailCategory: item.detailCategory,
     included: item.included,
