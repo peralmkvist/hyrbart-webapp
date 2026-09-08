@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import styles from './page.module.css';
 
 export default async function AboutPage({
@@ -19,38 +18,21 @@ export default async function AboutPage({
 
           <p>
             {en
-              ? 'I’m a hands-on family man who likes high-quality products.'
-              : 'Jag är en händig familjefar som gillar produkter med hög kvalitet.'}
+              ? 'I enjoy home projects and well-made, durable products – and the idea that things I don’t use every day can be useful to someone else. That way, good equipment doesn’t just gather dust, while others don’t have to buy machines and products they only use occasionally.'
+              : 'Jag gillar hemmaprojekt och bra, hållbara prylar – och tanken på att saker jag inte använder varje dag kan komma till nytta hos någon annan. Då slipper bra saker samla damm, samtidigt som andra inte behöver köpa maskiner och prylar som bara används någon gång ibland.'}
           </p>
 
           <p>
             {en
-              ? 'I rent out my machines and tools so they get used instead of gathering dust – and so you don’t have to buy expensive equipment for something you only need temporarily.'
-              : 'Jag hyr ut mina maskiner och verktyg för att de ska användas istället för att samla damm – och för att du som behöver dem inte ska behöva köpa dyra maskiner för en tillfällig användning.'}
+              ? 'When you rent from me, it should be easy to get started. What you need is included or available to buy directly from me, so you don’t need an extra trip to the hardware store.'
+              : 'När du hyr av mig ska det vara enkelt att komma igång. Det du behöver finns med eller går att köpa till direkt av mig, så att du slipper en extra tur till byggvaruhuset.'}
           </p>
 
           <p>
             {en
-              ? 'I use all the products myself on a regular basis and reinvest the rental income in new equipment.'
-              : 'Jag använder regelbundet alla produkter och återinvesterar intäkterna från uthyrningen i nya produkter.'}
+              ? 'Here you’ll find everything I rent out together with my own user guides, so you can quickly understand how it all works. I use the products myself regularly and reinvest the rental income in new products.'
+              : 'Här hittar du alla produkter jag hyr ut tillsammans med mina egna användarguider, så att du snabbt förstår hur allt fungerar. Jag använder själv produkterna regelbundet och återinvesterar intäkterna från uthyrningen i nya produkter.'}
           </p>
-
-          <p>
-            {en
-              ? 'This site is here to make it easy to rent and understand how to use the products in the best possible way.'
-              : 'Den här sidan är till för att göra det enkelt att hyra och förstå hur man använder produkterna på bästa sätt.'}
-          </p>
-
-          <p className={styles.statement}>
-            {en
-              ? 'What you need, but only when you need it.'
-              : 'Det du behöver, men bara när du behöver det.'}
-          </p>
-
-          <Link href={`/${locale}/produkter`} className={styles.cta}>
-            <span>{en ? 'See all my rental items' : 'Se alla mina hyresobjekt'}</span>
-            <span aria-hidden="true">→</span>
-          </Link>
         </div>
       </section>
     </div>
