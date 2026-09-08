@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import ProductGallery from '@/components/ProductGallery';
 import ProductVisual from '@/components/ProductVisual';
 import { RentalPriceGrid } from '@/components/ProductPricing';
-import { products } from '@/lib/products';
+import { getProduct } from '@/lib/sanity-products';
 import { BackIcon, BookIcon, CheckIcon, InfoIcon, ListIcon } from '@/components/Icons';
 
 export default async function GenericProductPage({
@@ -13,17 +13,13 @@ export default async function GenericProductPage({
 }) {
   const { locale, slug } = await params;
   const en = locale === 'en';
-  const product = products.find((item) => item.slug === slug);
+  const product = await getProduct(slug);
 
   if (!product) notFound();
 
-  const hasFullDetails =
-    product.description &&
-    product.specifications?.length;
+  const hasFullDetails = product.description && product.specifications?.length;
 
   if (!hasFullDetails) {
-    const index = products.findIndex((item) => item.slug === slug);
-
     return (
       <div className="pageShell genericProductPage">
         <Link href={`/${locale}/produkter`} className="backLink">
@@ -32,8 +28,10 @@ export default async function GenericProductPage({
 
         <div className="genericProductHero">
           <ProductVisual
-            kind={index === 1 ? 'saw' : 'cleaner'}
+            kind="cleaner"
             accent={product.accent}
+            imageSrc={product.image}
+            imageAlt={`${product.brand} ${product.name}`}
           />
           <div className="productTitle">
             <p>{en ? product.typeEn ?? product.type : product.type}</p>
@@ -44,9 +42,7 @@ export default async function GenericProductPage({
 
         <div className="genericProductNotice">
           <strong>
-            {en
-              ? 'More product information is coming.'
-              : 'Mer produktinformation kommer här.'}
+            {en ? 'More product information is coming.' : 'Mer produktinformation kommer här.'}
           </strong>
           <p>
             {en
@@ -154,10 +150,7 @@ export default async function GenericProductPage({
 
       {product.guideAvailable && (
         <div className="stackedActions">
-          <Link
-            href={`/${locale}/produkter/${product.slug}/guide`}
-            className="darkAction"
-          >
+          <Link href={`/${locale}/produkter/${product.slug}/guide`} className="darkAction">
             <BookIcon />
             <span>{en ? 'User guide' : 'Användarguide'}</span>
             <b>›</b>
