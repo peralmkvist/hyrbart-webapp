@@ -3,40 +3,21 @@ import { getProducts } from '@/lib/sanity-products';
 import ProductVisual from '@/components/ProductVisual';
 import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
 
-const svCategories = [
-  'Alla',
-  'Arbetsbelysning',
-  'Barnsaker',
-  'Biltillbehör',
-  'Borra & Skruva',
-  'Handverktyg',
-  'Hem & hushåll',
-  'Håltagning',
-  'Kontor',
-  'Luftverktyg',
-  'Mäta',
-  'Städa & Tvätta',
-  'Såga & Slipa',
-  'Trädgård',
-  'Värme',
-];
-
-const enCategories = [
-  'All',
-  'Car accessories',
-  'Children’s items',
-  'Cleaning & Washing',
-  'Drilling & Screwdriving',
-  'Garden',
-  'Hand tools',
-  'Heating',
-  'Hole making',
-  'Home & household',
-  'Measuring',
-  'Office',
-  'Pneumatic tools',
-  'Sawing & Sanding',
-  'Work lights',
+const categoryDefinitions = [
+  { value: 'Arbetsbelysning', sv: 'Arbetsbelysning', en: 'Work lights' },
+  { value: 'Barnsaker', sv: 'Barnsaker', en: 'Children’s items' },
+  { value: 'Biltillbehör', sv: 'Biltillbehör', en: 'Car accessories' },
+  { value: 'Borra & Skruva', sv: 'Borra & Skruva', en: 'Drilling & Screwdriving' },
+  { value: 'Handverktyg', sv: 'Handverktyg', en: 'Hand tools' },
+  { value: 'Hem & hushåll', sv: 'Hem & hushåll', en: 'Home & household' },
+  { value: 'Håltagning', sv: 'Håltagning', en: 'Hole making' },
+  { value: 'Kontor', sv: 'Kontor', en: 'Office' },
+  { value: 'Luftverktyg', sv: 'Luftverktyg', en: 'Pneumatic tools' },
+  { value: 'Mäta', sv: 'Mäta', en: 'Measuring' },
+  { value: 'Städa & Tvätta', sv: 'Städa & Tvätta', en: 'Cleaning & Washing' },
+  { value: 'Såga & Slipa', sv: 'Såga & Slipa', en: 'Sawing & Sanding' },
+  { value: 'Trädgård', sv: 'Trädgård', en: 'Garden' },
+  { value: 'Värme', sv: 'Värme', en: 'Heating' },
 ];
 
 function ProductRating({
@@ -59,26 +40,45 @@ function ProductRating({
 
 export default async function ProductsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ category?: string }>;
 }) {
   const { locale } = await params;
+  const { category } = await searchParams;
   const en = locale === 'en';
-  const categories = en ? enCategories : svCategories;
   const products = await getProducts();
+  const selectedCategory = categoryDefinitions.some((item) => item.value === category)
+    ? category
+    : undefined;
+  const filteredProducts = selectedCategory
+    ? products.filter((product) => product.category === selectedCategory)
+    : products;
 
   return (
     <div className="pageShell productsPage">
       <div className="chips productsChips" aria-label={en ? 'Product categories' : 'Produktkategorier'}>
-        {categories.map((category, index) => (
-          <button key={category} className={index === 0 ? 'chip active' : 'chip'}>
-            {category}
-          </button>
+        <Link
+          href={`/${locale}/produkter`}
+          className={!selectedCategory ? 'chip active' : 'chip'}
+        >
+          {en ? 'All' : 'Alla'}
+        </Link>
+
+        {categoryDefinitions.map((item) => (
+          <Link
+            key={item.value}
+            href={`/${locale}/produkter?category=${encodeURIComponent(item.value)}`}
+            className={selectedCategory === item.value ? 'chip active' : 'chip'}
+          >
+            {en ? item.en : item.sv}
+          </Link>
         ))}
       </div>
 
       <section className="productGrid productList">
-        {products.map((product) => (
+        {filteredProducts.map((product) => (
           <Link
             href={`/${locale}/produkter/${product.slug}`}
             className="productCard productListCard productCardLink"
