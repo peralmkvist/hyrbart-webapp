@@ -1,102 +1,25 @@
-'use client';
-
 import Link from 'next/link';
-import { use, useEffect, useRef, useState } from 'react';
+import GuideTabs from '@/components/GuideTabs';
 import { BackIcon } from '@/components/Icons';
 
-const ids = ['kom-igang', 'anvandning', 'vanliga-fel', 'aterlamning'];
-
-export default function BoschGuidePage({
+export default async function BoschGuidePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = use(params);
+  const { locale } = await params;
   const en = locale === 'en';
-  const headerRef = useRef<HTMLDivElement>(null);
-  const [activeSection, setActiveSection] = useState('kom-igang');
 
-  const sections = ids.map((id, i) => ({
-    id,
-    label: (en
-      ? ['Get started', 'Use', 'Common issues', 'Return']
-      : ['Kom igång', 'Användning', 'Vanliga fel', 'Återlämning'])[i],
-  }));
-
-  const getHeaderHeight = () =>
-    headerRef.current?.getBoundingClientRect().height ?? 0;
-
-  const scrollToSection = (id: string, smooth = true) => {
-    const target = document.getElementById(id);
-    if (!target) return;
-
-    const top =
-      target.getBoundingClientRect().top +
-      window.scrollY -
-      getHeaderHeight() -
-      8;
-
-    window.scrollTo({
-      top: Math.max(0, top),
-      behavior: smooth ? 'smooth' : 'auto',
-    });
-  };
-
-  useEffect(() => {
-    const updateActiveSection = () => {
-      const threshold = getHeaderHeight() + 12;
-      let current = ids[0];
-
-      for (const id of ids) {
-        const element = document.getElementById(id);
-        if (!element) continue;
-
-        if (element.getBoundingClientRect().top <= threshold) {
-          current = id;
-        } else {
-          break;
-        }
-      }
-
-      setActiveSection(current);
-    };
-
-    const applyHash = () => {
-      const hash = window.location.hash.slice(1);
-
-      if (ids.includes(hash)) {
-        setActiveSection(hash);
-        requestAnimationFrame(() => scrollToSection(hash, false));
-      } else {
-        updateActiveSection();
-      }
-    };
-
-    applyHash();
-    window.addEventListener('scroll', updateActiveSection, { passive: true });
-    window.addEventListener('resize', updateActiveSection);
-    window.addEventListener('hashchange', applyHash);
-
-    return () => {
-      window.removeEventListener('scroll', updateActiveSection);
-      window.removeEventListener('resize', updateActiveSection);
-      window.removeEventListener('hashchange', applyHash);
-    };
-  }, []);
-
-  const handleTabClick = (
-    event: React.MouseEvent<HTMLAnchorElement>,
-    id: string
-  ) => {
-    event.preventDefault();
-    setActiveSection(id);
-    window.history.replaceState(null, '', `#${id}`);
-    scrollToSection(id);
-  };
+  const sections = [
+    { id: 'kom-igang', label: en ? 'Get started' : 'Kom igång' },
+    { id: 'anvandning', label: en ? 'Use' : 'Användning' },
+    { id: 'vanliga-fel', label: en ? 'Problems' : 'Vanliga fel' },
+    { id: 'aterlamning', label: en ? 'Return' : 'Återlämning' },
+  ];
 
   return (
     <div className="pageShell guidePage">
-      <div ref={headerRef} className="guideHeaderSticky">
+      <div className="guideHeaderSticky">
         <Link
           href={`/${locale}/produkter/bosch-gbh-18v-22`}
           className="guideBackRow"
@@ -117,19 +40,10 @@ export default function BoschGuidePage({
           </h1>
         </header>
 
-        <nav className="guideTabs" aria-label={en ? 'Guide sections' : 'Guideavsnitt'}>
-          {sections.map((section) => (
-            <a
-              key={section.id}
-              href={`#${section.id}`}
-              className={activeSection === section.id ? 'active' : ''}
-              aria-current={activeSection === section.id ? 'location' : undefined}
-              onClick={(event) => handleTabClick(event, section.id)}
-            >
-              {section.label}
-            </a>
-          ))}
-        </nav>
+        <GuideTabs
+          sections={sections}
+          ariaLabel={en ? 'Guide sections' : 'Guideavsnitt'}
+        />
       </div>
 
       <section id="kom-igang" className="guideSection">
