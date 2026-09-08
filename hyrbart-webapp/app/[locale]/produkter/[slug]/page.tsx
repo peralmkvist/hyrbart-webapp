@@ -155,7 +155,7 @@ export default async function GenericProductPage({
       {product.guideAvailable && (
         <div className="stackedActions">
           <Link
-            href={`/${locale}/produkter/${product.slug}/guide#kom-igang`}
+            href={`/${locale}/produkter/${product.slug}/guide`}
             className="darkAction"
           >
             <BookIcon />
