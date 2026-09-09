@@ -133,7 +133,7 @@ export const product = defineType({
       name: 'images',
       title: 'Produktbilder',
       type: 'array',
-      of: [defineArrayMember({ type: 'image' })],
+      of: [defineArrayMember({ type: 'image', options: { hotspot: true } })],
     }),
     defineField({
       name: 'badge',
