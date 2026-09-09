@@ -5,6 +5,22 @@ const dataset = 'production';
 const apiVersion = '2026-09-08';
 const hyrbartAccent = '#c6f000';
 
+type SanityCrop = {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
+type SanityImage = {
+  url?: string;
+  crop?: SanityCrop;
+  dimensions?: {
+    width?: number;
+    height?: number;
+  };
+};
+
 const productProjection = `{
   brand,
   name,
@@ -12,8 +28,13 @@ const productProjection = `{
   typeSv,
   typeEn,
   category,
-  "imageUrls": coalesce(images[].asset->url, select(defined(image.asset) => [image.asset->url], [])),
-  "imageUrl": coalesce(images[0].asset->url, image.asset->url),
+  "imageItems": images[]{
+    "url": asset->url,
+    crop,
+    hotspot,
+    "dimensions": asset->metadata.dimensions
+  },
+  "legacyImageUrl": image.asset->url,
   legacyImagePath,
   badge,
   rating,
@@ -36,8 +57,8 @@ type SanityProduct = {
   typeSv: string;
   typeEn?: string;
   category: string;
-  imageUrl?: string;
-  imageUrls?: string[];
+  imageItems?: SanityImage[];
+  legacyImageUrl?: string;
   legacyImagePath?: string;
   badge?: Product['badge'];
   rating?: number;
@@ -53,10 +74,33 @@ type SanityProduct = {
   guideAvailable?: boolean;
 };
 
+function croppedImageUrl(image?: SanityImage): string | undefined {
+  if (!image?.url) return undefined;
+
+  const { crop, dimensions } = image;
+  const width = dimensions?.width;
+  const height = dimensions?.height;
+  if (!crop || !width || !height) return image.url;
+
+  const left = Math.max(0, crop.left ?? 0);
+  const right = Math.max(0, crop.right ?? 0);
+  const top = Math.max(0, crop.top ?? 0);
+  const bottom = Math.max(0, crop.bottom ?? 0);
+
+  const x = Math.round(left * width);
+  const y = Math.round(top * height);
+  const rectWidth = Math.max(1, Math.round(width * (1 - left - right)));
+  const rectHeight = Math.max(1, Math.round(height * (1 - top - bottom)));
+
+  const url = new URL(image.url);
+  url.searchParams.set('rect', `${x},${y},${rectWidth},${rectHeight}`);
+  return url.toString();
+}
+
 function mapProduct(item: SanityProduct): Product {
   const oneDayPrice = item.rentalPrices?.find((price) => price.days === 1)?.price;
-  const images = item.imageUrls?.filter(Boolean) ?? [];
-  const mainImage = images[0] || item.imageUrl || item.legacyImagePath;
+  const images = item.imageItems?.map(croppedImageUrl).filter((url): url is string => Boolean(url)) ?? [];
+  const mainImage = images[0] || item.legacyImageUrl || item.legacyImagePath;
 
   return {
     slug: item.slug,
