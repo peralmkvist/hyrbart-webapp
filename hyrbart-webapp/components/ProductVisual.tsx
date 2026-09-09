@@ -14,8 +14,6 @@ export default function ProductVisual({
   imageAlt?: string;
 }) {
   if (imageSrc) {
-    const sanityImage = imageSrc.includes('cdn.sanity.io');
-
     return (
       <div className={`productVisual productPhotoVisual ${large ? 'large' : ''}`}>
         <Image
@@ -24,7 +22,6 @@ export default function ProductVisual({
           fill
           sizes={large ? '(max-width: 760px) 90vw, 680px' : '(max-width: 760px) 38vw, 280px'}
           className="productPhoto"
-          style={sanityImage ? { transform: 'scale(1.28)' } : undefined}
           priority={large}
         />
       </div>
