@@ -56,14 +56,9 @@ export default async function ProductsPage({
     ? products.filter((product) => product.category === selectedCategory)
     : products;
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const aCategory = a.detailCategory
-      ? (en ? a.detailCategory.en : a.detailCategory.sv)
-      : (en ? (a.typeEn ?? a.type) : a.type);
-    const bCategory = b.detailCategory
-      ? (en ? b.detailCategory.en : b.detailCategory.sv)
-      : (en ? (b.typeEn ?? b.type) : b.type);
-
-    return aCategory.localeCompare(bCategory, en ? 'en' : 'sv', { sensitivity: 'base' });
+    const aType = en ? (a.typeEn ?? a.type) : a.type;
+    const bType = en ? (b.typeEn ?? b.type) : b.type;
+    return aType.localeCompare(bType, en ? 'en' : 'sv', { sensitivity: 'base' });
   });
 
   return (
