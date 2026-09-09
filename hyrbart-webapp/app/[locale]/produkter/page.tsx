@@ -31,7 +31,7 @@ function ProductRating({
 
   return (
     <div className="productCardRating" aria-label={`${rating} av 5, ${reviewCount} omdömen`}>
-      <span className="productCardRatingStar" aria-hidden="true">★</span>
+      <span className="ratingStar" aria-hidden="true">★</span>
       <strong>{rating.toFixed(1).replace('.', ',')}</strong>
       <span>({reviewCount})</span>
     </div>
