@@ -31,7 +31,7 @@ export default async function GenericProductPage({ params }: { params: Promise<{
     <div className="pageShell detailPage productDetailPage">
       <div className="productHeaderSticky">
         <Link href={`/${locale}/produkter`} className="productBackRow" aria-label={en ? 'Back to product list' : 'Tillbaka till produktlistan'}><BackIcon /><span>{en ? 'Back to product list' : 'Tillbaka till produktlistan'}</span></Link>
-        <div className="productCategoryRow">{product.detailCategory ? (en ? product.detailCategory.en : product.detailCategory.sv) : (en ? product.typeEn ?? product.type : product.type)}</div>
+        <div className="productCategoryRow">{en ? product.typeEn ?? product.type : product.type}</div>
         <header className="productTitle compactProductTitle">
           <h1>{product.brand.toUpperCase()}<br />{product.name.toUpperCase()}</h1>
           {product.rating != null && product.reviewCount != null && <div className="productDetailRating" aria-label={`${product.rating} av 5, ${product.reviewCount} omdömen`}><span className="ratingStars" aria-hidden="true">★★★★★</span><strong>{product.rating.toFixed(1).replace('.', ',')}</strong><span>({product.reviewCount} {en ? 'reviews' : 'omdömen'})</span></div>}
