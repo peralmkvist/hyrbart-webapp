@@ -1,5 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
-import { RentalPricesInput, TranslationToolInput } from './TranslationToolInput';
+import { BadgeInput, RentalPricesInput, TranslationToolInput } from './TranslationToolInput';
 
 export const localizedString = defineType({
   name: 'localizedString',
@@ -134,12 +134,12 @@ export const product = defineType({
       name: 'badge',
       title: 'Popularitetsstämpel',
       type: 'string',
+      components: { input: BadgeInput },
       options: {
         list: [
           { title: 'POPULÄR', value: 'popular' },
           { title: 'JÄTTEPOPULÄR', value: 'very-popular' },
         ],
-        layout: 'radio',
       },
     }),
     defineField({ name: 'rating', title: 'Betyg', type: 'number' }),
