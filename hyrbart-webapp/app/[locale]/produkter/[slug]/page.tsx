@@ -12,7 +12,7 @@ export default async function GenericProductPage({ params }: { params: Promise<{
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const hasProductContent = Boolean(product.description) || Boolean(product.specifications?.length) || Boolean(product.included?.length) || Boolean(product.rentalPrices?.length) || Boolean(product.hyggloUrl);
+  const hasProductContent = Boolean(product.description) || Boolean(product.specifications?.length) || Boolean(product.included?.length) || Boolean(product.rentalPrices?.length) || Boolean(product.hyggloUrl) || Boolean(product.supplierUrl);
 
   if (!hasProductContent) {
     return (
@@ -51,6 +51,7 @@ export default async function GenericProductPage({ params }: { params: Promise<{
       {product.guideAvailable && <div className="stackedActions"><Link href={`/${locale}/produkter/${product.slug}/guide`} className="darkAction"><BookIcon /><span>{en ? 'User guide' : 'Användarguide'}</span><b>›</b></Link></div>}
       {product.rentalPrices?.length ? <RentalPriceGrid prices={product.rentalPrices} locale={locale} /> : null}
       <a className="primaryButton wide" href={product.hyggloUrl ?? 'https://www.hygglo.se'} target="_blank" rel="noreferrer">{en ? 'Book on Hygglo' : 'Boka på Hygglo'} <span>↗</span></a>
+      {product.supplierUrl && <a className="primaryButton wide" style={{ background: 'var(--ink)', color: '#fff' }} href={product.supplierUrl} target="_blank" rel="noreferrer">{en ? 'Read more at the manufacturer' : 'Läs mer hos tillverkaren'} <span>↗</span></a>}
     </div>
   );
 }
