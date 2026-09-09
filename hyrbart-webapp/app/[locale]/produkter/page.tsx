@@ -31,7 +31,7 @@ function ProductRating({
 
   return (
     <div className="productCardRating" aria-label={`${rating} av 5, ${reviewCount} omdömen`}>
-      <span className="ratingStar" aria-hidden="true">★</span>
+      <span className="productCardRatingStar" aria-hidden="true">★</span>
       <strong>{rating.toFixed(1).replace('.', ',')}</strong>
       <span>({reviewCount})</span>
     </div>
@@ -55,6 +55,16 @@ export default async function ProductsPage({
   const filteredProducts = selectedCategory
     ? products.filter((product) => product.category === selectedCategory)
     : products;
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const aCategory = a.detailCategory
+      ? (en ? a.detailCategory.en : a.detailCategory.sv)
+      : (en ? (a.typeEn ?? a.type) : a.type);
+    const bCategory = b.detailCategory
+      ? (en ? b.detailCategory.en : b.detailCategory.sv)
+      : (en ? (b.typeEn ?? b.type) : b.type);
+
+    return aCategory.localeCompare(bCategory, en ? 'en' : 'sv', { sensitivity: 'base' });
+  });
 
   return (
     <div className="pageShell productsPage">
@@ -78,7 +88,7 @@ export default async function ProductsPage({
       </div>
 
       <section className="productGrid productList">
-        {filteredProducts.map((product) => (
+        {sortedProducts.map((product) => (
           <Link
             href={`/${locale}/produkter/${product.slug}`}
             className="productCard productListCard productCardLink"
