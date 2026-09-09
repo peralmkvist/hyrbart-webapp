@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sanity/locale-sv-se": "1.2.38",
     "next": "15.5.24",
     "next-sanity": "9.4.5",
     "react": "19.1.1",
