@@ -99,6 +99,12 @@ export const product = defineType({
   name: 'product',
   title: 'Produkt',
   type: 'document',
+  fieldsets: [
+    {
+      name: 'ratingInfo',
+      options: { columns: 2 },
+    },
+  ],
   fields: [
     defineField({
       name: 'category',
@@ -142,8 +148,8 @@ export const product = defineType({
         ],
       },
     }),
-    defineField({ name: 'rating', title: 'Betyg', type: 'number' }),
-    defineField({ name: 'reviewCount', title: 'Antal omdömen', type: 'number' }),
+    defineField({ name: 'rating', title: 'Betyg', type: 'number', fieldset: 'ratingInfo' }),
+    defineField({ name: 'reviewCount', title: 'Antal omdömen', type: 'number', fieldset: 'ratingInfo' }),
     defineField({
       name: 'rentalPrices',
       title: 'Hyrespriser',
