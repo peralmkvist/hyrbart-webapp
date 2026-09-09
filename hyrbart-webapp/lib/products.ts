@@ -38,6 +38,7 @@ export type Product = {
   specifications?: ProductSpecification[];
   guideAvailable?: boolean;
   hyggloUrl?: string;
+  supplierUrl?: string;
 };
 
 export const products: Product[] = [
