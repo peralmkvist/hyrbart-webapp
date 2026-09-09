@@ -119,9 +119,8 @@ export const product = defineType({
     defineField({ name: 'name', title: 'Produktnamn', type: 'string' }),
     defineField({
       name: 'cardHighlight',
-      title: 'Korttext / lyft fram',
+      title: 'Highlight',
       type: 'localizedString',
-      description: 'Valfri kort rad som visas under produktnamnet på produktkortet, till exempel “Munstycken ingår”.',
     }),
     defineField({
       name: 'slug',
