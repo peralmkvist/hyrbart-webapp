@@ -20,7 +20,11 @@ export function ProductBadgeLabel({
       className="productPopularityBadge"
       style={{
         maxWidth: '60%',
-        fontSize: large ? undefined : 'clamp(.44rem, 1.7vw, .76rem)',
+        fontSize: large ? undefined : 'clamp(.42rem, 1.55vw, .66rem)',
+        padding: large ? undefined : '5px 6px',
+        minHeight: large ? undefined : '26px',
+        justifyContent: 'center',
+        overflow: 'hidden',
       }}
     >
       {label}
