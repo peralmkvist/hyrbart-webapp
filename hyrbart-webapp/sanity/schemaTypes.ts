@@ -153,7 +153,6 @@ export const product = defineType({
     defineField({
       name: 'rentalPrices',
       title: 'Hyrespriser',
-      description: 'Fyll i priset för 1, 3 respektive 7 dagar.',
       type: 'array',
       of: [defineArrayMember({ type: 'rentalPrice' })],
       components: { input: RentalPricesInput },
