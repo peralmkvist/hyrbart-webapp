@@ -3,6 +3,7 @@ import { products as fallbackProducts, type Product } from '@/lib/products';
 const projectId = 'djps09z6';
 const dataset = 'production';
 const apiVersion = '2026-09-08';
+const hyrbartAccent = '#c6f000';
 
 const productProjection = `{
   brand,
@@ -11,7 +12,6 @@ const productProjection = `{
   typeSv,
   typeEn,
   category,
-  accent,
   "imageUrls": coalesce(images[].asset->url, select(defined(image.asset) => [image.asset->url], [])),
   "imageUrl": coalesce(images[0].asset->url, image.asset->url),
   legacyImagePath,
@@ -25,7 +25,6 @@ const productProjection = `{
   description{sv, en},
   specifications[]{label{sv, en}, value},
   hyggloUrl,
-  sortOrder,
   "guideAvailable": count(guideSections) > 0
 }`;
 
@@ -36,7 +35,6 @@ type SanityProduct = {
   typeSv: string;
   typeEn?: string;
   category: string;
-  accent?: string;
   imageUrl?: string;
   imageUrls?: string[];
   legacyImagePath?: string;
@@ -50,7 +48,6 @@ type SanityProduct = {
   description?: Product['description'];
   specifications?: Product['specifications'];
   hyggloUrl?: string;
-  sortOrder?: number;
   guideAvailable?: boolean;
 };
 
@@ -67,7 +64,7 @@ function mapProduct(item: SanityProduct): Product {
     typeEn: item.typeEn,
     price: oneDayPrice ? `fr. ${oneDayPrice} kr/dygn` : '',
     category: item.category,
-    accent: item.accent || '#c6f000',
+    accent: hyrbartAccent,
     image: mainImage,
     images: images.length ? images : mainImage ? [mainImage] : undefined,
     badge: item.badge || undefined,
@@ -95,7 +92,7 @@ async function sanityQuery<T>(query: string): Promise<T> {
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    const result = await sanityQuery<SanityProduct[]>(`*[_type == "product" && defined(slug.current)] | order(sortOrder asc) ${productProjection}`);
+    const result = await sanityQuery<SanityProduct[]>(`*[_type == "product" && defined(slug.current)] ${productProjection}`);
     return result.length ? result.map(mapProduct) : fallbackProducts;
   } catch (error) {
     console.error('Could not load products from Sanity. Using local fallback.', error);
