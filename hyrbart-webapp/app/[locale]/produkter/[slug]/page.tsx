@@ -44,7 +44,7 @@ export default async function GenericProductPage({ params }: { params: Promise<{
 
       {product.included && product.included.length > 0 && <section className="included"><h2>{en ? 'Included' : 'Det här ingår'}</h2><div className="includedGrid">{product.included.map((item) => { const text = en ? item.en : item.sv; return <div key={text}><span className="checkCircle"><CheckIcon /></span><span>{text}</span></div>; })}</div></section>}
 
-      {product.description && <details className="specDropdown productDescriptionDropdown"><summary><InfoIcon /><span>{en ? 'Product description' : 'Produktbeskrivning'}</span><span className="specChevron" aria-hidden="true">⌄</span></summary><div className="specBody productDescriptionBody"><p>{en ? product.description.en : product.description.sv}</p></div></details>}
+      {product.description && <details className="specDropdown productDescriptionDropdown"><summary><InfoIcon /><span>{en ? 'Product description' : 'Produktbeskrivning'}</span><span className="specChevron" aria-hidden="true">⌄</span></summary><div className="specBody productDescriptionBody"><p style={{ whiteSpace: 'pre-line' }}>{en ? product.description.en : product.description.sv}</p></div></details>}
 
       {product.specifications && product.specifications.length > 0 && <details className="specDropdown"><summary><ListIcon /><span>{en ? 'Technical specifications' : 'Tekniska specifikationer'}</span><span className="specChevron" aria-hidden="true">⌄</span></summary><div className="specBody">{product.specifications.map((spec) => <div key={spec.label.sv}><b>{en ? spec.label.en : spec.label.sv}</b><span>{spec.value}</span></div>)}</div></details>}
 
