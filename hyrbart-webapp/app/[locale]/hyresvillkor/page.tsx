@@ -5,12 +5,16 @@ export default async function TermsPage({
 }) {
   const { locale } = await params;
   const en = locale === 'en';
+  const headingStyle = {
+    maxWidth: 'calc(100% - 56px)',
+    fontSize: 'clamp(2rem, 7vw, 3.8rem)',
+  } as const;
 
   if (en) {
     return (
       <div className="pageShell termsPage">
         <header className="pageHeader termsHeaderSticky">
-          <h1>RENTAL TERMS</h1>
+          <h1 style={headingStyle}>RENTAL TERMS</h1>
           <p>Terms for rentals via Hygglo.</p>
         </header>
 
@@ -70,7 +74,7 @@ export default async function TermsPage({
   return (
     <div className="pageShell termsPage">
       <header className="pageHeader termsHeaderSticky">
-        <h1>HYRESVILLKOR</h1>
+        <h1 style={headingStyle}>HYRESVILLKOR</h1>
         <p>Villkor för uthyrning via Hygglo.</p>
       </header>
 
