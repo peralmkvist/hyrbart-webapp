@@ -9,15 +9,16 @@ function text(value: LocalizedGuideText | undefined, en: boolean) {
   return (en ? value.en : value.sv) || value.sv || value.en || '';
 }
 
-function tabLabel(key: string, en: boolean, fallback: string) {
-  const labels: Record<string, { sv: string; en: string }> = {
-    'kom-igang': { sv: 'Kom igång', en: 'Get started' },
-    anvandning: { sv: 'Användning', en: 'Use' },
-    'vanliga-fel': { sv: 'Vanliga fel', en: 'Common issues' },
-    aterlamning: { sv: 'Återlämning', en: 'Return' },
-  };
+const guideSectionLabels = [
+  { sv: 'Kom igång', en: 'Get started' },
+  { sv: 'Användning', en: 'Use' },
+  { sv: 'Tips', en: 'Tips' },
+  { sv: 'Återlämning', en: 'Return' },
+];
 
-  return labels[key] ? (en ? labels[key].en : labels[key].sv) : fallback;
+function guideSectionLabel(index: number, en: boolean, fallback: string) {
+  const label = guideSectionLabels[index];
+  return label ? (en ? label.en : label.sv) : fallback;
 }
 
 export default async function GuidePage({
@@ -31,9 +32,9 @@ export default async function GuidePage({
 
   if (!guide?.sections?.length) notFound();
 
-  const sections = guide.sections.map((section) => ({
+  const sections = guide.sections.map((section, index) => ({
     id: section.key,
-    label: tabLabel(section.key, en, text(section.title, en)),
+    label: guideSectionLabel(index, en, text(section.title, en)),
   }));
 
   return (
@@ -60,7 +61,7 @@ export default async function GuidePage({
       </div>
 
       {guide.sections.map((section, index) => {
-        const title = text(section.title, en);
+        const title = guideSectionLabel(index, en, text(section.title, en));
         const intro = text(section.intro, en);
 
         return (
