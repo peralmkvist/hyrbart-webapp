@@ -25,6 +25,7 @@ const productProjection = `{
   description{sv, en},
   specifications[]{label{sv, en}, value},
   hyggloUrl,
+  supplierUrl,
   "guideAvailable": count(guideSections) > 0
 }`;
 
@@ -48,6 +49,7 @@ type SanityProduct = {
   description?: Product['description'];
   specifications?: Product['specifications'];
   hyggloUrl?: string;
+  supplierUrl?: string;
   guideAvailable?: boolean;
 };
 
@@ -78,6 +80,7 @@ function mapProduct(item: SanityProduct): Product {
     specifications: item.specifications,
     guideAvailable: item.guideAvailable || undefined,
     hyggloUrl: item.hyggloUrl,
+    supplierUrl: item.supplierUrl,
   };
 }
 
