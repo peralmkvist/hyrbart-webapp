@@ -83,58 +83,70 @@ export default async function ProductsPage({
       </div>
 
       <section className="productGrid productList">
-        {sortedProducts.map((product) => (
-          <Link
-            href={`/${locale}/produkter/${product.slug}`}
-            className="productCard productListCard productCardLink"
-            key={product.slug}
-            aria-label={`${product.brand} ${product.name}`}
-          >
-            <div className="productCardVisualWrap">
-              <ProductVisual
-                kind="cleaner"
-                accent={product.accent}
-                imageSrc={product.image}
-                imageAlt={`${product.brand} ${product.name}`}
-              />
-              <ProductBadgeLabel badge={product.badge} locale={locale} />
-              <ProductRating
-                rating={product.rating}
-                reviewCount={product.reviewCount}
-              />
-            </div>
+        {sortedProducts.map((product) => {
+          const highlight = en ? product.cardHighlight?.en : product.cardHighlight?.sv;
 
-            <div className="productCardContent">
-              <div>
-                <p className="productCardType">
-                  {en ? (product.typeEn ?? product.type) : product.type}
-                </p>
-
-                <h2>{product.brand}<br />{product.name}</h2>
-
-                {product.cardHighlight && (
-                  <p className="productCardType" style={{ color: 'var(--ink)' }}>
-                    {en ? product.cardHighlight.en : product.cardHighlight.sv}
-                  </p>
-                )}
+          return (
+            <Link
+              href={`/${locale}/produkter/${product.slug}`}
+              className="productCard productListCard productCardLink"
+              key={product.slug}
+              aria-label={`${product.brand} ${product.name}`}
+            >
+              <div className="productCardVisualWrap">
+                <ProductVisual
+                  kind="cleaner"
+                  accent={product.accent}
+                  imageSrc={product.image}
+                  imageAlt={`${product.brand} ${product.name}`}
+                />
+                <ProductBadgeLabel badge={product.badge} locale={locale} />
+                <ProductRating
+                  rating={product.rating}
+                  reviewCount={product.reviewCount}
+                />
               </div>
 
-              <div style={{ marginTop: 'auto' }}>
-                {product.rentalPrices?.length ? (
-                  <RentalPriceGrid prices={product.rentalPrices} locale={locale} compact />
-                ) : (
-                  <p className="productCardPrice">
-                    {en ? product.price.replace('fr.', 'from') : product.price}
+              <div className="productCardContent">
+                <div>
+                  <p className="productCardType">
+                    {en ? (product.typeEn ?? product.type) : product.type}
                   </p>
-                )}
 
-                <span className="primaryButton compact productCardCta" aria-hidden="true">
-                  {en ? 'More info' : 'Mer info'}
-                </span>
+                  <h2>{product.brand}<br />{product.name}</h2>
+
+                  <p
+                    className="productCardType"
+                    aria-hidden={!highlight}
+                    style={{
+                      color: 'var(--ink)',
+                      visibility: highlight ? 'visible' : 'hidden',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {highlight || '\u00a0'}
+                  </p>
+                </div>
+
+                <div style={{ marginTop: 'auto' }}>
+                  {product.rentalPrices?.length ? (
+                    <RentalPriceGrid prices={product.rentalPrices} locale={locale} compact />
+                  ) : (
+                    <p className="productCardPrice">
+                      {en ? product.price.replace('fr.', 'from') : product.price}
+                    </p>
+                  )}
+
+                  <span className="primaryButton compact productCardCta" aria-hidden="true">
+                    {en ? 'More info' : 'Mer info'}
+                  </span>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </section>
     </div>
   );
