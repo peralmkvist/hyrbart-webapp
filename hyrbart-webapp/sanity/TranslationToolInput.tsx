@@ -8,6 +8,7 @@ import {
   useFormValue,
   type ArrayOfObjectsInputProps,
   type FieldProps,
+  type StringInputProps,
 } from 'sanity';
 
 type PathSegment = string | number;
@@ -34,6 +35,37 @@ export function CompactField(props: FieldProps) {
   return (
     <div style={topLevel ? { marginBlock: '-8px' } : undefined}>
       {props.renderDefault(props)}
+    </div>
+  );
+}
+
+export function BadgeInput(props: StringInputProps) {
+  const options = [
+    { label: 'Ingen', value: undefined },
+    { label: 'POPULÄR', value: 'popular' },
+    { label: 'JÄTTEPOPULÄR', value: 'very-popular' },
+  ] as const;
+
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+      {options.map((option) => {
+        const checked = option.value === undefined ? !props.value : props.value === option.value;
+        return (
+          <label
+            key={option.label}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', cursor: props.readOnly ? 'default' : 'pointer' }}
+          >
+            <input
+              type="radio"
+              name={props.id}
+              checked={checked}
+              disabled={props.readOnly}
+              onChange={() => props.onChange(option.value === undefined ? unset() : set(option.value))}
+            />
+            <span>{option.label}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
