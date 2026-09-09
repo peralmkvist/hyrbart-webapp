@@ -1,10 +1,10 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
+import { TranslationToolInput } from './TranslationToolInput';
 
 export const localizedString = defineType({
   name: 'localizedString',
   title: 'Lokaliserad korttext',
   type: 'object',
-  options: { aiAssist: { translateAction: true } },
   fields: [
     defineField({ name: 'sv', title: 'Svenska', type: 'string' }),
     defineField({ name: 'en', title: 'Engelska', type: 'string' }),
@@ -15,7 +15,6 @@ export const localizedText = defineType({
   name: 'localizedText',
   title: 'Lokaliserad text',
   type: 'object',
-  options: { aiAssist: { translateAction: true } },
   fields: [
     defineField({ name: 'sv', title: 'Svenska', type: 'text', rows: 4 }),
     defineField({ name: 'en', title: 'Engelska', type: 'text', rows: 4 }),
@@ -106,6 +105,13 @@ export const product = defineType({
   title: 'Produkt',
   type: 'document',
   fields: [
+    defineField({
+      name: 'translationTool',
+      title: 'Automatisk översättning',
+      type: 'string',
+      components: { input: TranslationToolInput },
+      description: 'Översätter produktens svenska texter till engelska utan att ändra annan produktdata.',
+    }),
     defineField({ name: 'brand', title: 'Varumärke', type: 'string' }),
     defineField({ name: 'name', title: 'Produktnamn', type: 'string' }),
     defineField({
