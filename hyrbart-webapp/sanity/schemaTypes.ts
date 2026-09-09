@@ -182,6 +182,12 @@ export const product = defineType({
       validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
     }),
     defineField({
+      name: 'supplierUrl',
+      title: 'Länk till leverantörshemsida',
+      type: 'url',
+      validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
+    }),
+    defineField({
       name: 'translationTool',
       title: 'Automatisk översättning',
       type: 'string',
