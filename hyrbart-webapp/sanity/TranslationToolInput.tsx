@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useClient, useFormValue } from 'sanity';
+import {
+  set,
+  unset,
+  useClient,
+  useFormValue,
+  type ArrayOfObjectsInputProps,
+  type FieldProps,
+} from 'sanity';
 
 type PathSegment = string | number;
 type TranslationEntry = {
@@ -14,6 +21,87 @@ type TranslationResponse = {
   translations?: Record<string, string>;
   error?: string;
 };
+
+type RentalPriceValue = {
+  _key?: string;
+  _type?: string;
+  days?: number;
+  price?: number;
+};
+
+export function CompactField(props: FieldProps) {
+  const topLevel = props.path.length === 1;
+  return (
+    <div style={topLevel ? { marginBlock: '-8px' } : undefined}>
+      {props.renderDefault(props)}
+    </div>
+  );
+}
+
+export function RentalPricesInput(props: ArrayOfObjectsInputProps) {
+  const prices = (props.value ?? []) as RentalPriceValue[];
+  const days = [1, 3, 7] as const;
+
+  function updatePrice(dayCount: 1 | 3 | 7, rawValue: string) {
+    const existing = prices.find((item) => item.days === dayCount);
+    const others = prices.filter((item) => item.days !== dayCount);
+    const trimmed = rawValue.trim();
+
+    if (!trimmed) {
+      props.onChange(others.length ? set(others) : unset());
+      return;
+    }
+
+    const numericValue = Number(trimmed);
+    if (!Number.isFinite(numericValue)) return;
+
+    const next = [
+      ...others,
+      {
+        ...existing,
+        _key: existing?._key ?? `${dayCount}d`,
+        _type: 'rentalPrice',
+        days: dayCount,
+        price: numericValue,
+      },
+    ].sort((a, b) => (a.days ?? 0) - (b.days ?? 0));
+
+    props.onChange(set(next));
+  }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '10px' }}>
+      {days.map((dayCount) => {
+        const price = prices.find((item) => item.days === dayCount)?.price;
+        return (
+          <label key={dayCount} style={{ display: 'grid', gap: '6px', fontSize: '13px', fontWeight: 600 }}>
+            <span>{dayCount} {dayCount === 1 ? 'dag' : 'dagar'}</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              value={price ?? ''}
+              onChange={(event) => updatePrice(dayCount, event.currentTarget.value)}
+              disabled={props.readOnly}
+              style={{
+                width: '100%',
+                minWidth: 0,
+                height: '38px',
+                padding: '0 10px',
+                border: '1px solid #c7c7c7',
+                borderRadius: '4px',
+                background: props.readOnly ? '#f3f3f3' : '#fff',
+                font: 'inherit',
+              }}
+              aria-label={`Pris för ${dayCount} ${dayCount === 1 ? 'dag' : 'dagar'}`}
+            />
+          </label>
+        );
+      })}
+    </div>
+  );
+}
 
 function collectLocalizedStrings(
   value: unknown,
@@ -62,7 +150,6 @@ export function TranslationToolInput() {
   const typeSv = useFormValue(['typeSv']);
   const typeEn = useFormValue(['typeEn']);
   const cardHighlight = useFormValue(['cardHighlight']);
-  const detailCategory = useFormValue(['detailCategory']);
   const included = useFormValue(['included']);
   const description = useFormValue(['description']);
   const specifications = useFormValue(['specifications']);
@@ -78,7 +165,6 @@ export function TranslationToolInput() {
       typeSv,
       typeEn,
       cardHighlight,
-      detailCategory,
       included,
       description,
       specifications,
@@ -90,7 +176,7 @@ export function TranslationToolInput() {
       entries.push({ id: `t${entries.length}`, text: typeSv, path: ['typeEn'] });
     }
 
-    ['cardHighlight', 'detailCategory', 'included', 'description', 'specifications', 'guideSections']
+    ['cardHighlight', 'included', 'description', 'specifications', 'guideSections']
       .forEach((key) => collectLocalizedStrings(source[key], [key], entries));
 
     if (!entries.length) {
