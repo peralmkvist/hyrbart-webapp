@@ -1,5 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
-import { TranslationToolInput } from './TranslationToolInput';
+import { RentalPricesInput, TranslationToolInput } from './TranslationToolInput';
 
 export const localizedString = defineType({
   name: 'localizedString',
@@ -26,12 +26,7 @@ export const rentalPrice = defineType({
   title: 'Hyrespris',
   type: 'object',
   fields: [
-    defineField({
-      name: 'days',
-      title: 'Antal dagar',
-      type: 'number',
-      options: { list: [1, 3, 7] },
-    }),
+    defineField({ name: 'days', title: 'Antal dagar', type: 'number' }),
     defineField({ name: 'price', title: 'Pris', type: 'number' }),
   ],
 });
@@ -106,38 +101,35 @@ export const product = defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'translationTool',
-      title: 'Automatisk översättning',
+      name: 'category',
+      title: 'Kategori',
+      description: 'Övergripande kategori som används för filtreringen i produktlistan.',
       type: 'string',
-      components: { input: TranslationToolInput },
-      description: 'Översätter produktens svenska texter till engelska utan att ändra annan produktdata.',
+      options: { list: categories.map((value) => ({ title: value, value })) },
     }),
+    defineField({ name: 'typeSv', title: 'Produkttyp – svenska', type: 'string' }),
+    defineField({ name: 'typeEn', title: 'Produkttyp – engelska', type: 'string' }),
     defineField({ name: 'brand', title: 'Varumärke', type: 'string' }),
     defineField({ name: 'name', title: 'Produktnamn', type: 'string' }),
     defineField({
+      name: 'cardHighlight',
+      title: 'Korttext / lyft fram',
+      type: 'localizedString',
+      description: 'Valfri kort rad som visas under produktnamnet på produktkortet, till exempel “Munstycken ingår”.',
+    }),
+    defineField({
       name: 'slug',
-      title: 'Slug',
+      title: 'Web-adress',
       type: 'slug',
       options: { source: 'name' },
       validation: (rule) => rule.required(),
     }),
-    defineField({ name: 'typeSv', title: 'Produkttyp – svenska', type: 'string' }),
-    defineField({ name: 'typeEn', title: 'Produkttyp – engelska', type: 'string' }),
-    defineField({
-      name: 'category',
-      title: 'Kategori',
-      type: 'string',
-      options: { list: categories.map((value) => ({ title: value, value })) },
-    }),
-    defineField({ name: 'accent', title: 'Accentfärg', type: 'string' }),
     defineField({
       name: 'images',
       title: 'Produktbilder',
       type: 'array',
       of: [defineArrayMember({ type: 'image' })],
     }),
-    defineField({ name: 'image', title: 'Äldre huvudbild', type: 'image' }),
-    defineField({ name: 'legacyImagePath', title: 'Äldre bildsökväg', type: 'string' }),
     defineField({
       name: 'badge',
       title: 'Popularitetsstämpel',
@@ -153,28 +145,23 @@ export const product = defineType({
     defineField({ name: 'rating', title: 'Betyg', type: 'number' }),
     defineField({ name: 'reviewCount', title: 'Antal omdömen', type: 'number' }),
     defineField({
-      name: 'cardHighlight',
-      title: 'Korttext / lyft fram',
-      type: 'localizedString',
-      description: 'Valfri kort rad som visas under produktnamnet på produktkortet, till exempel “Munstycken ingår”.',
-    }),
-    defineField({
       name: 'rentalPrices',
       title: 'Hyrespriser',
+      description: 'Fyll i priset för 1, 3 respektive 7 dagar.',
       type: 'array',
       of: [defineArrayMember({ type: 'rentalPrice' })],
+      components: { input: RentalPricesInput },
     }),
-    defineField({ name: 'detailCategory', title: 'Kategori på produktsidan', type: 'localizedString' }),
     defineField({
       name: 'included',
       title: 'Detta ingår',
       type: 'array',
       of: [defineArrayMember({ type: 'localizedString' })],
     }),
-    defineField({ name: 'description', title: 'Beskrivning', type: 'localizedText' }),
+    defineField({ name: 'description', title: 'Produktbeskrivning', type: 'localizedText' }),
     defineField({
       name: 'specifications',
-      title: 'Specifikationer',
+      title: 'Tekniska specifikationer',
       type: 'array',
       of: [defineArrayMember({ type: 'specification' })],
     }),
@@ -190,7 +177,55 @@ export const product = defineType({
       type: 'url',
       validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
     }),
-    defineField({ name: 'sortOrder', title: 'Sorteringsordning', type: 'number' }),
+    defineField({
+      name: 'translationTool',
+      title: 'Automatisk översättning',
+      type: 'string',
+      components: { input: TranslationToolInput },
+      description: 'Översätter produktens svenska texter till engelska utan att ändra annan produktdata.',
+    }),
+
+    // Äldre fält behålls dolt tills befintlig data är helt migrerad/rensad.
+    defineField({
+      name: 'detailCategory',
+      title: 'Kategori på produktsidan (tidigare)',
+      type: 'localizedString',
+      hidden: true,
+      readOnly: true,
+      deprecated: { reason: 'Produkttyp används nu både i produktlistan och på produktsidan.' },
+    }),
+    defineField({
+      name: 'accent',
+      title: 'Accentfärg (tidigare)',
+      type: 'string',
+      hidden: true,
+      readOnly: true,
+      deprecated: { reason: 'Hyrbarts gemensamma accentfärg används för alla produkter.' },
+    }),
+    defineField({
+      name: 'image',
+      title: 'Äldre huvudbild',
+      type: 'image',
+      hidden: true,
+      readOnly: true,
+      deprecated: { reason: 'Produktbilder används i stället.' },
+    }),
+    defineField({
+      name: 'legacyImagePath',
+      title: 'Äldre bildsökväg',
+      type: 'string',
+      hidden: true,
+      readOnly: true,
+      deprecated: { reason: 'Produktbilder används i stället.' },
+    }),
+    defineField({
+      name: 'sortOrder',
+      title: 'Sorteringsordning (tidigare)',
+      type: 'number',
+      hidden: true,
+      readOnly: true,
+      deprecated: { reason: 'Produktlistan sorteras automatiskt i bokstavsordning efter produkttyp.' },
+    }),
   ],
   preview: {
     select: { brand: 'brand', name: 'name', media: 'images.0' },
