@@ -86,13 +86,26 @@ export default function GuideTabs({
   }, [sections]);
 
   return (
-    <nav className="guideTabs" aria-label={ariaLabel}>
+    <nav
+      className="guideTabs"
+      aria-label={ariaLabel}
+      style={{
+        gridTemplateColumns: 'repeat(4, max-content)',
+        justifyContent: 'space-between',
+        columnGap: '6px',
+      }}
+    >
       {sections.map((section) => (
         <a
           key={section.id}
           href={`#${section.id}`}
           className={activeSection === section.id ? 'active' : ''}
           aria-current={activeSection === section.id ? 'location' : undefined}
+          style={{
+            paddingLeft: 0,
+            paddingRight: 0,
+            fontSize: 'clamp(.68rem, 3vw, .82rem)',
+          }}
           onClick={(event) => {
             event.preventDefault();
 
