@@ -4,8 +4,8 @@ import ProductVisual from '@/components/ProductVisual';
 import { ProductBadgeLabel, RentalPriceGrid } from '@/components/ProductPricing';
 
 const categoryDefinitions = [
-  { value: 'Arbetsbelysning', sv: 'Arbetsbelysning', en: 'Work lights' },
-  { value: 'Barnsaker', sv: 'Barnsaker', en: 'Children’s items' },
+  { value: 'Belysning', sv: 'Belysning', en: 'Lighting' },
+  { value: 'Barnartiklar', sv: 'Barnartiklar', en: 'Children’s items' },
   { value: 'Biltillbehör', sv: 'Biltillbehör', en: 'Car accessories' },
   { value: 'Borra & Skruva', sv: 'Borra & Skruva', en: 'Drilling & Screwdriving' },
   { value: 'Handverktyg', sv: 'Handverktyg', en: 'Hand tools' },
