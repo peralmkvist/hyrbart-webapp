@@ -149,3 +149,16 @@ html {
     font-size: .68rem;
   }
 }
+
+/* Håll bottom-nav på exakt samma viewport-position även när en filtrerad lista är kort. */
+.productsPage {
+  min-height: 100dvh;
+}
+
+.liquidNav {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+}
