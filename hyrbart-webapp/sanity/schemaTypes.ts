@@ -79,8 +79,8 @@ export const guideSection = defineType({
 });
 
 const categories = [
-  'Arbetsbelysning',
-  'Barnsaker',
+  'Belysning',
+  'Barnartiklar',
   'Biltillbehör',
   'Borra & Skruva',
   'Handverktyg',
