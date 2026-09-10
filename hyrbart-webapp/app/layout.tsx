@@ -50,8 +50,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="sv" className={`${archivo.variable} ${mono.variable}`}>
-      <body>
+    <html
+      lang="sv"
+      className={`${archivo.variable} ${mono.variable}`}
+      style={{ maxWidth: '100%', overflowX: 'hidden' }}
+    >
+      <body style={{ maxWidth: '100%', overflowX: 'hidden' }}>
         <main>{children}</main>
         <BottomNav />
       </body>
