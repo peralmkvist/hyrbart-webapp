@@ -53,8 +53,9 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading-stack); }
 }
 .brandHeader2,
 .rentHeader2 { min-height: 46px; display: flex; align-items: center; justify-content: space-between; }
-.hyrbartWordmark2 { display: inline-flex; flex-direction: column; align-items: flex-start; color: var(--ink); font-size: 1.28rem; font-weight: 850; letter-spacing: -.045em; line-height: 1; }
-.hyrbartWordmark2 i { width: 22px; height: 4px; margin-top: 5px; border-radius: 99px; background: var(--accent); }
+.hyrbartWordmark2 { display: inline-flex; align-items: baseline; color: var(--ink); font-size: 1.28rem; font-weight: 850; letter-spacing: -.045em; line-height: 1; }
+.hyrbartWordmarkH2 { position: relative; display: inline-block; }
+.hyrbartWordmarkH2 i { position: absolute; left: 0; right: 0; bottom: -.16em; height: 3px; border-radius: 99px; background: var(--accent); }
 .homeIntro2 { margin-top: 20px; }
 .homeIntro2 h1,
 .rentHeader2 h1 { margin: 0; font-size: clamp(2rem, 8.8vw, 3rem); line-height: .98; letter-spacing: -.055em; font-weight: 850; }
