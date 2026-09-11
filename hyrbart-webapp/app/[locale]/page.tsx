@@ -32,7 +32,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </header>
         <section className="homeIntro2 rentIntro2">
           <h1>{en ? 'What do you want to rent?' : 'Vad vill du hyra?'}</h1>
-          <ProductSearchForm locale={locale} initialPlace="Danderyd" initialRadius="10" initiallyCollapsed={false} />
+          <ProductSearchForm locale={locale} initialPlace="" initialRadius="10" initiallyCollapsed={false} />
         </section>
         <div className="categoryStrip2">
           <Link href={`/${locale}/produkter`} className="categoryChip2 active">{en ? 'All' : 'Alla'}</Link>
