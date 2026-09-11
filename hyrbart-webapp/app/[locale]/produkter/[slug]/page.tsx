@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductGallery from '@/components/ProductGallery';
 import ProductVisual from '@/components/ProductVisual';
+import ProductPageActions from '@/components/ProductPageActions';
+import BookingActions from '@/components/BookingActions';
 import { getProduct, getProducts } from '@/lib/sanity-products';
 import { calculateRentalPricing } from '@/lib/rental-pricing';
 import { BackIcon, CheckIcon, ForwardIcon } from '@/components/Icons';
@@ -25,7 +27,7 @@ export default async function GenericProductPage({params,searchParams}:{params:P
  const {locale,slug}=await params,sp=await searchParams,en=locale==='en';
  const [product,allProducts]=await Promise.all([getProduct(slug),getProducts()]);if(!product)notFound();
  const typeLabel=en?product.typeEn??product.type:product.type,description=product.description?(en?product.description.en:product.description.sv):'',shortDescription=firstSentence(description),included=product.included??[],specs=product.specifications??[],highlight=product.cardHighlight?(en?product.cardHighlight.en:product.cardHighlight.sv):'';
- const pricing=sp.from?calculateRentalPricing(product.price,sp.from,sp.to||sp.from,product.rentalPrices):null,hasRentalContext=Boolean(sp.from),resultsParams=new URLSearchParams();
+ const pricing=sp.from?calculateRentalPricing(product.price,sp.from,sp.to||sp.from,product.rentalPrices,product.discounts):null,hasRentalContext=Boolean(sp.from),resultsParams=new URLSearchParams();
  if(sp.q)resultsParams.set('q',sp.q);if(sp.category)resultsParams.set('category',sp.category);if(sp.from)resultsParams.set('from',sp.from);if(sp.to)resultsParams.set('to',sp.to);if(sp.place)resultsParams.set('place',sp.place);if(sp.radius)resultsParams.set('radius',sp.radius);
  const resultsHref=`/${locale}/produkter${resultsParams.size?`?${resultsParams.toString()}`:''}`,editParams=new URLSearchParams(resultsParams);editParams.set('edit','1');const editSearchHref=`/${locale}/produkter?${editParams.toString()}`;
  const ownerProducts=product.owner?.id?allProducts.filter(p=>p.owner?.id===product.owner?.id):[];
@@ -34,9 +36,9 @@ export default async function GenericProductPage({params,searchParams}:{params:P
  const ownerRating=ownerReviewCount>0?ownerRatingSum/ownerReviewCount:null;
  const responseTime=product.owner?.responseTimeMinutes;
 
- return <div className="productPage2"><header className="productTopbar2"><Link href={resultsHref} className="productBack2" aria-label={en?'Back to products':'Tillbaka till produkter'}><BackIcon/></Link></header>
+ return <div className="productPage2"><header className="productTopbar2"><Link href={resultsHref} className="productBack2" aria-label={en?'Back to products':'Tillbaka till produkter'}><BackIcon/></Link><ProductPageActions slug={product.slug} title={`${product.brand} ${product.name}`} locale={locale}/></header>
  <section className="productHero2"><div className="productGallery2">{product.images?.length||product.image?<ProductGallery images={product.images?.length?product.images:[product.image!]} alt={`${product.brand} ${product.name}`} badge={product.badge} locale={locale}/>:<ProductVisual kind="cleaner" accent={product.accent}/>}</div><div className="productIdentity2"><h1><span className="productBrand2">{product.brand}</span><span className="productName2">{product.name}</span></h1><div className="productType2">{typeLabel}</div>{highlight?<div className="productHighlight2">{highlight}</div>:null}{shortDescription?<p>{shortDescription}</p>:null}{product.rating!=null&&product.reviewCount!=null?<div className="productRating2" aria-label={`${product.rating} ${en?'out of 5':'av 5'}, ${product.reviewCount} ${en?'reviews':'omdömen'}`}><span aria-hidden="true">★</span><strong>{product.rating.toFixed(1).replace('.',',')}</strong><span>({product.reviewCount} {en?'reviews':'omdömen'})</span></div>:null}</div></section>
- {hasRentalContext&&sp.from?<section className={styles.summaryCard} aria-label={en?'Selected rental period':'Vald hyresperiod'}>
+ {hasRentalContext&&sp.from?<><section className={styles.summaryCard} aria-label={en?'Selected rental period':'Vald hyresperiod'}>
    <details className={styles.priceDetails}>
     <summary style={{display:'flex',justifyContent:'space-between',gap:18,alignItems:'flex-start',cursor:'pointer',listStyle:'none'}}>
       <div><span className={styles.summaryEyebrow}>{en?'Selected dates':'Valda datum'}</span><strong className={styles.summaryDates}>{formatRentalDate(sp.from,en)}{sp.to&&sp.to!==sp.from?` – ${formatRentalDate(sp.to,en)}`:''}</strong>{sp.place?<span className={styles.summaryPlace}>{sp.place}{sp.radius?` · ${sp.radius} km`:''}</span>:null}</div>
@@ -44,13 +46,13 @@ export default async function GenericProductPage({params,searchParams}:{params:P
     </summary>
     {pricing?<div className={styles.priceBreakdown}>
       <div><span>{en?`Rental cost for ${pricing.days} ${pricing.days===1?'day':'days'}`:`Hyreskostnad för ${pricing.days} ${pricing.days===1?'dag':'dagar'}`}</span><strong>{pricing.regularRental} kr</strong></div>
-      {pricing.discount>0?<div><span>{pricing.hasWeeklyDiscount?(en?`Weekly discount ${pricing.discountPercent}%`:`Veckorabatt ${pricing.discountPercent}%`):(en?`Multi-day discount ${pricing.discountPercent}%`:`Flerdagsrabatt ${pricing.discountPercent}%`)}</span><strong>−{pricing.discount} kr</strong></div>:null}
+      {pricing.discount>0?<div><span>{pricing.discountType==='repeatCustomer'?(en?`Returning customer discount ${pricing.discountPercent}%`:`Stammisrabatt ${pricing.discountPercent}%`):pricing.hasWeeklyDiscount?(en?`Weekly discount ${pricing.discountPercent}%`:`Veckorabatt ${pricing.discountPercent}%`):(en?`Multi-day discount ${pricing.discountPercent}%`:`Flerdagsrabatt ${pricing.discountPercent}%`)}</span><strong>−{pricing.discount} kr</strong></div>:null}
       <div><span>{en?'Booking fee':'Bokningsavgift'}</span><strong>{pricing.bookingFee} kr</strong></div>
       <div className={styles.priceBreakdownTotal}><strong>{en?'Total':'Totalt'}</strong><strong>{pricing.total} kr</strong></div>
     </div>:null}
    </details>
    <Link href={editSearchHref} className={styles.editSearchLink}>{en?'Change search':'Ändra sökning'}</Link>
-  </section>:null}
+  </section><BookingActions slug={product.slug} from={sp.from} to={sp.to||sp.from} locale={locale}/></>:null}
 
  {product.owner?.name?<section className={styles.ownerCard} aria-label={en?'About the owner':'Om uthyraren'}>
    <div className={styles.identity}>
