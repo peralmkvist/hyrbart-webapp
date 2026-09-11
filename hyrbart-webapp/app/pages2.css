@@ -3,119 +3,26 @@
   max-width: 760px;
   min-height: 100svh;
   margin: 0 auto;
-  padding: calc(max(22px, env(safe-area-inset-top)) + 66px) 18px calc(92px + env(safe-area-inset-bottom));
+  padding: var(--top-page-y) 18px calc(92px + env(safe-area-inset-bottom));
   background: var(--bg);
 }
-
-.ds2Header {
-  min-height: 46px;
-  display: flex;
-  align-items: flex-start;
-}
-
-.ds2Header h1 {
-  margin: 0;
-  font-size: clamp(2rem, 8.8vw, 3rem);
-  line-height: .98;
-  letter-spacing: -.055em;
-  font-weight: 850;
-}
-
-.ds2Page .ds2Intro {
-  margin: 18px 0 22px;
-  color: var(--muted);
-  font-size: .92rem;
-  line-height: 1.5;
-}
-
-.ds2Page .ds2List {
-  overflow: visible;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.modePage .ds2Header { margin-bottom: 22px; }
-.modeCard {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: var(--surface);
-}
-.modeAvatar {
-  width: 62px;
-  height: 62px;
-  flex: 0 0 62px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #f0f0ee;
-  font-size: 1.35rem;
-  font-weight: 800;
-}
-.modeCard h2 { margin: 0; font-size: 1.2rem; }
-.modeCard p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; }
-.modeSwitchButton {
-  width: 100%;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 0 22px;
-  padding: 0 18px;
-  border-radius: 16px;
-  background: #111;
-  color: #fff;
-  font-size: .9rem;
-  font-weight: 750;
-}
-.profileMenuLink {
-  min-height: 58px;
-  display: flex;
-  align-items: center;
-  padding: 0 2px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  font-weight: 700;
-}
-.moreAccordion { border-top: 1px solid var(--line); }
-.moreAccordion details { border-bottom: 1px solid var(--line); }
-.moreAccordion summary { min-height: 62px; display:grid; grid-template-columns:minmax(0,1fr) 20px; align-items:center; gap:12px; padding:0 2px; list-style:none; cursor:pointer; font-size:.96rem; font-weight:700; }
-.moreAccordion summary::-webkit-details-marker { display:none; }
-.moreAccordion summary svg { width:18px; height:18px; justify-self:end; color:#71717a; transition:transform .18s ease; }
-.moreAccordion details[open] summary svg { transform:rotate(90deg); }
-.moreAccordionBody { padding:0 2px 18px; color:#4b5563; font-size:.9rem; line-height:1.55; }
-.moreAccordionBody p { margin:0 0 10px; }
-.moreAccordionBody p:last-child { margin-bottom:0; }
-.moreAccordionBody h3 { margin:14px 0 5px; color:var(--ink); font-size:.9rem; }
-
-.hostListingsPage {
-  max-width:760px;
-  min-height:100svh;
-  margin:0 auto;
-  padding:calc(max(22px, env(safe-area-inset-top)) + 66px) 18px calc(96px + env(safe-area-inset-bottom));
-  background:var(--bg);
-}
-.hostListingsHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
-.hostListingsHeader h1 { margin:0; font-size:clamp(2rem,8.8vw,3rem); line-height:.98; letter-spacing:-.055em; font-weight:850; }
-.hostListingsHeader p { margin:8px 0 0; color:var(--muted); font-size:.8rem; }
-.hostAddListingButton { min-height:64px; margin-top:22px; padding:0 18px; border-radius:18px; background:var(--accent); display:flex; align-items:center; justify-content:center; gap:10px; color:#111; font-size:1rem; font-weight:800; box-shadow:0 4px 16px rgba(17,17,17,.06); }
-.hostAddListingPlus { width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#111; color:#fff; font-size:1.2rem; line-height:1; }
-.hostListingsGrid { margin-top:22px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 12px; }
-.hostListingCard { min-width:0; }
-.hostListingVisual { position:relative; aspect-ratio:1.05; overflow:hidden; border-radius:18px; background:#f1f1ef; }
-.hostListingVisual .productVisual { width:100%; height:100%; min-height:0; background:transparent!important; }
-.hostListingVisual .productPhoto { padding:11px!important; object-fit:contain; }
-.hostListingStatus { position:absolute; top:9px; left:9px; padding:5px 8px; border-radius:999px; background:rgba(255,255,255,.94); box-shadow:0 2px 8px rgba(0,0,0,.08); font-size:.62rem; font-weight:800; }
-.hostListingCopy { padding:8px 2px 2px; }
-.hostListingCopy span { display:block; color:var(--muted); font-size:.69rem; }
-.hostListingCopy strong { display:block; margin-top:3px; font-size:.82rem; line-height:1.14; letter-spacing:-.015em; }
-.hostListingCopy b { display:block; margin-top:5px; font-size:.75rem; }
-.newListingPlaceholder { margin-top:26px; padding:28px 22px; border-radius:20px; background:#f0f0ee; }
-.newListingPlaceholder h2 { margin:0; font-size:1.25rem; }
-.newListingPlaceholder p { margin:8px 0 0; color:var(--muted); line-height:1.45; }
+.ds2Header { min-height:46px; display:flex; align-items:flex-start; }
+.ds2Header h1 { margin:0; font-size:clamp(2rem,8.8vw,3rem); line-height:.98; letter-spacing:-.055em; font-weight:850; }
+.ds2Page .ds2Intro { margin:18px 0 22px; color:var(--muted); font-size:.92rem; line-height:1.5; }
+.ds2Page .ds2List { overflow:visible; border:0; border-radius:0; background:transparent; }
+.modePage .ds2Header { margin-bottom:22px; }
+.modeCard { display:flex; align-items:center; gap:16px; padding:20px; margin-bottom:16px; border:1px solid var(--line); border-radius:20px; background:var(--surface); }
+.modeAvatar { width:62px; height:62px; flex:0 0 62px; display:grid; place-items:center; border-radius:50%; background:#f0f0ee; font-size:1.35rem; font-weight:800; }
+.modeCard h2 { margin:0; font-size:1.2rem; }.modeCard p { margin:4px 0 0; color:var(--muted); font-size:.86rem; }
+.modeSwitchButton { width:100%; min-height:52px; display:flex; align-items:center; justify-content:center; margin:0 0 22px; padding:0 18px; border-radius:16px; background:#111; color:#fff; font-size:.9rem; font-weight:750; }
+.profileMenuLink { min-height:58px; display:flex; align-items:center; padding:0 2px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); font-weight:700; }
+.moreAccordion { border-top:1px solid var(--line); }.moreAccordion details { border-bottom:1px solid var(--line); }
+.moreAccordion summary { min-height:62px; display:grid; grid-template-columns:minmax(0,1fr) 20px; align-items:center; gap:12px; padding:0 2px; list-style:none; cursor:pointer; font-size:.96rem; font-weight:700; }
+.moreAccordion summary::-webkit-details-marker { display:none; }.moreAccordion summary svg { width:18px; height:18px; justify-self:end; color:#71717a; transition:transform .18s ease; }.moreAccordion details[open] summary svg { transform:rotate(90deg); }
+.moreAccordionBody { padding:0 2px 18px; color:#4b5563; font-size:.9rem; line-height:1.55; }.moreAccordionBody p { margin:0 0 10px; }.moreAccordionBody p:last-child { margin-bottom:0; }.moreAccordionBody h3 { margin:14px 0 5px; color:var(--ink); font-size:.9rem; }
+.hostListingsPage { max-width:760px; min-height:100svh; margin:0 auto; padding:var(--top-page-y) 18px calc(96px + env(safe-area-inset-bottom)); background:var(--bg); }
+.hostListingsHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }.hostListingsHeader h1 { margin:0; font-size:clamp(2rem,8.8vw,3rem); line-height:.98; letter-spacing:-.055em; font-weight:850; }.hostListingsHeader p { margin:8px 0 0; color:var(--muted); font-size:.8rem; }
+.hostAddListingButton { min-height:64px; margin-top:22px; padding:0 18px; border-radius:18px; background:var(--accent); display:flex; align-items:center; justify-content:center; gap:10px; color:#111; font-size:1rem; font-weight:800; box-shadow:0 4px 16px rgba(17,17,17,.06); }.hostAddListingPlus { width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#111; color:#fff; font-size:1.2rem; line-height:1; }
+.hostListingsGrid { margin-top:22px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 12px; }.hostListingCard { min-width:0; }.hostListingVisual { position:relative; aspect-ratio:1.05; overflow:hidden; border-radius:18px; background:#f1f1ef; }.hostListingVisual .productVisual { width:100%; height:100%; min-height:0; background:transparent!important; }.hostListingVisual .productPhoto { padding:11px!important; object-fit:contain; }.hostListingStatus { position:absolute; top:9px; left:9px; padding:5px 8px; border-radius:999px; background:rgba(255,255,255,.94); box-shadow:0 2px 8px rgba(0,0,0,.08); font-size:.62rem; font-weight:800; }.hostListingCopy { padding:8px 2px 2px; }.hostListingCopy span { display:block; color:var(--muted); font-size:.69rem; }.hostListingCopy strong { display:block; margin-top:3px; font-size:.82rem; line-height:1.14; letter-spacing:-.015em; }.hostListingCopy b { display:block; margin-top:5px; font-size:.75rem; }
+.newListingPlaceholder { margin-top:26px; padding:28px 22px; border-radius:20px; background:#f0f0ee; }.newListingPlaceholder h2 { margin:0; font-size:1.25rem; }.newListingPlaceholder p { margin:8px 0 0; color:var(--muted); line-height:1.45; }
 @media(min-width:700px){.hostListingsGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
