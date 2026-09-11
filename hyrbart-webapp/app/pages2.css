@@ -1,4 +1,4 @@
-/* Hyrbart 2.0 — top-level Guides + More alignment */
+/* Hyrbart 2.0 — top-level Guides + Menu alignment */
 .ds2Page {
   max-width: 760px;
   min-height: 100svh;
@@ -33,6 +33,54 @@
   border: 0;
   border-radius: 0;
   background: transparent;
+}
+
+.modePage .ds2Header { margin-bottom: 22px; }
+.modeCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+}
+.modeAvatar {
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f0f0ee;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+.modeCard h2 { margin: 0; font-size: 1.2rem; }
+.modeCard p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; }
+.modeSwitchButton {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 22px;
+  padding: 0 18px;
+  border-radius: 16px;
+  background: #111;
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 750;
+}
+.profileMenuLink {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
 }
 
 .moreAccordion {
