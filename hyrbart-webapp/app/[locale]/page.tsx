@@ -48,7 +48,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           {popularNearby.map((product) => (
             <Link key={product.slug} href={`/${locale}/produkter/${product.slug}`} className="popularCard2">
               <div className="popularVisual2"><ProductVisual kind="cleaner" accent={product.accent} imageSrc={product.image} imageAlt={`${product.brand} ${product.name}`} /></div>
-              <strong>{product.brand} {product.name}</strong>
+              <strong className="productTileTitle2"><span className="productTileBrand2">{product.brand}</span><span className="productTileName2">{product.name}</span></strong>
               <span>{en ? (product.typeEn ?? product.type) : product.type}</span>
               <b>{formatPrice(product.price, en)}</b>
             </Link>
