@@ -1,0 +1,17 @@
+{
+  "name": "Hyrbart",
+  "short_name": "Hyrbart",
+  "description": "Det du behöver. När du behöver det.",
+  "start_url": "/sv",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#fafafa",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
