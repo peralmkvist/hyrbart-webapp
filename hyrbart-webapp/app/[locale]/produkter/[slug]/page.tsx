@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductGallery from '@/components/ProductGallery';
 import ProductVisual from '@/components/ProductVisual';
-import BookingPanel from '@/components/BookingPanel';
 import { getProduct } from '@/lib/sanity-products';
 import { BackIcon, BookIcon, CategoryIcon, CheckIcon, ForwardIcon, MeasureIcon } from '@/components/Icons';
 
@@ -65,8 +64,6 @@ export default async function GenericProductPage({ params }: { params: Promise<{
           ) : null}
         </div>
       </section>
-
-      <BookingPanel locale={locale} productName={`${product.brand} ${product.name}`} price={product.price} />
 
       {keyFacts.length ? <section className="productFacts2" aria-label={en ? 'Key product facts' : 'Viktiga produktfakta'}>
         {keyFacts.slice(0, 4).map(({ key, icon, eyebrow, value }) => <div className="productFact2" key={key}><span className="productFactIcon2">{icon}</span><div><span>{eyebrow}</span><strong>{value}</strong></div></div>)}
