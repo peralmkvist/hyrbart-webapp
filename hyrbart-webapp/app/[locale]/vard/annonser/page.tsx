@@ -21,7 +21,7 @@ export default async function HostListingsPage({ params }: { params: Promise<{ l
     <section className="hostListingsPage">
       <header className="hostListingsHeader">
         <div>
-          <h1>{en ? 'Listings' : 'Annonser'}</h1>
+          <h1>{en ? 'My listings' : 'Mina annonser'}</h1>
           <p>{en ? `${sortedProducts.length} active listings` : `${sortedProducts.length} aktiva annonser`}</p>
         </div>
       </header>
