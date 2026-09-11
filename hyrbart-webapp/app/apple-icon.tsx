@@ -21,7 +21,7 @@ export default function AppleIcon() {
           <div style={{ position: 'absolute', left: '9px', top: '6px', width: '23px', height: '82px', borderRadius: '7px', background: '#111111' }} />
           <div style={{ position: 'absolute', right: '9px', top: '6px', width: '23px', height: '82px', borderRadius: '7px', background: '#111111' }} />
           <div style={{ position: 'absolute', left: '27px', top: '39px', width: '50px', height: '21px', borderRadius: '7px', background: '#111111' }} />
-          <div style={{ position: 'absolute', left: '9px', top: '96px', width: '23px', height: '8px', borderRadius: '4px', background: '#ffcc00' }} />
+          <div style={{ position: 'absolute', left: '9px', top: '96px', width: '86px', height: '8px', borderRadius: '4px', background: '#ffcc00' }} />
         </div>
       </div>
     ),
