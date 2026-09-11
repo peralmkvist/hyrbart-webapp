@@ -31,6 +31,8 @@ export type Product = {
   rating?: number;
   reviewCount?: number;
   cardHighlight?: LocalizedText;
+  owner?: { id?: string; name?: string; city?: string };
+  pickupLocation?: { id?: string; name?: string; city?: string; area?: string; lat: number; lng: number };
 
   detailCategory?: LocalizedText;
   included?: LocalizedText[];
