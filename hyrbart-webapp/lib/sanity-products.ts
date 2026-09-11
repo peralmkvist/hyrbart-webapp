@@ -5,21 +5,8 @@ const dataset = 'production';
 const apiVersion = '2026-09-08';
 const hyrbartAccent = '#c6f000';
 
-type SanityCrop = {
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-};
-
-type SanityImage = {
-  url?: string;
-  crop?: SanityCrop;
-  dimensions?: {
-    width?: number;
-    height?: number;
-  };
-};
+type SanityCrop = { top?: number; bottom?: number; left?: number; right?: number };
+type SanityImage = { url?: string; crop?: SanityCrop; dimensions?: { width?: number; height?: number } };
 
 const productProjection = `{
   brand,
@@ -47,7 +34,9 @@ const productProjection = `{
   specifications[]{label{sv, en}, value},
   hyggloUrl,
   supplierUrl,
-  "guideAvailable": count(guideSections) > 0
+  "guideAvailable": count(guideSections) > 0,
+  "owner": owner->{"id": _id, "name": displayName, city},
+  "pickupLocation": pickupLocation->{"id": _id, name, city, area, "lat": location.lat, "lng": location.lng}
 }`;
 
 type SanityProduct = {
@@ -72,26 +61,24 @@ type SanityProduct = {
   hyggloUrl?: string;
   supplierUrl?: string;
   guideAvailable?: boolean;
+  owner?: Product['owner'];
+  pickupLocation?: Product['pickupLocation'];
 };
 
 function croppedImageUrl(image?: SanityImage): string | undefined {
   if (!image?.url) return undefined;
-
   const { crop, dimensions } = image;
   const width = dimensions?.width;
   const height = dimensions?.height;
   if (!crop || !width || !height) return image.url;
-
   const left = Math.max(0, crop.left ?? 0);
   const right = Math.max(0, crop.right ?? 0);
   const top = Math.max(0, crop.top ?? 0);
   const bottom = Math.max(0, crop.bottom ?? 0);
-
   const x = Math.round(left * width);
   const y = Math.round(top * height);
   const rectWidth = Math.max(1, Math.round(width * (1 - left - right)));
   const rectHeight = Math.max(1, Math.round(height * (1 - top - bottom)));
-
   const url = new URL(image.url);
   url.searchParams.set('rect', `${x},${y},${rectWidth},${rectHeight}`);
   return url.toString();
@@ -125,13 +112,14 @@ function mapProduct(item: SanityProduct): Product {
     guideAvailable: item.guideAvailable || undefined,
     hyggloUrl: item.hyggloUrl,
     supplierUrl: item.supplierUrl,
+    owner: item.owner,
+    pickupLocation: item.pickupLocation,
   };
 }
 
 async function sanityQuery<T>(query: string): Promise<T> {
   const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
   const response = await fetch(url, { cache: 'no-store' });
-
   if (!response.ok) throw new Error(`Sanity request failed: ${response.status}`);
   const payload = (await response.json()) as { result: T };
   return payload.result;
