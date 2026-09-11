@@ -83,8 +83,8 @@ export default function RecentSearchRail({ locale, products }: { locale: string;
               href={hrefFor(locale, search)}
               className="recentSearchCard2"
               style={{
-                flex: '0 0 220px',
-                width: 220,
+                flex: '0 0 145px',
+                width: 145,
                 padding: '11px 13px',
                 borderRadius: 14,
                 background: '#f0f0ee',
