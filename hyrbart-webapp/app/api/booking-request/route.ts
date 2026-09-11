@@ -15,6 +15,16 @@ async function querySanity<T>(query: string): Promise<T> {
   return payload.result;
 }
 
+export async function GET() {
+  try {
+    const requests = await querySanity<Array<{id:string;from:string;to:string;requestType:string;message?:string;status?:string;createdAt?:string;product?:string}>>(`*[_type == "bookingRequest"] | order(createdAt desc)[0...30]{"id":_id,from,to,requestType,message,status,createdAt,"product":array::join([coalesce(product->brand,""),coalesce(product->name,"")]," ")}`);
+    return NextResponse.json({ requests });
+  } catch (error) {
+    console.error('Booking request GET failed', error);
+    return NextResponse.json({ error: 'Kunde inte läsa bokningsförfrågningar.' }, { status: 502 });
+  }
+}
+
 export async function POST(request: Request) {
   const token = process.env.SANITY_API_WRITE_TOKEN;
   if (!token) return NextResponse.json({ error: 'Skrivåtkomst till Sanity är inte konfigurerad.' }, { status: 503 });
@@ -69,7 +79,7 @@ export async function POST(request: Request) {
     });
     const payload = await response.json();
     if (!response.ok) {
-      console.error('Booking mutation failed', payload);
+      console.error('Sanity mutation failed', payload);
       return NextResponse.json({ error: 'Kunde inte skicka förfrågan.' }, { status: 502 });
     }
     return NextResponse.json({ ok: true, reserved: requestType === 'reserve-question' });
