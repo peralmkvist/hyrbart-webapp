@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, KeyboardEvent, useMemo, useRef, useState } from 'react';
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SearchIcon } from './Icons';
 
@@ -12,10 +12,11 @@ function monthCells(cursor:Date){const year=cursor.getFullYear(),month=cursor.ge
 
 export default function ProductSearchForm({locale,initialQuery='',category,initialFrom='',initialTo='',initialPlace='Danderyd',initialRadius='10',initiallyCollapsed=false}:Props){
  const router=useRouter(),en=locale==='en';
- const placeInputRef=useRef<HTMLInputElement>(null),calendarScrollRef=useRef<HTMLDivElement>(null);
+ const formRef=useRef<HTMLFormElement>(null),placeInputRef=useRef<HTMLInputElement>(null),calendarScrollRef=useRef<HTMLDivElement>(null);
  const [expanded,setExpanded]=useState(!initiallyCollapsed),[calendarOpen,setCalendarOpen]=useState(false);
  const [query,setQuery]=useState(initialQuery),[from,setFrom]=useState(initialFrom),[to,setTo]=useState(initialTo),[place,setPlace]=useState(initialPlace),[radius,setRadius]=useState(initialRadius);
  const [searchStarted,setSearchStarted]=useState(Boolean(initialQuery.trim()||initialFrom||initialTo||initiallyCollapsed));
+ useEffect(()=>{if(!searchStarted)return;function handleOutside(event:PointerEvent){if(formRef.current&&!formRef.current.contains(event.target as Node)){setCalendarOpen(false);setSearchStarted(false)}}document.addEventListener('pointerdown',handleOutside);return()=>document.removeEventListener('pointerdown',handleOutside)},[searchStarted]);
  const today=isoDate(new Date());
  const baseMonth=useMemo(()=>{const source=initialFrom?new Date(`${initialFrom}T12:00:00`):new Date();return new Date(source.getFullYear(),source.getMonth(),1)},[initialFrom]);
  const months=useMemo(()=>Array.from({length:12},(_,i)=>new Date(baseMonth.getFullYear(),baseMonth.getMonth()+i,1)),[baseMonth]);
@@ -33,7 +34,7 @@ export default function ProductSearchForm({locale,initialQuery='',category,initi
  const dateLabel=from?(to?`${compactDate(from,en)} – ${compactDate(to,en)}`:compactDate(from,en)):(en?'Add dates':'Lägg till datum');
  const whatLabel=query||(en?'All products':'Alla produkter'),whereLabel=place?`${place} · ${radius} km`:(en?'Add location':'Lägg till plats');
  if(!expanded)return <button type="button" className="rentalSearchCompact2" onClick={()=>{setExpanded(true);setSearchStarted(true)}} aria-label={en?'Edit search':'Ändra sökning'}><SearchIcon/><span><b>{whatLabel}</b><small>{dateLabel} · {whereLabel}</small></span><span className="rentalSearchEdit2">☰</span></button>;
- return <form onSubmit={handleSubmit} className={`rentalSearchFlow2 ${calendarOpen?'calendarIsOpen':''}`}>
+ return <form ref={formRef} onSubmit={handleSubmit} className={`rentalSearchFlow2 ${calendarOpen?'calendarIsOpen':''}`}>
   <label className="rentalSearchField2"><span><b>{en?'What?':'Vad?'}</b><input value={query} onFocus={()=>setSearchStarted(true)} onChange={e=>setQuery(e.target.value)} onKeyDown={handleQueryKeyDown} enterKeyHint="next" placeholder={en?'What do you need?':'Vad behöver du?'}/></span><SearchIcon/></label>
   {searchStarted&&<>
   <div className="rentalWhenWrap2"><button type="button" className="rentalSearchRow2" onClick={()=>setCalendarOpen(v=>!v)}><span><b>{en?'When?':'När?'}</b><small>{dateLabel}</small></span><span className="rentalPlus2">＋</span></button>
