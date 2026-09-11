@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { BackIcon, ForwardIcon, ListIcon, ListingsIcon } from './Icons';
 
 type ProductOption = { id: string; label: string };
-type Block = { id: string; productId: string; from: string; to: string; status: 'blocked'|'booked'|'service'; note?: string };
+type Block = { id: string; productId: string; from: string; to: string; status: 'blocked'|'reserved'|'booked'|'service'; note?: string };
+type PricingProduct = ProductOption & { dailyPrice?:number; multiDayDiscountPercent?:number; weeklyDiscountPercent?:number; repeatCustomerDiscountPercent?:number };
 
 function startOfMonth(date: Date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
 function addMonths(date: Date, amount: number) { return new Date(date.getFullYear(), date.getMonth() + amount, 1); }
@@ -29,6 +30,16 @@ export default function HostCalendar({ locale }: { locale: string }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [pricingProducts, setPricingProducts] = useState<PricingProduct[]>([]);
+  const [pricingProductId, setPricingProductId] = useState('');
+  const [dailyPrice, setDailyPrice] = useState('');
+  const [multiDiscount, setMultiDiscount] = useState('');
+  const [weeklyDiscount, setWeeklyDiscount] = useState('');
+  const [repeatDiscount, setRepeatDiscount] = useState('');
+  const [pricingSaving, setPricingSaving] = useState(false);
+  const [pricingMessage, setPricingMessage] = useState('');
+
   async function loadAvailability() {
     const response = await fetch('/api/availability', { cache: 'no-store' });
     if (!response.ok) return;
@@ -38,7 +49,25 @@ export default function HostCalendar({ locale }: { locale: string }) {
     setBlockProduct((current) => current || data.products?.[0]?.id || '');
   }
 
-  useEffect(() => { void loadAvailability(); }, []);
+  async function loadPricing() {
+    const response = await fetch('/api/pricing', { cache:'no-store' });
+    if (!response.ok) return;
+    const data = await response.json() as { products?: PricingProduct[] };
+    const next = data.products ?? [];
+    setPricingProducts(next);
+    setPricingProductId((current) => current || next[0]?.id || '');
+  }
+
+  useEffect(() => { void loadAvailability(); void loadPricing(); }, []);
+
+  useEffect(() => {
+    const selected = pricingProducts.find(product => product.id === pricingProductId);
+    if (!selected) return;
+    setDailyPrice(selected.dailyPrice != null ? String(selected.dailyPrice) : '');
+    setMultiDiscount(selected.multiDayDiscountPercent != null ? String(selected.multiDayDiscountPercent) : '');
+    setWeeklyDiscount(selected.weeklyDiscountPercent != null ? String(selected.weeklyDiscountPercent) : '');
+    setRepeatDiscount(selected.repeatCustomerDiscountPercent != null ? String(selected.repeatCustomerDiscountPercent) : '');
+  }, [pricingProductId, pricingProducts]);
 
   const monthLabel = new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { month: 'long', year: 'numeric' }).format(month);
   const weekdayLabels = en ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
@@ -78,17 +107,39 @@ export default function HostCalendar({ locale }: { locale: string }) {
     finally { setSaving(false); }
   }
 
+  async function savePricing() {
+    if (!pricingProductId) return;
+    setPricingSaving(true); setPricingMessage('');
+    try {
+      const response = await fetch('/api/pricing', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+        productId: pricingProductId,
+        dailyPrice: Number(dailyPrice || 0),
+        multiDayDiscountPercent: Number(multiDiscount || 0),
+        weeklyDiscountPercent: Number(weeklyDiscount || 0),
+        repeatCustomerDiscountPercent: Number(repeatDiscount || 0),
+      }) });
+      const data = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(data.error || (en ? 'Could not save pricing.' : 'Kunde inte spara prissättningen.'));
+      await loadPricing();
+      setPricingMessage(en ? 'Pricing saved.' : 'Prisinställningarna är sparade.');
+    } catch (error) { setPricingMessage(error instanceof Error ? error.message : (en ? 'Could not save pricing.' : 'Kunde inte spara prissättningen.')); }
+    finally { setPricingSaving(false); }
+  }
+
   const listBlocks = visibleBlocks.filter((block) => block.to >= iso(month) && block.from <= iso(new Date(month.getFullYear(), month.getMonth()+1, 0)));
+  const statusLabel = (block: Block) => block.status==='booked'?(en?'Booked':'Bokad'):block.status==='reserved'?(en?'Reserved':'Reserverad'):block.status==='service'?'Service':(en?'Blocked':'Blockerad');
 
   return (
     <section className="hostCalendarPage">
-      <div className="hostCalendarTop"><div className="hostCalendarTopActions"><button type="button" className="hostCalendarToday" onClick={() => setMonth(startOfMonth(today))}>{en?'Today':'Idag'}</button><div className="hostCalendarViewPicker"><button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={() => setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>{viewMenuOpen&&<div className="hostCalendarViewMenu" role="menu"><button type="button" className={view==='list'?'active':''} onClick={()=>{setView('list');setViewMenuOpen(false)}}><span>{en?'List':'Lista'}</span><ListIcon/></button><button type="button" className={view==='month'?'active':''} onClick={()=>{setView('month');setViewMenuOpen(false)}}><span>{en?'Month':'Månad'}</span><ListingsIcon/></button></div>}</div></div></div>
+      <div className="hostCalendarTop"><div className="hostCalendarTopActions"><button type="button" className="hostCalendarToday" onClick={() => setMonth(startOfMonth(today))}>{en?'Today':'Idag'}</button><button type="button" className="hostCalendarToday" onClick={()=>setPricingOpen(true)}>{en?'Price & discounts':'Pris & rabatter'}</button><div className="hostCalendarViewPicker"><button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={() => setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>{viewMenuOpen&&<div className="hostCalendarViewMenu" role="menu"><button type="button" className={view==='list'?'active':''} onClick={()=>{setView('list');setViewMenuOpen(false)}}><span>{en?'List':'Lista'}</span><ListIcon/></button><button type="button" className={view==='month'?'active':''} onClick={()=>{setView('month');setViewMenuOpen(false)}}><span>{en?'Month':'Månad'}</span><ListingsIcon/></button></div>}</div></div></div>
       <div className="hostCalendarToolbar"><div><span className="hostCalendarEyebrow">{en?'Availability':'Tillgänglighet'}</span><strong>{monthLabel}</strong></div><div className="hostCalendarArrows"><button type="button" onClick={()=>setMonth(m=>addMonths(m,-1))}><BackIcon/></button><button type="button" onClick={()=>setMonth(m=>addMonths(m,1))}><ForwardIcon/></button></div></div>
       <label className="hostListingFilter" style={{cursor:'default'}}><select value={filterProduct} onChange={(e)=>setFilterProduct(e.target.value)} style={{border:0,background:'transparent',width:'100%',font:'inherit',fontWeight:700,color:'inherit',outline:0}}><option value="all">{en?'All listings':'Alla annonser'}</option>{products.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}</select><ForwardIcon/></label>
-      {view==='month' ? <><div className="hostCalendarCard"><div className="hostCalendarWeekdays">{weekdayLabels.map(label=><span key={label}>{label}</span>)}</div><div className="hostCalendarGrid">{cells.map((cell,index)=>{const date=iso(cellDate(month,cell.day,cell.monthOffset));const dayBlocks=blocksOnDate(date);const selected=inSelection(date);const cls=`hostCalendarDay ${cell.outside?'outside ':''}${date===iso(today)?'today ':''}${selected?'selected ':''}${dayBlocks.length?'blocked ':''}`;return <button type="button" key={`${cell.monthOffset}-${cell.day}-${index}`} className={cls} onClick={()=>selectDate(date)} aria-label={date} style={selected?{background:'var(--accent)',color:'var(--ink)'}:dayBlocks.length?{background:'#f0f0ed'}:undefined}><span>{cell.day}</span>{dayBlocks.length>0&&<i style={{width:5,height:5,borderRadius:'50%',background:dayBlocks.some(b=>b.status==='booked')?'#111':'#777',position:'absolute',bottom:5}}/>}</button>})}</div></div><div className="hostCalendarLegend"><span><i className="available"/>{en?'Available':'Tillgänglig'}</span><span><i className="blocked"/>{en?'Blocked':'Blockerad'}</span><span><i className="booked"/>{en?'Booked':'Bokad'}</span></div></> : <div className="hostCalendarList"><div className="hostCalendarListMonth">{monthLabel}</div>{listBlocks.length?listBlocks.map(block=><div key={block.id} style={{padding:'14px 4px',borderBottom:'1px solid var(--line)'}}><strong>{products.find(p=>p.id===block.productId)?.label||'Annons'}</strong><div style={{color:'var(--muted)',marginTop:4}}>{block.from} – {block.to} · {block.status==='booked'?'Bokad':block.status==='service'?'Service':'Blockerad'}</div></div>):<div className="hostCalendarListEmpty"><ListIcon/><strong>{en?'No blocked dates this month':'Inga blockerade datum den här månaden'}</strong></div>}</div>}
+      {view==='month' ? <><div className="hostCalendarCard"><div className="hostCalendarWeekdays">{weekdayLabels.map(label=><span key={label}>{label}</span>)}</div><div className="hostCalendarGrid">{cells.map((cell,index)=>{const date=iso(cellDate(month,cell.day,cell.monthOffset));const dayBlocks=blocksOnDate(date);const selected=inSelection(date);const cls=`hostCalendarDay ${cell.outside?'outside ':''}${date===iso(today)?'today ':''}${selected?'selected ':''}${dayBlocks.length?'blocked ':''}`;return <button type="button" key={`${cell.monthOffset}-${cell.day}-${index}`} className={cls} onClick={()=>selectDate(date)} aria-label={date} style={selected?{background:'var(--accent)',color:'var(--ink)'}:dayBlocks.length?{background:'#f0f0ed'}:undefined}><span>{cell.day}</span>{dayBlocks.length>0&&<i style={{width:5,height:5,borderRadius:'50%',background:dayBlocks.some(b=>b.status==='booked')?'#111':dayBlocks.some(b=>b.status==='reserved')?'var(--accent)':'#777',position:'absolute',bottom:5}}/>}</button>})}</div></div><div className="hostCalendarLegend"><span><i className="available"/>{en?'Available':'Tillgänglig'}</span><span><i className="blocked"/>{en?'Blocked':'Blockerad'}</span><span><i className="booked"/>{en?'Booked / reserved':'Bokad / reserverad'}</span></div></> : <div className="hostCalendarList"><div className="hostCalendarListMonth">{monthLabel}</div>{listBlocks.length?listBlocks.map(block=><div key={block.id} style={{padding:'14px 4px',borderBottom:'1px solid var(--line)'}}><strong>{products.find(p=>p.id===block.productId)?.label||'Annons'}</strong><div style={{color:'var(--muted)',marginTop:4}}>{block.from} – {block.to} · {statusLabel(block)}</div></div>):<div className="hostCalendarListEmpty"><ListIcon/><strong>{en?'No blocked dates this month':'Inga blockerade datum den här månaden'}</strong></div>}</div>}
       {selection&&view==='month'&&<div style={{position:'sticky',bottom:'calc(var(--nav-h) + 18px)',zIndex:25,display:'flex',gap:10,marginTop:18}}><button type="button" onClick={()=>{setSelection(null);setDraftStart(null)}} style={{flex:1,minHeight:52,border:'1px solid var(--line)',borderRadius:16,background:'#fff',fontWeight:750}}>{en?'Clear':'Rensa'}</button><button type="button" onClick={()=>setModalOpen(true)} style={{flex:2,minHeight:52,border:0,borderRadius:16,background:'var(--accent)',color:'var(--ink)',fontWeight:850}}>{en?'Block selected dates':'Blockera valda datum'}</button></div>}
       {message&&<p style={{textAlign:'center',fontWeight:700,marginTop:14}}>{message}</p>}
       {modalOpen&&selection&&<div role="dialog" aria-modal="true" style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,.34)',display:'flex',alignItems:'flex-end',justifyContent:'center'}} onClick={()=>setModalOpen(false)}><div style={{width:'min(100%,560px)',background:'#fff',borderRadius:'24px 24px 0 0',padding:'24px 20px calc(24px + env(safe-area-inset-bottom))',boxShadow:'0 -10px 40px rgba(0,0,0,.18)'}} onClick={(e)=>e.stopPropagation()}><h2 style={{margin:'0 0 6px',fontSize:'1.45rem'}}>{en?'Block availability':'Blockera tillgänglighet'}</h2><p style={{margin:'0 0 20px',color:'var(--muted)'}}>{selection.from===selection.to?selection.from:`${selection.from} – ${selection.to}`}</p><label style={{display:'grid',gap:7,marginBottom:16,fontWeight:750}}>{en?'Listing':'Annons'}<select value={blockProduct} onChange={(e)=>setBlockProduct(e.target.value)} style={{minHeight:52,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px',background:'#fff',font:'inherit'}}>{products.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}</select></label><label style={{display:'grid',gap:7,marginBottom:16,fontWeight:750}}>{en?'Reason':'Orsak'}<select value={status} onChange={(e)=>setStatus(e.target.value as 'blocked'|'service')} style={{minHeight:52,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px',background:'#fff',font:'inherit'}}><option value="blocked">{en?'Blocked by host':'Blockerad av uthyrare'}</option><option value="service">{en?'Service / maintenance':'Service / underhåll'}</option></select></label><label style={{display:'grid',gap:7,marginBottom:20,fontWeight:750}}>{en?'Note (optional)':'Notering (valfritt)'}<input value={note} onChange={(e)=>setNote(e.target.value)} style={{minHeight:52,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px',font:'inherit'}}/></label><div style={{display:'flex',gap:10}}><button type="button" onClick={()=>setModalOpen(false)} style={{flex:1,minHeight:52,border:'1px solid var(--line)',borderRadius:16,background:'#fff',fontWeight:750}}>{en?'Cancel':'Avbryt'}</button><button type="button" disabled={saving||!blockProduct} onClick={saveBlock} style={{flex:2,minHeight:52,border:0,borderRadius:16,background:'var(--ink)',color:'#fff',fontWeight:850,opacity:saving ? .65 : 1}}>{saving?(en?'Saving…':'Sparar…'):(en?'Block':'Blockera')}</button></div></div></div>}
+
+      {pricingOpen&&<div role="dialog" aria-modal="true" style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,.34)',display:'flex',alignItems:'flex-end',justifyContent:'center'}} onClick={()=>setPricingOpen(false)}><div style={{width:'min(100%,560px)',maxHeight:'88vh',overflowY:'auto',background:'#fff',borderRadius:'24px 24px 0 0',padding:'24px 20px calc(24px + env(safe-area-inset-bottom))',boxShadow:'0 -10px 40px rgba(0,0,0,.18)'}} onClick={(e)=>e.stopPropagation()}><h2 style={{margin:'0 0 6px',fontSize:'1.45rem'}}>{en?'Price & discounts':'Pris & rabatter'}</h2><p style={{margin:'0 0 20px',color:'var(--muted)',lineHeight:1.45}}>{en?'Set a daily base price, then percentage discounts for longer rentals and returning customers.':'Sätt ett grundpris per dag och därefter procentuella rabatter för längre hyror och återkommande kunder.'}</p><label className="calendarPricingField2">{en?'Listing':'Annons'}<select value={pricingProductId} onChange={(e)=>setPricingProductId(e.target.value)}>{pricingProducts.map(product=><option key={product.id} value={product.id}>{product.label}</option>)}</select></label><label className="calendarPricingField2">{en?'Base price per day':'Grundpris per dag'}<div><input inputMode="decimal" type="number" min="0" value={dailyPrice} onChange={(e)=>setDailyPrice(e.target.value)}/><span>kr</span></div></label><label className="calendarPricingField2">{en?'Multi-day discount (2–6 days)':'Flerdagsrabatt (2–6 dagar)'}<div><input inputMode="decimal" type="number" min="0" max="90" value={multiDiscount} onChange={(e)=>setMultiDiscount(e.target.value)}/><span>%</span></div></label><label className="calendarPricingField2">{en?'Weekly discount (7+ days)':'Veckorabatt (7 dagar och uppåt)'}<div><input inputMode="decimal" type="number" min="0" max="90" value={weeklyDiscount} onChange={(e)=>setWeeklyDiscount(e.target.value)}/><span>%</span></div></label><label className="calendarPricingField2">{en?'Returning customer discount':'Stammisrabatt'}<div><input inputMode="decimal" type="number" min="0" max="90" value={repeatDiscount} onChange={(e)=>setRepeatDiscount(e.target.value)}/><span>%</span></div></label>{pricingMessage?<p style={{fontWeight:700}}>{pricingMessage}</p>:null}<div style={{display:'flex',gap:10,marginTop:20}}><button type="button" onClick={()=>setPricingOpen(false)} style={{flex:1,minHeight:52,border:'1px solid var(--line)',borderRadius:16,background:'#fff',fontWeight:750}}>{en?'Close':'Stäng'}</button><button type="button" onClick={savePricing} disabled={pricingSaving||!pricingProductId} style={{flex:2,minHeight:52,border:0,borderRadius:16,background:'var(--ink)',color:'#fff',fontWeight:850,opacity:pricingSaving?.65:1}}>{pricingSaving?(en?'Saving…':'Sparar…'):(en?'Save pricing':'Spara priser')}</button></div></div></div>}
     </section>
   );
 }
