@@ -41,12 +41,19 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hyrbart' },
 };
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#fafafa' };
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#fafafa',
+};
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="sv" className={`${inter.variable} ${mono.variable}`} style={{ maxWidth: '100%', overflowX: 'clip' }}>
-      <body style={{ maxWidth: '100%', overflowX: 'clip' }}><main>{children}</main><BottomNav /></body>
+    <html lang="sv" className={`${inter.variable} ${mono.variable}`} style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+      <body style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}><main>{children}</main><BottomNav /></body>
     </html>
   );
 }
