@@ -29,11 +29,15 @@ export default function SearchResults({
   place,
   radius,
   items,
+  metaLabel,
+  clearHref,
 }: {
   locale: string;
   place: string;
   radius: number;
   items: ResultItem[];
+  metaLabel: string;
+  clearHref: string;
 }) {
   const en = locale === 'en';
   const [activeSlug, setActiveSlug] = useState<string | null>(items[0]?.slug ?? null);
@@ -75,6 +79,11 @@ export default function SearchResults({
         ))}
         <span className="mapAreaNotice2">{en ? 'Approximate area' : 'Ungefärligt område'}</span>
       </section>
+
+      <div className="rentMeta2 searchResultsMeta2">
+        <span>{metaLabel}</span>
+        <Link href={clearHref}>{en ? 'Clear filters' : 'Rensa filter'}</Link>
+      </div>
 
       <section className="productGrid2">
         {items.map((item) => (
