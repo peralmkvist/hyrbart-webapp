@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductGallery from '@/components/ProductGallery';
@@ -21,6 +22,13 @@ function firstSentence(text?: string) {
   return (match?.[1] ?? normalized).slice(0, 190);
 }
 
+type ProductFact = {
+  key: string;
+  icon: ReactNode;
+  eyebrow: string;
+  value: string;
+};
+
 export default async function GenericProductPage({
   params,
 }: {
@@ -41,24 +49,21 @@ export default async function GenericProductPage({
   const keyFacts = [
     {
       key: 'type',
-      Icon: CategoryIcon,
-      iconProps: { category: product.category },
+      icon: <CategoryIcon category={product.category} />,
       eyebrow: en ? 'Type' : 'Typ',
       value: typeLabel,
     },
     highlight
       ? {
           key: 'highlight',
-          Icon: CheckIcon,
-          iconProps: {},
+          icon: <CheckIcon />,
           eyebrow: en ? 'Good to know' : 'Bra att veta',
           value: highlight,
         }
       : included[0]
         ? {
             key: 'included',
-            Icon: CheckIcon,
-            iconProps: {},
+            icon: <CheckIcon />,
             eyebrow: en ? 'Included' : 'Ingår',
             value: en ? included[0].en : included[0].sv,
           }
@@ -66,8 +71,7 @@ export default async function GenericProductPage({
     specs[0]
       ? {
           key: 'spec-1',
-          Icon: MeasureIcon,
-          iconProps: {},
+          icon: <MeasureIcon />,
           eyebrow: en ? specs[0].label.en : specs[0].label.sv,
           value: specs[0].value,
         }
@@ -75,27 +79,19 @@ export default async function GenericProductPage({
     product.guideAvailable
       ? {
           key: 'guide',
-          Icon: BookIcon,
-          iconProps: {},
+          icon: <BookIcon />,
           eyebrow: en ? 'Guide' : 'Guide',
           value: en ? 'User guide included' : 'Användarguide finns',
         }
       : specs[1]
         ? {
             key: 'spec-2',
-            Icon: MeasureIcon,
-            iconProps: {},
+            icon: <MeasureIcon />,
             eyebrow: en ? specs[1].label.en : specs[1].label.sv,
             value: specs[1].value,
           }
         : null,
-  ].filter(Boolean) as Array<{
-    key: string;
-    Icon: typeof CheckIcon;
-    iconProps: Record<string, string>;
-    eyebrow: string;
-    value: string;
-  }>;
+  ].filter((item): item is ProductFact => item !== null);
 
   return (
     <div className="productPage2">
@@ -141,9 +137,9 @@ export default async function GenericProductPage({
 
       {keyFacts.length ? (
         <section className="productFacts2" aria-label={en ? 'Key product facts' : 'Viktiga produktfakta'}>
-          {keyFacts.slice(0, 4).map(({ key, Icon, iconProps, eyebrow, value }) => (
+          {keyFacts.slice(0, 4).map(({ key, icon, eyebrow, value }) => (
             <div className="productFact2" key={key}>
-              <span className="productFactIcon2"><Icon {...iconProps} /></span>
+              <span className="productFactIcon2">{icon}</span>
               <div>
                 <span>{eyebrow}</span>
                 <strong>{value}</strong>
