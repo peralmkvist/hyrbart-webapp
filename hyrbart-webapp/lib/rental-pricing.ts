@@ -1,6 +1,11 @@
 export const BOOKING_FEE = 9;
 
 export type RentalPriceTier = { days: number; price: number };
+export type RentalDiscountRules = {
+  multiDayPercent?: number;
+  weeklyPercent?: number;
+  repeatCustomerPercent?: number;
+};
 
 export type RentalPricing = {
   days: number;
@@ -9,6 +14,7 @@ export type RentalPricing = {
   rentalCost: number;
   discount: number;
   discountPercent: number;
+  discountType?: 'multiDay' | 'weekly' | 'repeatCustomer';
   hasWeeklyDiscount: boolean;
   bookingFee: number;
   total: number;
@@ -46,23 +52,47 @@ export function bestRentalCost(days: number, daily: number, prices?: RentalPrice
   return Number.isFinite(dp[days]) ? Math.round(dp[days]) : Math.round(days * daily);
 }
 
+function clampPercent(value?: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(90, Number(value)));
+}
+
 export function calculateRentalPricing(
   priceLabel: string,
   from?: string,
   to?: string,
   prices?: RentalPriceTier[],
+  discountRules?: RentalDiscountRules,
+  repeatCustomer = false,
 ): RentalPricing | null {
   const days = rentalDays(from, to);
   const dailyPrice = dailyNumber(priceLabel);
   if (!days || !dailyPrice) return null;
 
   const regularRental = Math.round(days * dailyPrice);
-  const rentalCost = bestRentalCost(days, dailyPrice, prices);
+
+  const multiDayPercent = days >= 2 && days <= 6 ? clampPercent(discountRules?.multiDayPercent) : 0;
+  const weeklyPercent = days >= 7 ? clampPercent(discountRules?.weeklyPercent) : 0;
+  const repeatPercent = repeatCustomer ? clampPercent(discountRules?.repeatCustomerPercent) : 0;
+  const configuredPercent = Math.max(multiDayPercent, weeklyPercent, repeatPercent);
+
+  let rentalCost: number;
+  let discountType: RentalPricing['discountType'];
+  if (configuredPercent > 0) {
+    rentalCost = Math.round(regularRental * (1 - configuredPercent / 100));
+    discountType = configuredPercent === repeatPercent && repeatPercent > Math.max(multiDayPercent, weeklyPercent)
+      ? 'repeatCustomer'
+      : weeklyPercent >= multiDayPercent && weeklyPercent > 0
+        ? 'weekly'
+        : 'multiDay';
+  } else {
+    rentalCost = bestRentalCost(days, dailyPrice, prices);
+    if (rentalCost < regularRental) discountType = days >= 7 ? 'weekly' : 'multiDay';
+  }
+
   const discount = Math.max(0, regularRental - rentalCost);
   const discountPercent = discount > 0 ? Math.round((discount / regularRental) * 100) : 0;
-  const hasWeeklyDiscount = Boolean(
-    days >= 7 && prices?.some((tier) => tier.days >= 7 && tier.price < tier.days * dailyPrice),
-  );
+  const hasWeeklyDiscount = discountType === 'weekly';
 
   return {
     days,
@@ -71,6 +101,7 @@ export function calculateRentalPricing(
     rentalCost,
     discount,
     discountPercent,
+    discountType,
     hasWeeklyDiscount,
     bookingFee: BOOKING_FEE,
     total: rentalCost + BOOKING_FEE,
