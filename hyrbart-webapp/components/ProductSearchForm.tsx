@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, KeyboardEvent, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SearchIcon } from './Icons';
 
@@ -52,6 +52,7 @@ export default function ProductSearchForm({
 }: Props) {
   const router = useRouter();
   const en = locale === 'en';
+  const placeInputRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(!initiallyCollapsed);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [query, setQuery] = useState(initialQuery);
@@ -77,6 +78,21 @@ export default function ProductSearchForm({
     setExpanded(false);
     window.scrollTo(0, 0);
     router.push(`/${locale}/produkter?${params.toString()}`, { scroll: true });
+  }
+
+  function handleQueryKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    event.currentTarget.blur();
+    setCalendarOpen(true);
+  }
+
+  function finishCalendar() {
+    setCalendarOpen(false);
+    requestAnimationFrame(() => {
+      placeInputRef.current?.focus();
+      placeInputRef.current?.select();
+    });
   }
 
   function chooseDate(value: string) {
@@ -117,7 +133,7 @@ export default function ProductSearchForm({
   return (
     <form onSubmit={handleSubmit} className="rentalSearchFlow2">
       <label className="rentalSearchField2">
-        <span><b>{en ? 'What' : 'Vad'}</b><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={en ? 'What do you need?' : 'Vad behöver du?'} /></span>
+        <span><b>{en ? 'What' : 'Vad'}</b><input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleQueryKeyDown} enterKeyHint="next" placeholder={en ? 'What do you need?' : 'Vad behöver du?'} /></span>
         <SearchIcon />
       </label>
 
@@ -146,13 +162,13 @@ export default function ProductSearchForm({
           </div>
           <div className="rentalCalendarFooter2">
             <button type="button" className="clear" onClick={() => { setFrom(''); setTo(''); }}>{en ? 'Clear' : 'Rensa'}</button>
-            <button type="button" className="done" disabled={!from} onClick={() => setCalendarOpen(false)}>{en ? 'Done' : 'Klar'}</button>
+            <button type="button" className="done" disabled={!from} onClick={finishCalendar}>{en ? 'Done' : 'Klar'}</button>
           </div>
         </div>
       )}
 
       <div className="rentalSearchField2 rentalWhereField2">
-        <span><b>{en ? 'Where' : 'Var'}</b><input value={place} onChange={(e) => setPlace(e.target.value)} placeholder={en ? 'City or area' : 'Ort eller område'} /></span>
+        <span><b>{en ? 'Where' : 'Var'}</b><input ref={placeInputRef} value={place} onChange={(e) => setPlace(e.target.value)} enterKeyHint="search" placeholder={en ? 'City or area' : 'Ort eller område'} /></span>
         <label className="rentalRadiusInline2"><small>{radius} km</small><input aria-label={en ? 'Search radius' : 'Sökradie'} type="range" min="1" max="50" step="1" value={radius} onChange={(e) => setRadius(e.target.value)} /></label>
       </div>
 
