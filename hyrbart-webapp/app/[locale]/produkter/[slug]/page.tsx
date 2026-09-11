@@ -46,52 +46,55 @@ export default async function GenericProductPage({
   const specs = product.specifications ?? [];
   const highlight = product.cardHighlight ? (en ? product.cardHighlight.en : product.cardHighlight.sv) : '';
 
-  const keyFacts = [
+  const keyFacts: ProductFact[] = [
     {
       key: 'type',
       icon: <CategoryIcon category={product.category} />,
       eyebrow: en ? 'Type' : 'Typ',
       value: typeLabel,
     },
-    highlight
-      ? {
-          key: 'highlight',
-          icon: <CheckIcon />,
-          eyebrow: en ? 'Good to know' : 'Bra att veta',
-          value: highlight,
-        }
-      : included[0]
-        ? {
-            key: 'included',
-            icon: <CheckIcon />,
-            eyebrow: en ? 'Included' : 'Ingår',
-            value: en ? included[0].en : included[0].sv,
-          }
-        : null,
-    specs[0]
-      ? {
-          key: 'spec-1',
-          icon: <MeasureIcon />,
-          eyebrow: en ? specs[0].label.en : specs[0].label.sv,
-          value: specs[0].value,
-        }
-      : null,
-    product.guideAvailable
-      ? {
-          key: 'guide',
-          icon: <BookIcon />,
-          eyebrow: en ? 'Guide' : 'Guide',
-          value: en ? 'User guide included' : 'Användarguide finns',
-        }
-      : specs[1]
-        ? {
-            key: 'spec-2',
-            icon: <MeasureIcon />,
-            eyebrow: en ? specs[1].label.en : specs[1].label.sv,
-            value: specs[1].value,
-          }
-        : null,
-  ].filter((item): item is ProductFact => item !== null);
+  ];
+
+  if (highlight) {
+    keyFacts.push({
+      key: 'highlight',
+      icon: <CheckIcon />,
+      eyebrow: en ? 'Good to know' : 'Bra att veta',
+      value: highlight,
+    });
+  } else if (included[0]) {
+    keyFacts.push({
+      key: 'included',
+      icon: <CheckIcon />,
+      eyebrow: en ? 'Included' : 'Ingår',
+      value: en ? included[0].en : included[0].sv,
+    });
+  }
+
+  if (specs[0]) {
+    keyFacts.push({
+      key: 'spec-1',
+      icon: <MeasureIcon />,
+      eyebrow: en ? specs[0].label.en : specs[0].label.sv,
+      value: specs[0].value,
+    });
+  }
+
+  if (product.guideAvailable) {
+    keyFacts.push({
+      key: 'guide',
+      icon: <BookIcon />,
+      eyebrow: en ? 'Guide' : 'Guide',
+      value: en ? 'User guide included' : 'Användarguide finns',
+    });
+  } else if (specs[1]) {
+    keyFacts.push({
+      key: 'spec-2',
+      icon: <MeasureIcon />,
+      eyebrow: en ? specs[1].label.en : specs[1].label.sv,
+      value: specs[1].value,
+    });
+  }
 
   return (
     <div className="productPage2">
