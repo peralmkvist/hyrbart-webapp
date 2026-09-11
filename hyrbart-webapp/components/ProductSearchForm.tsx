@@ -34,7 +34,7 @@ function monthCells(cursor: Date) {
   const first = new Date(year, month, 1);
   const mondayIndex = (first.getDay() + 6) % 7;
   const days = new Date(year, month + 1, 0).getDate();
-  return Array.from({ length: 42 }, (_, i) => {
+  return Array.from({ length: mondayIndex + days }, (_, i) => {
     const day = i - mondayIndex + 1;
     return day >= 1 && day <= days ? new Date(year, month, day) : null;
   });
@@ -53,6 +53,7 @@ export default function ProductSearchForm({
   const router = useRouter();
   const en = locale === 'en';
   const placeInputRef = useRef<HTMLInputElement>(null);
+  const calendarScrollRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(!initiallyCollapsed);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [query, setQuery] = useState(initialQuery);
@@ -60,10 +61,17 @@ export default function ProductSearchForm({
   const [to, setTo] = useState(initialTo);
   const [place, setPlace] = useState(initialPlace);
   const [radius, setRadius] = useState(initialRadius);
-  const [cursor, setCursor] = useState(() => initialFrom ? new Date(`${initialFrom}T12:00:00`) : new Date());
 
-  const cells = useMemo(() => monthCells(cursor), [cursor]);
   const today = isoDate(new Date());
+  const baseMonth = useMemo(() => {
+    const source = initialFrom ? new Date(`${initialFrom}T12:00:00`) : new Date();
+    return new Date(source.getFullYear(), source.getMonth(), 1);
+  }, [initialFrom]);
+  const months = useMemo(
+    () => Array.from({ length: 12 }, (_, i) => new Date(baseMonth.getFullYear(), baseMonth.getMonth() + i, 1)),
+    [baseMonth],
+  );
+  const weekdays = en ? ['M','T','W','T','F','S','S'] : ['M','T','O','T','F','L','S'];
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -85,6 +93,7 @@ export default function ProductSearchForm({
     event.preventDefault();
     event.currentTarget.blur();
     setCalendarOpen(true);
+    requestAnimationFrame(() => calendarScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
   function finishCalendar() {
@@ -117,8 +126,6 @@ export default function ProductSearchForm({
     : (en ? 'Add dates' : 'Lägg till datum');
   const whatLabel = query || (en ? 'All products' : 'Alla produkter');
   const whereLabel = place ? `${place} · ${radius} km` : (en ? 'Add location' : 'Lägg till plats');
-  const monthLabel = new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { month: 'long', year: 'numeric' }).format(cursor);
-  const weekdays = en ? ['M','T','W','T','F','S','S'] : ['M','T','O','T','F','L','S'];
 
   if (!expanded) {
     return (
@@ -131,44 +138,52 @@ export default function ProductSearchForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rentalSearchFlow2">
+    <form onSubmit={handleSubmit} className={`rentalSearchFlow2 ${calendarOpen ? 'calendarIsOpen' : ''}`}>
       <label className="rentalSearchField2">
-        <span><b>{en ? 'What' : 'Vad'}</b><input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleQueryKeyDown} enterKeyHint="next" placeholder={en ? 'What do you need?' : 'Vad behöver du?'} /></span>
+        <span><b>{en ? 'What?' : 'Vad?'}</b><input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleQueryKeyDown} enterKeyHint="next" placeholder={en ? 'What do you need?' : 'Vad behöver du?'} /></span>
         <SearchIcon />
       </label>
 
-      <button type="button" className="rentalSearchRow2" onClick={() => setCalendarOpen((v) => !v)}>
-        <span><b>{en ? 'When' : 'När'}</b><small>{dateLabel}</small></span><span className="rentalPlus2">＋</span>
-      </button>
+      <div className="rentalWhenWrap2">
+        <button type="button" className="rentalSearchRow2" onClick={() => setCalendarOpen((v) => !v)}>
+          <span><b>{en ? 'When?' : 'När?'}</b><small>{dateLabel}</small></span><span className="rentalPlus2">＋</span>
+        </button>
 
-      {calendarOpen && (
-        <div className="rentalCalendar2">
-          <div className="rentalCalendarTop2">
-            <button type="button" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}>‹</button>
-            <strong>{monthLabel}</strong>
-            <button type="button" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}>›</button>
+        {calendarOpen && (
+          <div className="rentalCalendar2 rentalCalendarOverlay2">
+            <div className="rentalCalendarScroll2" ref={calendarScrollRef}>
+              {months.map((month, monthIndex) => {
+                const monthLabel = new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { month: 'long', year: 'numeric' }).format(month);
+                const cells = monthCells(month);
+                return (
+                  <section className="rentalCalendarMonth2" key={`${month.getFullYear()}-${month.getMonth()}`}>
+                    <strong className="rentalCalendarMonthTitle2">{monthLabel}</strong>
+                    {monthIndex === 0 && <div className="rentalWeekdays2">{weekdays.map((d, i) => <span key={`${d}-${i}`}>{d}</span>)}</div>}
+                    <div className="rentalCalendarGrid2">
+                      {cells.map((date, i) => {
+                        if (!date) return <span key={`blank-${monthIndex}-${i}`} />;
+                        const value = isoDate(date);
+                        const disabled = value < today;
+                        const selectedStart = value === from;
+                        const selectedEnd = value === to;
+                        const inRange = Boolean(from && to && value > from && value < to);
+                        return <button type="button" key={value} disabled={disabled} className={`${selectedStart || selectedEnd ? 'selected' : ''} ${inRange ? 'inRange' : ''}`} onClick={() => chooseDate(value)}>{date.getDate()}</button>;
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+            <div className="rentalCalendarFooter2">
+              <button type="button" className="clear" onClick={() => { setFrom(''); setTo(''); }}>{en ? 'Clear' : 'Rensa'}</button>
+              <button type="button" className="done" disabled={!from} onClick={finishCalendar}>{en ? 'Done' : 'Klar'}</button>
+            </div>
           </div>
-          <div className="rentalWeekdays2">{weekdays.map((d, i) => <span key={`${d}-${i}`}>{d}</span>)}</div>
-          <div className="rentalCalendarGrid2">
-            {cells.map((date, i) => {
-              if (!date) return <span key={`blank-${i}`} />;
-              const value = isoDate(date);
-              const disabled = value < today;
-              const selectedStart = value === from;
-              const selectedEnd = value === to;
-              const inRange = Boolean(from && to && value > from && value < to);
-              return <button type="button" key={value} disabled={disabled} className={`${selectedStart || selectedEnd ? 'selected' : ''} ${inRange ? 'inRange' : ''}`} onClick={() => chooseDate(value)}>{date.getDate()}</button>;
-            })}
-          </div>
-          <div className="rentalCalendarFooter2">
-            <button type="button" className="clear" onClick={() => { setFrom(''); setTo(''); }}>{en ? 'Clear' : 'Rensa'}</button>
-            <button type="button" className="done" disabled={!from} onClick={finishCalendar}>{en ? 'Done' : 'Klar'}</button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="rentalSearchField2 rentalWhereField2">
-        <span><b>{en ? 'Where' : 'Var'}</b><input ref={placeInputRef} value={place} onChange={(e) => setPlace(e.target.value)} enterKeyHint="search" placeholder={en ? 'City or area' : 'Ort eller område'} /></span>
+        <span><b>{en ? 'Where?' : 'Var?'}</b><input ref={placeInputRef} value={place} onChange={(e) => setPlace(e.target.value)} enterKeyHint="search" placeholder={en ? 'City or area' : 'Ort eller område'} /></span>
         <label className="rentalRadiusInline2"><small>{radius} km</small><input aria-label={en ? 'Search radius' : 'Sökradie'} type="range" min="1" max="50" step="1" value={radius} onChange={(e) => setRadius(e.target.value)} /></label>
       </div>
 
