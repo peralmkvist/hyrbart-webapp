@@ -1,0 +1,4 @@
+/* Isolated guide-page overrides. Keep guide-specific tweaks out of globals.css. */
+.guideHeaderSticky {
+  padding-top: calc(18px + env(safe-area-inset-top));
+}
