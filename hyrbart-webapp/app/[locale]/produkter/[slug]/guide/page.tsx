@@ -12,7 +12,7 @@ const guideSectionLabels = [
   { sv: 'Kom igång', en: 'Get started' },
   { sv: 'Användning', en: 'Use' },
   { sv: 'Tips', en: 'Tips' },
-  { sv: 'Återlämning', en: 'Return' },
+  { sv: 'Inför återlämning', en: 'Before return' },
 ];
 
 function guideSectionLabel(index: number, en: boolean, fallback: string) {
