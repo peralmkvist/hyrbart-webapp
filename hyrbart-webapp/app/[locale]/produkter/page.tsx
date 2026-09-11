@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getProducts, getAvailabilityBlocks } from '@/lib/sanity-products';
+import { getProducts, getUnavailableProductSlugs } from '@/lib/sanity-products';
 import { distanceKm, geocodeSwedishPlace } from '@/lib/geo';
 import ProductVisual from '@/components/ProductVisual';
 import ProductSearchForm from '@/components/ProductSearchForm';
@@ -19,23 +19,22 @@ export default async function ProductsPage({params,searchParams}:{params:Promise
  const {category,q,from,to,place,radius}=sp;
  const en=locale==='en';
  const products=await getProducts();
- const blocks=(from||to)?await getAvailabilityBlocks():[];
  const selectedCategory=categoryDefinitions.some(i=>i.value===category)?category:undefined;
  const query=normalize(q);
+ const requestedFrom=from||to;
+ const requestedTo=to||from;
+ const unavailableSlugs=requestedFrom?await getUnavailableProductSlugs(requestedFrom,requestedTo):new Set<string>();
  const days=daysBetween(from,to||from);
  const searched=Boolean(query||from||to||place);
  const searchPlace=place?.trim()||'Danderyd';
  const searchRadius=Math.max(1,Math.min(50,Number(radius||10)||10));
  const searchCenter=searched?await geocodeSwedishPlace(searchPlace):null;
- const requestedFrom=from||to;
- const requestedTo=to||from;
- const unavailableIds=new Set(requestedFrom&&requestedTo?blocks.filter(b=>b.from<=requestedTo&&b.to>=requestedFrom).map(b=>b.productId):[]);
 
  const filtered=products
   .filter(p=>{
     if(selectedCategory&&p.category!==selectedCategory)return false;
     if(query){const c=categoryDefinitions.find(i=>i.value===p.category);if(![p.brand,p.name,p.type,p.typeEn,p.category,c?.sv,c?.en].map(normalize).join(' ').includes(query))return false;}
-    if(requestedFrom&&requestedTo&&p.id&&unavailableIds.has(p.id))return false;
+    if(requestedFrom&&unavailableSlugs.has(p.slug))return false;
     if(searched&&searchCenter){
       const point=p.pickupLocation;
       if(!point)return false;
