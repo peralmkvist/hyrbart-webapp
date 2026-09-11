@@ -15,6 +15,10 @@ const productProjection = `{
   typeSv,
   typeEn,
   category,
+  dailyPrice,
+  multiDayDiscountPercent,
+  weeklyDiscountPercent,
+  repeatCustomerDiscountPercent,
   "imageItems": images[]{
     "url": asset->url,
     crop,
@@ -46,6 +50,10 @@ type SanityProduct = {
   typeSv: string;
   typeEn?: string;
   category: string;
+  dailyPrice?: number;
+  multiDayDiscountPercent?: number;
+  weeklyDiscountPercent?: number;
+  repeatCustomerDiscountPercent?: number;
   imageItems?: SanityImage[];
   legacyImageUrl?: string;
   legacyImagePath?: string;
@@ -85,7 +93,8 @@ function croppedImageUrl(image?: SanityImage): string | undefined {
 }
 
 function mapProduct(item: SanityProduct): Product {
-  const oneDayPrice = item.rentalPrices?.find((price) => price.days === 1)?.price;
+  const legacyOneDayPrice = item.rentalPrices?.find((price) => price.days === 1)?.price;
+  const oneDayPrice = item.dailyPrice ?? legacyOneDayPrice;
   const images = item.imageItems?.map(croppedImageUrl).filter((url): url is string => Boolean(url)) ?? [];
   const mainImage = images[0] || item.legacyImageUrl || item.legacyImagePath;
 
@@ -96,6 +105,12 @@ function mapProduct(item: SanityProduct): Product {
     type: item.typeSv,
     typeEn: item.typeEn,
     price: oneDayPrice ? `fr. ${oneDayPrice} kr/dygn` : '',
+    dailyPrice: oneDayPrice,
+    discounts: {
+      multiDayPercent: item.multiDayDiscountPercent,
+      weeklyPercent: item.weeklyDiscountPercent,
+      repeatCustomerPercent: item.repeatCustomerDiscountPercent,
+    },
     category: item.category,
     accent: hyrbartAccent,
     image: mainImage,
@@ -135,8 +150,8 @@ export async function getUnavailableProductSlugs(from?: string, to?: string): Pr
       *[
         _type == "availabilityBlock" &&
         defined(product) &&
-        startDate <= ${safeEnd} &&
-        endDate >= ${safeFrom}
+        from <= ${safeEnd} &&
+        to >= ${safeFrom}
       ]{
         "slug": product->slug.current
       }
