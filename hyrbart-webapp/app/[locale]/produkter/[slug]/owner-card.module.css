@@ -80,7 +80,7 @@
 
 .ownerCard {
   display: grid;
-  grid-template-columns: minmax(0,1.35fr) minmax(130px,.72fr) minmax(160px,.95fr);
+  grid-template-columns: minmax(0,1.35fr) minmax(160px,.9fr) minmax(170px,1fr);
   align-items: center;
   gap: 0;
   min-height: 142px;
@@ -177,24 +177,51 @@
   border-left: 1px solid var(--line);
 }
 
-.metricIcon,
+.ratingMetric {
+  gap: 8px;
+}
+
+.ratingStar {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.ratingLine {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.ratingLine strong {
+  display: inline;
+  font-size: 1rem !important;
+  line-height: 1.2;
+}
+
+.ratingLine span {
+  display: inline !important;
+  margin: 0 !important;
+  color: var(--muted);
+  font-size: .76rem !important;
+  line-height: 1.2;
+}
+
 .messageIcon {
   width: 34px;
   height: 34px;
   flex: 0 0 34px;
   display: grid;
   place-items: center;
-  color: var(--ink);
-  font-size: 1.45rem;
-  line-height: 1;
-}
-
-.messageIcon {
   position: relative;
   border-radius: 50%;
   background: var(--accent);
   color: var(--ink);
   font-size: .75rem;
+  line-height: 1;
 }
 
 .messageIcon::after {
@@ -211,19 +238,7 @@
 .metric strong {
   display: block;
   color: var(--ink);
-  font-size: 1rem;
-  line-height: 1.25;
-}
-
-.metric:first-of-type strong {
-  font-size: 1.35rem;
-}
-
-.metric span:not(.metricIcon):not(.messageIcon) {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: .72rem;
+  font-size: .9rem;
   line-height: 1.25;
 }
 
@@ -257,19 +272,25 @@
     flex-basis: 64px;
   }
 
-  .metricIcon,
+  .ratingStar {
+    font-size: 1.2rem;
+  }
+
   .messageIcon {
     width: 28px;
     height: 28px;
     flex-basis: 28px;
-    font-size: 1.2rem;
   }
 
   .metric strong {
-    font-size: .84rem;
+    font-size: .82rem;
   }
 
-  .metric:first-of-type strong {
-    font-size: 1.15rem;
+  .ratingLine strong {
+    font-size: .9rem !important;
+  }
+
+  .ratingLine span {
+    font-size: .7rem !important;
   }
 }
