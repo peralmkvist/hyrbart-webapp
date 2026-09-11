@@ -175,13 +175,16 @@ export const product = defineType({
       type: 'array',
       of: [defineArrayMember({ type: 'guideSection' })],
       validation: (rule) =>
-        rule.required().length(4).custom((sections) => {
-          if (!Array.isArray(sections)) return true;
+        rule.custom((sections) => {
+          if (sections === undefined) return true;
+          if (!Array.isArray(sections) || sections.length !== 4) {
+            return 'Användarguiden måste ha exakt fyra delar: Kom igång, Användning, Tips, Återlämning.';
+          }
           const expectedKeys = ['kom-igang', 'anvandning', 'tips', 'aterlamning'];
           const keys = sections.map((section) => (section as { key?: string })?.key);
           return expectedKeys.every((key, index) => keys[index] === key)
             ? true
-            : 'Användarguiden måste ha fyra delar i ordningen: Kom igång, Användning, Tips, Återlämning.';
+            : 'Användarguiden måste ligga i ordningen: Kom igång, Användning, Tips, Återlämning.';
         }),
     }),
     defineField({
