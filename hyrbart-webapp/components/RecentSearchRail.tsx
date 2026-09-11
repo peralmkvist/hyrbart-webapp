@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import ProductVisual from './ProductVisual';
 
 type ProductCard = {
   slug: string;
@@ -59,12 +58,11 @@ export default function RecentSearchRail({ locale, products }: { locale: string;
     const placeholders = products.slice(0, 5).map((p) => ({
       search: { q: p.type, place: 'Danderyd', radius: '10' } as RecentSearch,
       product: p,
-      placeholder: true,
     }));
     const actual = recent.slice(0, 5).map((search, index) => {
       const q = (search.q || '').toLocaleLowerCase('sv');
       const product = products.find((p) => `${p.brand} ${p.name} ${p.type} ${p.typeEn ?? ''}`.toLocaleLowerCase('sv').includes(q)) || products[index % Math.max(products.length, 1)];
-      return { search, product, placeholder: false };
+      return { search, product };
     });
     return [...actual, ...placeholders.slice(actual.length)].slice(0, 5);
   }, [recent, products]);
@@ -81,10 +79,25 @@ export default function RecentSearchRail({ locale, products }: { locale: string;
           const radius = search.radius || '10';
           const subtitle = [date, `${place} · ${radius} km`].filter(Boolean).join(' · ');
           return (
-            <Link key={`${title}-${index}`} href={hrefFor(locale, search)} className="popularCard2 recentSearchCard2">
-              <div className="popularVisual2"><ProductVisual kind="cleaner" accent={product.accent} imageSrc={product.image} imageAlt={`${product.brand} ${product.name}`} /></div>
-              <strong>{title}</strong>
-              <span>{subtitle}</span>
+            <Link
+              key={`${title}-${index}`}
+              href={hrefFor(locale, search)}
+              className="recentSearchCard2"
+              style={{
+                flex: '0 0 auto',
+                minWidth: 156,
+                maxWidth: 220,
+                padding: '11px 13px',
+                borderRadius: 14,
+                background: '#f0f0ee',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                gap: 3,
+              }}
+            >
+              <strong style={{fontSize: '.9rem', lineHeight: 1.15}}>{title}</strong>
+              <span style={{fontSize: '.75rem', lineHeight: 1.25, color: 'var(--muted)'}}>{subtitle}</span>
             </Link>
           );
         })}
