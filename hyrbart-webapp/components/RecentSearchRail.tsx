@@ -77,16 +77,14 @@ export default function RecentSearchRail({ locale, products }: { locale: string;
           const date = search.from ? (search.to && search.to !== search.from ? `${compactDate(search.from, en)} – ${compactDate(search.to, en)}` : compactDate(search.from, en)) : '';
           const place = search.place || 'Danderyd';
           const radius = search.radius || '10';
-          const subtitle = [date, `${place} · ${radius} km`].filter(Boolean).join(' · ');
           return (
             <Link
               key={`${title}-${index}`}
               href={hrefFor(locale, search)}
               className="recentSearchCard2"
               style={{
-                flex: '0 0 auto',
-                minWidth: 156,
-                maxWidth: 220,
+                flex: '0 0 220px',
+                width: 220,
                 padding: '11px 13px',
                 borderRadius: 14,
                 background: '#f0f0ee',
@@ -97,7 +95,8 @@ export default function RecentSearchRail({ locale, products }: { locale: string;
               }}
             >
               <strong style={{fontSize: '.9rem', lineHeight: 1.15}}>{title}</strong>
-              <span style={{fontSize: '.75rem', lineHeight: 1.25, color: 'var(--muted)'}}>{subtitle}</span>
+              {date ? <span style={{fontSize: '.75rem', lineHeight: 1.25, color: 'var(--muted)'}}>{date}</span> : null}
+              <span style={{fontSize: '.75rem', lineHeight: 1.25, color: 'var(--muted)'}}>{place} · {radius} km</span>
             </Link>
           );
         })}
