@@ -1,0 +1,266 @@
+.summaryCard {
+  margin: 18px 0 20px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(17,17,17,.05);
+}
+
+.summaryEyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.summaryDates {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.summaryPlace {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.summaryTotal {
+  font-size: 1.1rem;
+}
+
+.summaryDetails {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.priceBreakdown {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: .86rem;
+}
+
+.priceBreakdown > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.priceBreakdownTotal {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: .95rem;
+}
+
+.editSearchLink {
+  display: inline-flex;
+  margin-top: 16px;
+  color: var(--ink);
+  font-size: .8rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ownerCard {
+  display: grid;
+  grid-template-columns: minmax(0,1.35fr) minmax(130px,.72fr) minmax(160px,.95fr);
+  align-items: center;
+  gap: 0;
+  min-height: 142px;
+  margin: 0 0 20px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(17,17,17,.05);
+}
+
+.identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-right: 18px;
+}
+
+.avatar,
+.avatarFallback {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  background: #f0f0ee;
+}
+
+.avatarFallback {
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  font-size: 1.7rem;
+  font-weight: 850;
+}
+
+.nameBlock {
+  min-width: 0;
+}
+
+.nameBlock > span:first-child {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.nameBlock > strong {
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 1.12rem;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.verified {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 650;
+}
+
+.shield {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px 7px 9px 9px;
+  background: var(--ink);
+  color: var(--accent);
+}
+
+.shield svg {
+  width: 14px;
+  height: 14px;
+}
+
+.metric {
+  min-width: 0;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 18px;
+  border-left: 1px solid var(--line);
+}
+
+.metricIcon,
+.messageIcon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.messageIcon {
+  position: relative;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: .75rem;
+}
+
+.messageIcon::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  bottom: -2px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  transform: rotate(35deg);
+}
+
+.metric strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.metric:first-of-type strong {
+  font-size: 1.35rem;
+}
+
+.metric span:not(.metricIcon):not(.messageIcon) {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .72rem;
+  line-height: 1.25;
+}
+
+@media (max-width: 640px) {
+  .ownerCard {
+    grid-template-columns: 1fr 1fr;
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .identity {
+    grid-column: 1 / -1;
+    padding: 0 0 16px;
+  }
+
+  .metric {
+    min-height: 66px;
+    padding: 14px 10px 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .metric + .metric {
+    border-left: 1px solid var(--line);
+  }
+
+  .avatar,
+  .avatarFallback {
+    width: 64px;
+    height: 64px;
+    flex-basis: 64px;
+  }
+
+  .metricIcon,
+  .messageIcon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+    font-size: 1.2rem;
+  }
+
+  .metric strong {
+    font-size: .84rem;
+  }
+
+  .metric:first-of-type strong {
+    font-size: 1.15rem;
+  }
+}
