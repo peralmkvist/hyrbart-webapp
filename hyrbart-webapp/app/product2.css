@@ -2,7 +2,7 @@
 .productPage2 {
   max-width: 760px;
   margin: 0 auto;
-  padding: env(safe-area-inset-top) 18px calc(104px + env(safe-area-inset-bottom));
+  padding: env(safe-area-inset-top) 18px 12px;
   background: var(--bg);
 }
 
@@ -46,20 +46,24 @@
 .productIdentity2 { padding: 10px 2px 0; }
 .productIdentity2 h1 {
   margin: 0;
-  letter-spacing: -.045em;
-  line-height: .98;
-}
-.productBrand2,
-.productName2 { display: block; }
-.productBrand2 {
-  font-size: clamp(1.05rem, 4vw, 1.35rem);
-  font-weight: 650;
-  letter-spacing: -.025em;
-}
-.productName2 {
-  margin-top: 2px;
   font-size: clamp(2rem, 9vw, 3.4rem);
   font-weight: 850;
+  letter-spacing: -.05em;
+  line-height: .96;
+}
+.productBrand2,
+.productName2 {
+  display: block;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+.productName2 { margin-top: 1px; }
+.productType2 {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 650;
 }
 .productPrice2 {
   margin-top: 10px;
@@ -101,16 +105,16 @@
   text-align: center;
 }
 .productFactIcon2 {
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: #f1f1ef;
+  border-radius: 0;
+  background: transparent;
 }
-.productFactIcon2 svg { width: 21px; height: 21px; stroke-width: 1.8; }
-.productFact2 > div { min-width: 0; margin-top: 8px; }
+.productFactIcon2 svg { width: 23px; height: 23px; stroke-width: 1.8; }
+.productFact2 > div { min-width: 0; margin-top: 5px; }
 .productFact2 > div > span {
   display: block;
   color: var(--muted);
@@ -183,6 +187,7 @@
 .hyggloButton2 {
   min-height: 54px;
   margin-top: 22px;
+  margin-bottom: 0;
   padding: 0 18px;
   border-radius: 999px;
   display: flex;
