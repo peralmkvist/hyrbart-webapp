@@ -26,25 +26,18 @@ export default function BottomNav() {
     ? { calendar: 'Calendar', listings: 'Listings', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
     : { calendar: 'Kalender', listings: 'Annonser', messages: 'Meddelanden', profile: 'Profil', aria: 'Uthyrarmeny' };
 
-  const profileItem = {
-    href: `${base}/profil`,
-    label: isEnglish ? 'Profile' : 'Profil',
-    Icon: PersonIcon,
-    match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) || p.startsWith(`/${locale}/vard/profil`) || p.startsWith(`/${locale}/vard/meny`),
-  };
-
   const items = hostMode
     ? [
         { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, match: (p: string) => p.startsWith(`/${locale}/vard/annonser`) },
         { href: `${base}/vard`, label: hostLabels.calendar, Icon: CalendarIcon, match: (p: string) => p === `/${locale}/vard` },
         { href: `${base}/vard/meddelanden`, label: hostLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/vard/meddelanden`) },
-        profileItem,
+        { href: `${base}/vard/profil`, label: hostLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/vard/profil`) || p.startsWith(`/${locale}/vard/meny`) },
       ]
     : [
         { href: base, label: renterLabels.explore, Icon: SearchIcon, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
         { href: `${base}/onskelista`, label: renterLabels.wishlist, Icon: HeartIcon, match: (p: string) => p.startsWith(`/${locale}/onskelista`) },
         { href: `${base}/meddelanden`, label: renterLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/meddelanden`) },
-        profileItem,
+        { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
       ];
 
   return (
