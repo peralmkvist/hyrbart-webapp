@@ -52,7 +52,6 @@ export default function HostCalendar({ locale }: { locale: string }) {
   return (
     <section className="hostCalendarPage">
       <div className="hostCalendarTop">
-        <h1>{en ? 'Calendar' : 'Kalender'}</h1>
         <div className="hostCalendarTopActions">
           <button type="button" className="hostCalendarToday" onClick={() => setMonth(startOfMonth(today))}>
             {en ? 'Today' : 'Idag'}
