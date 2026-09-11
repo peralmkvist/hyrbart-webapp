@@ -13,55 +13,17 @@ export async function GET() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#01453A',
+        background: '#ffffff',
+        borderRadius: '40px',
       },
     },
     React.createElement(
-      'svg',
-      {
-        width: '180',
-        height: '180',
-        viewBox: '0 0 1024 1024',
-        xmlns: 'http://www.w3.org/2000/svg',
-      },
-      React.createElement('rect', {
-        x: '32',
-        y: '32',
-        width: '960',
-        height: '960',
-        rx: '190',
-        fill: '#01453A',
-      }),
-      React.createElement('path', {
-        d: 'M210 505 512 230 814 505v278c0 36-29 65-65 65H275c-36 0-65-29-65-65V505Z',
-        fill: 'none',
-        stroke: '#FCF9F3',
-        strokeWidth: '76',
-        strokeLinejoin: 'round',
-        strokeLinecap: 'round',
-      }),
-      React.createElement('path', {
-        d: 'M722 420V330h88v172',
-        fill: 'none',
-        stroke: '#FCF9F3',
-        strokeWidth: '76',
-        strokeLinejoin: 'round',
-        strokeLinecap: 'round',
-      }),
-      React.createElement(
-        'g',
-        { transform: 'rotate(-45 520 610)' },
-        React.createElement('path', {
-          d: 'M405 435h230c28 0 50 22 50 50v282c0 28-22 50-50 50H405c-28 0-50-22-50-50V485c0-28 22-50 50-50Z',
-          fill: '#C0FF00',
-        }),
-        React.createElement('circle', {
-          cx: '620',
-          cy: '505',
-          r: '31',
-          fill: '#01453A',
-        }),
-      ),
+      'div',
+      { style: { position: 'relative', width: '104px', height: '112px', display: 'flex' } },
+      React.createElement('div', { style: { position: 'absolute', left: '9px', top: '6px', width: '23px', height: '82px', borderRadius: '7px', background: '#111111' } }),
+      React.createElement('div', { style: { position: 'absolute', right: '9px', top: '6px', width: '23px', height: '82px', borderRadius: '7px', background: '#111111' } }),
+      React.createElement('div', { style: { position: 'absolute', left: '27px', top: '39px', width: '50px', height: '21px', borderRadius: '7px', background: '#111111' } }),
+      React.createElement('div', { style: { position: 'absolute', left: '9px', top: '96px', width: '23px', height: '8px', borderRadius: '4px', background: '#ffcc00' } }),
     ),
   );
 
@@ -70,7 +32,7 @@ export async function GET() {
     height: 180,
     headers: {
       'Content-Type': 'image/png',
-      'Cache-Control': 'public, max-age=86400, immutable',
+      'Cache-Control': 'no-store, max-age=0',
     },
   });
 }
