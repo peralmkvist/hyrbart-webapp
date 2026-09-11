@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarIcon, HeartIcon, HomeIcon, ListingsIcon, MenuIcon, MessageIcon, PersonIcon } from './Icons';
+import { CalendarIcon, HeartIcon, ListingsIcon, MenuIcon, MessageIcon, PersonIcon, SearchIcon } from './Icons';
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -19,8 +19,8 @@ export default function BottomNav() {
   const hostMode = appPath === `/${locale}/vard` || appPath.startsWith(`/${locale}/vard/`);
 
   const renterLabels = isEnglish
-    ? { explore: 'Explore', wishlist: 'Wishlist', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
-    : { explore: 'Utforska', wishlist: 'Önskelista', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
+    ? { explore: 'Explore', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
+    : { explore: 'Utforska', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
     ? { calendar: 'Calendar', listings: 'Listings', messages: 'Messages', menu: 'Menu', aria: 'Host menu' }
@@ -34,7 +34,7 @@ export default function BottomNav() {
         { href: `${base}/vard/meny`, label: hostLabels.menu, Icon: MenuIcon, match: (p: string) => p.startsWith(`/${locale}/vard/meny`) },
       ]
     : [
-        { href: base, label: renterLabels.explore, Icon: HomeIcon, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
+        { href: base, label: renterLabels.explore, Icon: SearchIcon, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
         { href: `${base}/onskelista`, label: renterLabels.wishlist, Icon: HeartIcon, match: (p: string) => p.startsWith(`/${locale}/onskelista`) },
         { href: `${base}/meddelanden`, label: renterLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/meddelanden`) },
         { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
