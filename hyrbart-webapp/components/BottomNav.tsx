@@ -19,25 +19,25 @@ export default function BottomNav() {
   const hostMode = appPath === `/${locale}/vard` || appPath.startsWith(`/${locale}/vard/`);
 
   const renterLabels = isEnglish
-    ? { explore: 'Explore', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
-    : { explore: 'Utforska', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
+    ? { explore: 'Explore', wishlist: 'Favorites', messages: 'Messages', menu: 'Menu', aria: 'Renter menu' }
+    : { explore: 'Utforska', wishlist: 'Favoriter', messages: 'Meddelanden', menu: 'Meny', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
-    ? { calendar: 'Calendar', listings: 'Listings', messages: 'Messages', menu: 'Menu', aria: 'Host menu' }
-    : { calendar: 'Kalender', listings: 'Annonser', messages: 'Meddelanden', menu: 'Meny', aria: 'Uthyrarmeny' };
+    ? { calendar: 'Calendar', listings: 'Listings', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
+    : { calendar: 'Kalender', listings: 'Annonser', messages: 'Meddelanden', profile: 'Profil', aria: 'Uthyrarmeny' };
 
   const items = hostMode
     ? [
         { href: `${base}/vard`, label: hostLabels.calendar, Icon: CalendarIcon, match: (p: string) => p === `/${locale}/vard` },
         { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, match: (p: string) => p.startsWith(`/${locale}/vard/annonser`) },
         { href: `${base}/vard/meddelanden`, label: hostLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/vard/meddelanden`) },
-        { href: `${base}/vard/meny`, label: hostLabels.menu, Icon: MenuIcon, match: (p: string) => p.startsWith(`/${locale}/vard/meny`) },
+        { href: `${base}/vard/profil`, label: hostLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/vard/profil`) || p.startsWith(`/${locale}/vard/meny`) },
       ]
     : [
         { href: base, label: renterLabels.explore, Icon: SearchIcon, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
         { href: `${base}/onskelista`, label: renterLabels.wishlist, Icon: HeartIcon, match: (p: string) => p.startsWith(`/${locale}/onskelista`) },
         { href: `${base}/meddelanden`, label: renterLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/meddelanden`) },
-        { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
+        { href: `${base}/mer`, label: renterLabels.menu, Icon: MenuIcon, match: (p: string) => p.startsWith(`/${locale}/mer`) || p.startsWith(`/${locale}/profil`) },
       ];
 
   return (
