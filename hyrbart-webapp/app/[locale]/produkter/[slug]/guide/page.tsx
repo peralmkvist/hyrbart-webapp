@@ -1,7 +1,6 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import GuideTabs from '@/components/GuideTabs';
-import { BackIcon, InfoIcon } from '@/components/Icons';
+import { InfoIcon } from '@/components/Icons';
 import { getProductGuide, type LocalizedGuideText } from '@/lib/sanity-guides';
 
 function text(value: LocalizedGuideText | undefined, en: boolean) {
@@ -40,11 +39,6 @@ export default async function GuidePage({
   return (
     <div className="guidePage pageShell">
       <div className="guideHeaderSticky">
-        <Link href={`/${locale}/produkter/${guide.slug}`} className="guideBackRow">
-          <BackIcon />
-          <span>{en ? 'Back to product page' : 'Tillbaka till produktsidan'}</span>
-        </Link>
-
         <div className="guideCategoryRow">{en ? 'User guide' : 'Användarguide'}</div>
 
         <header className="guideIdentityRow">
