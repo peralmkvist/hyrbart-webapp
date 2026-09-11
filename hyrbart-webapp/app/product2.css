@@ -43,7 +43,7 @@
 .productGallery2 .productGalleryImage,
 .productGallery2 .productPhoto { padding: 6px 12px 24px !important; object-fit: contain; }
 
-/* 2.0 identity hierarchy: brand + product name are peers; type and price are secondary. */
+/* 2.0 identity hierarchy: brand + product name are peers; type and supporting info are secondary. */
 .productIdentity2 { padding: 10px 2px 0; }
 .productIdentity2 h1 {
   margin: 0;
@@ -72,6 +72,13 @@
   font-size: .96rem;
   font-weight: 700;
   letter-spacing: -.01em;
+}
+.productHighlight2 {
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: .86rem;
+  line-height: 1.3;
+  font-weight: 700;
 }
 .productIdentity2 > p {
   margin: 10px 0 0;
