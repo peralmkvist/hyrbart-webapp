@@ -95,7 +95,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading-stack); }
 
 .categoryStrip2 { margin: 14px -18px 0; padding: 0 18px 5px; display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; }
 .categoryStrip2::-webkit-scrollbar { display: none; }
-.categoryChip2 { flex: 0 0 auto; padding: 9px 13px; border-radius: 999px; background: #f0f0ee; font-size: .75rem; font-weight: 650; }
+.categoryChip2 { flex: 0 0 auto; padding: 9px 13px; border-radius: 12px; background: #f0f0ee; font-size: .75rem; font-weight: 650; }
 .categoryChip2.active { background: var(--accent); }
 .rentMeta2 { margin: 14px 0 12px; display: flex; justify-content: space-between; color: var(--muted); font-size: .74rem; }
 .productGrid2 { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
