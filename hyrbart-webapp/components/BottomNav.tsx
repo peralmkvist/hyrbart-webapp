@@ -11,6 +11,10 @@ export default function BottomNav() {
   if (!isPrivateApp) return null;
 
   const appPath = pathname.replace(/^\/topsecret/, '') || '/sv';
+  const isStandaloneGuide = /^\/(sv|en)\/produkter\/[^/]+\/guide\/?$/.test(appPath);
+
+  if (isStandaloneGuide) return null;
+
   const isEnglish = appPath === '/en' || appPath.startsWith('/en/');
   const locale = isEnglish ? 'en' : 'sv';
   const base = `/topsecret/${locale}`;
