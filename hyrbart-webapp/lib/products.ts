@@ -1,8 +1,14 @@
 export type ProductBadge = 'popular' | 'very-popular';
 
 export type RentalPrice = {
-  days: 1 | 3 | 7;
+  days: number;
   price: number;
+};
+
+export type RentalDiscounts = {
+  multiDayPercent?: number;
+  weeklyPercent?: number;
+  repeatCustomerPercent?: number;
 };
 
 export type LocalizedText = {
@@ -22,6 +28,8 @@ export type Product = {
   type: string;
   typeEn?: string;
   price: string;
+  dailyPrice?: number;
+  discounts?: RentalDiscounts;
   category: string;
   accent: string;
   image?: string;
