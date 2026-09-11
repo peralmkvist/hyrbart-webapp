@@ -1,0 +1,81 @@
+/* Hyrbart 2.0 — top-level Guides + More alignment */
+.ds2Page {
+  max-width: 760px;
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: max(22px, env(safe-area-inset-top)) 18px calc(92px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+.ds2Header {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+}
+
+.ds2Header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 8.8vw, 3rem);
+  line-height: .98;
+  letter-spacing: -.055em;
+  font-weight: 850;
+}
+
+.ds2Page .ds2Intro {
+  margin: 18px 0 22px;
+  color: var(--muted);
+  font-size: .92rem;
+  line-height: 1.5;
+}
+
+.ds2Page .ds2List {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.moreAccordion {
+  border-top: 1px solid var(--line);
+}
+
+.moreAccordion details {
+  border-bottom: 1px solid var(--line);
+}
+
+.moreAccordion summary {
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 2px;
+  list-style: none;
+  cursor: pointer;
+  font-size: .96rem;
+  font-weight: 700;
+}
+
+.moreAccordion summary::-webkit-details-marker { display: none; }
+.moreAccordion summary svg {
+  width: 18px;
+  height: 18px;
+  justify-self: end;
+  color: #71717a;
+  transition: transform .18s ease;
+}
+.moreAccordion details[open] summary svg { transform: rotate(90deg); }
+
+.moreAccordionBody {
+  padding: 0 2px 18px;
+  color: #4b5563;
+  font-size: .9rem;
+  line-height: 1.55;
+}
+.moreAccordionBody p { margin: 0 0 10px; }
+.moreAccordionBody p:last-child { margin-bottom: 0; }
+.moreAccordionBody h3 {
+  margin: 14px 0 5px;
+  color: var(--ink);
+  font-size: .9rem;
+}
