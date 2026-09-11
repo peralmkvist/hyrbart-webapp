@@ -33,9 +33,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   return (
     <div className="pageShell homePage2">
       <header className="brandHeader2" aria-label="Hyrbart">
-        <Link href={`/${locale}`} className="hyrbartWordmark2">
-          <span>Hyrbart</span>
-          <i aria-hidden="true" />
+        <Link href={`/${locale}`} className="hyrbartWordmark2" aria-label="Hyrbart">
+          <span className="hyrbartWordmarkH2">H<i aria-hidden="true" /></span><span>yrbart</span>
         </Link>
       </header>
 
