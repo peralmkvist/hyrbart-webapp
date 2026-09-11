@@ -8,7 +8,7 @@
   "theme_color": "#fafafa",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/hyrbart-h-v2.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
