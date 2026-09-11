@@ -125,6 +125,29 @@ async function sanityQuery<T>(query: string): Promise<T> {
   return payload.result;
 }
 
+export async function getUnavailableProductSlugs(from?: string, to?: string): Promise<Set<string>> {
+  if (!from) return new Set();
+  const end = to || from;
+  try {
+    const safeFrom = JSON.stringify(from);
+    const safeEnd = JSON.stringify(end);
+    const result = await sanityQuery<Array<{ slug?: string }>>(`
+      *[
+        _type == "availabilityBlock" &&
+        defined(product) &&
+        startDate <= ${safeEnd} &&
+        endDate >= ${safeFrom}
+      ]{
+        "slug": product->slug.current
+      }
+    `);
+    return new Set(result.map((item) => item.slug).filter((slug): slug is string => Boolean(slug)));
+  } catch (error) {
+    console.error('Could not load availability from Sanity. Treating products as available.', error);
+    return new Set();
+  }
+}
+
 export async function getProducts(): Promise<Product[]> {
   try {
     const result = await sanityQuery<SanityProduct[]>(`*[_type == "product" && defined(slug.current)] ${productProjection}`);
