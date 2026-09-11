@@ -1,38 +1,102 @@
-import styles from './page.module.css';
+import Link from 'next/link';
+import { getProducts } from '@/lib/sanity-products';
+import ProductVisual from '@/components/ProductVisual';
+import { ArrowIcon, CategoryIcon, SearchIcon } from '@/components/Icons';
 
-export default async function AboutPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+const categoryDefinitions = [
+  { value: 'Belysning', sv: 'Belysning', en: 'Lighting' },
+  { value: 'Biltillbehör', sv: 'Biltillbehör', en: 'Car accessories' },
+  { value: 'Borra & Skruva', sv: 'Borra & Skruva', en: 'Drilling & screwdriving' },
+  { value: 'Foto & Teknik', sv: 'Foto & Teknik', en: 'Photo & tech' },
+  { value: 'Hem & hushåll', sv: 'Hem & hushåll', en: 'Home & household' },
+  { value: 'Håltagning', sv: 'Håltagning', en: 'Hole making' },
+  { value: 'Kontor', sv: 'Kontor', en: 'Office' },
+  { value: 'Mäta', sv: 'Mäta', en: 'Measuring' },
+  { value: 'Städa & Tvätta', sv: 'Städa & Tvätta', en: 'Cleaning & washing' },
+  { value: 'Såga & Slipa', sv: 'Såga & Slipa', en: 'Sawing & sanding' },
+  { value: 'Trädgård', sv: 'Trädgård', en: 'Garden' },
+];
+
+function formatPrice(price: string, en: boolean) {
+  if (!en) return price;
+  return price.replace(/^fr\.\s*/i, 'from ').replace(/\s*kr\/dygn$/i, ' SEK/day');
+}
+
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const en = locale === 'en';
+  const products = await getProducts();
+  const featured = [...products]
+    .sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0))
+    .slice(0, 4);
 
   return (
-    <div className={styles.page}>
-      <div className={styles.backdrop} aria-hidden="true" />
+    <div className="pageShell homePage2">
+      <header className="brandHeader2" aria-label="Hyrbart">
+        <Link href={`/${locale}`} className="hyrbartWordmark2" aria-label="Hyrbart">
+          <span className="hyrbartWordmarkH2">H<i aria-hidden="true" /></span><span>yrbart</span>
+        </Link>
+      </header>
 
-      <section className={styles.content}>
-        <div className={styles.copy}>
-          <h1>{en ? 'Welcome' : 'Välkommen hit'}</h1>
+      <section className="homeIntro2">
+        <h1>{en ? 'What do you want to rent?' : 'Vad vill du hyra?'}</h1>
+        <Link href={`/${locale}/produkter`} className="searchField2 homeSearch2">
+          <SearchIcon aria-hidden="true" />
+          <span>{en ? 'Search product, category or use' : 'Sök produkt, kategori eller tillfälle'}</span>
+        </Link>
+      </section>
 
-          <p>
-            {en
-              ? 'I enjoy home projects and well-made, durable products – and the idea that things I don’t use every day can be useful to someone else. That way, good equipment doesn’t just gather dust, while others don’t have to buy machines and products they only use occasionally.'
-              : 'Jag gillar hemmaprojekt och bra, hållbara prylar – och tanken på att saker jag inte använder varje dag kan komma till nytta hos någon annan. Då slipper bra saker samla damm, samtidigt som andra inte behöver köpa maskiner och prylar som bara används någon gång ibland.'}
-          </p>
+      <section className="homeCategories2" aria-label={en ? 'Categories' : 'Kategorier'}>
+        {categoryDefinitions.map((category) => (
+          <Link key={category.value} href={`/${locale}/produkter?category=${encodeURIComponent(category.value)}`}>
+            <span className="categoryIconBubble2"><CategoryIcon category={category.value} /></span>
+            <span>{en ? category.en : category.sv}</span>
+          </Link>
+        ))}
+      </section>
 
-          <p>
-            {en
-              ? 'When you rent from me, it should be easy to get started. What you need is included or available to buy directly from me, so you don’t need an extra trip to the hardware store.'
-              : 'När du hyr av mig ska det vara enkelt att komma igång. Det du behöver finns med eller går att köpa till direkt av mig, så att du slipper en extra tur till byggvaruhuset.'}
-          </p>
+      <section className="homeHeroCard2">
+        <div>
+          <span className="eyebrow2">HYRBART</span>
+          <h2>{en ? 'The right gear for the next project' : 'Rätt prylar för nästa projekt'}</h2>
+          <p>{en ? 'Quality products, ready when you need them.' : 'Kvalitetsprodukter, redo när du behöver dem.'}</p>
+          <Link href={`/${locale}/produkter`} className="darkPillButton2">
+            {en ? 'See all products' : 'Se alla produkter'} <ArrowIcon />
+          </Link>
+        </div>
+        {featured[0] && (
+          <div className="heroProduct2" aria-hidden="true">
+            <ProductVisual
+              kind="cleaner"
+              accent={featured[0].accent}
+              imageSrc={featured[0].image}
+              imageAlt=""
+            />
+          </div>
+        )}
+      </section>
 
-          <p>
-            {en
-              ? 'Here you’ll find everything I rent out together with my own user guides, so you can quickly understand how it all works. I use the products myself regularly and reinvest the rental income in new products.'
-              : 'Här hittar du alla produkter jag hyr ut tillsammans med mina egna användarguider, så att du snabbt förstår hur allt fungerar. Jag använder själv produkterna regelbundet och återinvesterar intäkterna från uthyrningen i nya produkter.'}
-          </p>
+      <section className="homePopular2">
+        <div className="sectionHeading2">
+          <h2>{en ? 'Popular right now' : 'Populärt just nu'}</h2>
+          <Link href={`/${locale}/produkter`}>{en ? 'See all' : 'Visa alla'}</Link>
+        </div>
+        <div className="popularRail2">
+          {featured.map((product) => (
+            <Link key={product.slug} href={`/${locale}/produkter/${product.slug}`} className="popularCard2">
+              <div className="popularVisual2">
+                <ProductVisual
+                  kind="cleaner"
+                  accent={product.accent}
+                  imageSrc={product.image}
+                  imageAlt={`${product.brand} ${product.name}`}
+                />
+              </div>
+              <strong>{product.brand} {product.name}</strong>
+              <span>{en ? (product.typeEn ?? product.type) : product.type}</span>
+              <b>{formatPrice(product.price, en)}</b>
+            </Link>
+          ))}
         </div>
       </section>
     </div>
