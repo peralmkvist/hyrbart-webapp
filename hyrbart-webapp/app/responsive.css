@@ -4,6 +4,36 @@ html {
   text-size-adjust: 100%;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
+}
+
+body,
+main {
+  position: relative;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* Prevent iOS input-focus zoom while viewport zoom is disabled. */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Productkort: låt hela bildkolumnen bära den grå bildbakgrunden. */
 .productListCard .productCardVisualWrap {
   min-height: 100%;
@@ -25,6 +55,42 @@ html {
   padding: 4px 10px;
   line-height: 1;
   text-align: center;
+}
+
+/* Shared sticky top headers across the app. */
+.rentSticky2,
+.ds2Header,
+.messagesHeader,
+.hostListingsHeader,
+.hostCalendarTop,
+.productTopbar2,
+.guideHeaderSticky,
+.termsHeaderSticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 120;
+}
+
+.ds2Header,
+.messagesHeader,
+.hostListingsHeader,
+.hostCalendarTop,
+.productTopbar2,
+.guideHeaderSticky,
+.termsHeaderSticky {
+  background: rgba(250,250,250,.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Give standalone title headers a clean sticky safe-area surface. */
+.ds2Header,
+.messagesHeader,
+.hostListingsHeader,
+.hostCalendarTop {
+  padding-top: max(12px, env(safe-area-inset-top));
+  margin-top: calc(-1 * max(12px, env(safe-area-inset-top)));
 }
 
 @media (max-width: 480px) {
