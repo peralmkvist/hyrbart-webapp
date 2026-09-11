@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getProducts } from '@/lib/sanity-products';
+import { getProducts, getUnavailableProductSlugs } from '@/lib/sanity-products';
 import { distanceKm, geocodeSwedishPlace } from '@/lib/geo';
 import ProductVisual from '@/components/ProductVisual';
 import ProductSearchForm from '@/components/ProductSearchForm';
@@ -18,7 +18,7 @@ export default async function ProductsPage({params,searchParams}:{params:Promise
  const sp=await searchParams;
  const {category,q,from,to,place,radius}=sp;
  const en=locale==='en';
- const products=await getProducts();
+ const [products, unavailableSlugs]=await Promise.all([getProducts(),getUnavailableProductSlugs(from,to)]);
  const selectedCategory=categoryDefinitions.some(i=>i.value===category)?category:undefined;
  const query=normalize(q);
  const days=daysBetween(from,to);
@@ -29,6 +29,7 @@ export default async function ProductsPage({params,searchParams}:{params:Promise
 
  const filtered=products
   .filter(p=>{
+    if(from&&unavailableSlugs.has(p.slug))return false;
     if(selectedCategory&&p.category!==selectedCategory)return false;
     if(query){const c=categoryDefinitions.find(i=>i.value===p.category);if(![p.brand,p.name,p.type,p.typeEn,p.category,c?.sv,c?.en].map(normalize).join(' ').includes(query))return false;}
     if(searched&&searchCenter){
@@ -51,8 +52,9 @@ export default async function ProductsPage({params,searchParams}:{params:Promise
  const resultItems=filtered.map(p=>{const daily=dailyNumber(p.price);const total=daily&&days?Math.round(daily*days):null;const params=new URLSearchParams({...(from?{from}:{}),...(to?{to}:{}),...(place?{place}:{}),...(radius?{radius}:{})});const point=p.pickupLocation;const distance=searchCenter&&point?distanceKm(searchCenter,{lat:point.lat,lng:point.lng}):undefined;return{slug:p.slug,href:`/${locale}/produkter/${p.slug}${searched?`?${params.toString()}`:''}`,brand:p.brand,name:p.name,type:en?(p.typeEn??p.type):p.type,image:p.image,accent:p.accent,priceLabel:total?`${total} kr · ${days} ${en?'days':'dagar'}`:p.price,mapLabel:total?`${total} kr`:(daily?`${daily} kr`:p.price),lat:point?.lat,lng:point?.lng,distanceKm:distance};});
  const metaLabel=`${filtered.length} ${en?'products':'produkter'}`;
  const locationUnavailable=searched&&!searchCenter;
+ const noAvailability=Boolean(from&&products.length>0&&filtered.length===0&&unavailableSlugs.size>0);
 
  return <div className="pageShell rentPage2"><div className="rentSticky2"><header className="brandHeader2"><Link href={`/${locale}`} className="hyrbartWordmark2"><span className="hyrbartWordmarkH2">H<i/></span><span>yrbart</span></Link></header><section className="homeIntro2 rentIntro2"><h1>{en?'What do you want to rent?':'Vad vill du hyra?'}</h1><ProductSearchForm locale={locale} initialQuery={q??''} category={selectedCategory} initialFrom={from??''} initialTo={to??''} initialPlace={place??'Danderyd'} initialRadius={radius??'10'} initiallyCollapsed={searched}/></section><div className="categoryStrip2"><Link href={keep()} className={!selectedCategory?'categoryChip2 active':'categoryChip2'}>{en?'All':'Alla'}</Link>{categoryDefinitions.map(i=><Link key={i.value} href={keep(i.value)} className={selectedCategory===i.value?'categoryChip2 active':'categoryChip2'}>{en?i.en:i.sv}</Link>)}</div></div>
- {locationUnavailable?<section className="rentEmpty2"><h2>{en?'Location not found':'Platsen hittades inte'}</h2><p>{en?'Try a city, district or postcode in Sweden.':'Testa en ort, stadsdel eller ett postnummer i Sverige.'}</p></section>:filtered.length?(searched?<SearchResults locale={locale} place={searchPlace} radius={searchRadius} center={searchCenter!} items={resultItems} metaLabel={metaLabel} clearHref={`/${locale}/produkter`}/>:<><div className="rentMeta2"><span>{metaLabel}</span>{(selectedCategory||query)&&<Link href={`/${locale}/produkter`}>{en?'Clear filters':'Rensa filter'}</Link>}</div><section className="productGrid2">{filtered.map(p=><Link href={`/${locale}/produkter/${p.slug}`} className="productTile2" key={p.slug}><div className="productTileVisual2"><ProductVisual kind="cleaner" accent={p.accent} imageSrc={p.image} imageAlt={`${p.brand} ${p.name}`}/></div><div className="productTileCopy2"><strong>{p.brand} {p.name}</strong><span>{en?(p.typeEn??p.type):p.type}</span><b>{p.price}</b></div></Link>)}</section></>):<section className="rentEmpty2"><h2>{en?'No matches within the radius':'Inga träffar inom radien'}</h2><p>{en?'Try increasing the radius or changing the location.':'Prova att öka sökradien eller ändra plats.'}</p></section>}
+ {locationUnavailable?<section className="rentEmpty2"><h2>{en?'Location not found':'Platsen hittades inte'}</h2><p>{en?'Try a city, district or postcode in Sweden.':'Testa en ort, stadsdel eller ett postnummer i Sverige.'}</p></section>:filtered.length?(searched?<SearchResults locale={locale} place={searchPlace} radius={searchRadius} center={searchCenter!} items={resultItems} metaLabel={metaLabel} clearHref={`/${locale}/produkter`}/>:<><div className="rentMeta2"><span>{metaLabel}</span>{(selectedCategory||query)&&<Link href={`/${locale}/produkter`}>{en?'Clear filters':'Rensa filter'}</Link>}</div><section className="productGrid2">{filtered.map(p=><Link href={`/${locale}/produkter/${p.slug}`} className="productTile2" key={p.slug}><div className="productTileVisual2"><ProductVisual kind="cleaner" accent={p.accent} imageSrc={p.image} imageAlt={`${p.brand} ${p.name}`}/></div><div className="productTileCopy2"><strong>{p.brand} {p.name}</strong><span>{en?(p.typeEn??p.type):p.type}</span><b>{p.price}</b></div></Link>)}</section></>):<section className="rentEmpty2"><h2>{noAvailability?(en?'Nothing available for these dates':'Inget ledigt de här datumen'):(en?'No matches within the radius':'Inga träffar inom radien')}</h2><p>{noAvailability?(en?'Try changing the dates to see more products.':'Prova att ändra datumen för att se fler produkter.'):(en?'Try increasing the radius or changing the location.':'Prova att öka sökradien eller ändra plats.')}</p></section>}
  {!selectedCategory&&!query&&!searched&&<section className="categoryOverview2">{categoryDefinitions.map(i=><Link key={i.value} href={`/${locale}/produkter?category=${encodeURIComponent(i.value)}`}><CategoryIcon category={i.value}/><span>{en?i.en:i.sv}</span></Link>)}</section>}</div>
 }
