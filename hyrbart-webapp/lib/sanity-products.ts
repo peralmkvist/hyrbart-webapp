@@ -9,6 +9,7 @@ type SanityCrop = { top?: number; bottom?: number; left?: number; right?: number
 type SanityImage = { url?: string; crop?: SanityCrop; dimensions?: { width?: number; height?: number } };
 
 const productProjection = `{
+  "id": _id,
   brand,
   name,
   "slug": slug.current,
@@ -44,6 +45,7 @@ const productProjection = `{
 }`;
 
 type SanityProduct = {
+  id?: string;
   brand: string;
   name: string;
   slug: string;
@@ -99,6 +101,7 @@ function mapProduct(item: SanityProduct): Product {
   const mainImage = images[0] || item.legacyImageUrl || item.legacyImagePath;
 
   return {
+    id: item.id,
     slug: item.slug,
     brand: item.brand,
     name: item.name,
