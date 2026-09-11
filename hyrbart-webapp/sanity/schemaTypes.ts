@@ -174,6 +174,15 @@ export const product = defineType({
       title: 'Användarguide',
       type: 'array',
       of: [defineArrayMember({ type: 'guideSection' })],
+      validation: (rule) =>
+        rule.required().length(4).custom((sections) => {
+          if (!Array.isArray(sections)) return true;
+          const expectedKeys = ['kom-igang', 'anvandning', 'tips', 'aterlamning'];
+          const keys = sections.map((section) => (section as { key?: string })?.key);
+          return expectedKeys.every((key, index) => keys[index] === key)
+            ? true
+            : 'Användarguiden måste ha fyra delar i ordningen: Kom igång, Användning, Tips, Återlämning.';
+        }),
     }),
     defineField({
       name: 'hyggloUrl',
