@@ -22,6 +22,7 @@ export type ProductSpecification = {
 };
 
 export type Product = {
+  id?: string;
   slug: string;
   brand: string;
   name: string;
