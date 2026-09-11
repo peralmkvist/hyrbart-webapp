@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { getProducts } from '@/lib/sanity-products';
 import ProductVisual from '@/components/ProductVisual';
-import { CategoryIcon, SearchIcon } from '@/components/Icons';
+import ProductSearchForm from '@/components/ProductSearchForm';
+import { CategoryIcon } from '@/components/Icons';
 
 const categoryDefinitions = [
   { value: 'Barnartiklar', sv: 'Barnartiklar', en: 'Baby & kids' },
@@ -58,13 +59,15 @@ export default async function ProductsPage({ params, searchParams }: { params: P
   return (
     <div className="pageShell rentPage2">
       <div className="rentSticky2">
-        <header className="rentHeader2"><h1>{en ? 'Rent' : 'Hyra'}</h1></header>
-        <form action={`/${locale}/produkter`} method="get" className="searchField2 rentSearch2" role="search">
-          <SearchIcon aria-hidden="true" />
-          <input type="search" name="q" defaultValue={q ?? ''} enterKeyHint="search" autoComplete="off" aria-label={en ? 'Search products' : 'Sök produkter'} placeholder={en ? 'Search product, category or use' : 'Sök produkt, kategori eller tillfälle'} />
-          {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
-          <button type="submit" className="rentSearchButton2" aria-label={en ? 'Search' : 'Sök'}><SearchIcon /></button>
-        </form>
+        <header className="brandHeader2" aria-label="Hyrbart">
+          <Link href={`/${locale}`} className="hyrbartWordmark2" aria-label="Hyrbart">
+            <span className="hyrbartWordmarkH2">H<i aria-hidden="true" /></span><span>yrbart</span>
+          </Link>
+        </header>
+        <section className="homeIntro2 rentIntro2">
+          <h1>{en ? 'What do you want to rent?' : 'Vad vill du hyra?'}</h1>
+          <ProductSearchForm locale={locale} initialQuery={q ?? ''} category={selectedCategory} />
+        </section>
         <div className="categoryStrip2" aria-label={en ? 'Product categories' : 'Produktkategorier'}>
           <Link href={buildCategoryHref()} className={!selectedCategory ? 'categoryChip2 active' : 'categoryChip2'}>{en ? 'All' : 'Alla'}</Link>
           {categoryDefinitions.map((item) => <Link key={item.value} href={buildCategoryHref(item.value)} className={selectedCategory === item.value ? 'categoryChip2 active' : 'categoryChip2'}>{en ? item.en : item.sv}</Link>)}
