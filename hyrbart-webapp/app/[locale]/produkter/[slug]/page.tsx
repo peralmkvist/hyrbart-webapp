@@ -89,7 +89,7 @@ export default async function GenericProductPage({
     keyFacts.push({
       key: 'guide',
       icon: <BookIcon />,
-      eyebrow: 'Guide',
+      eyebrow: en ? 'Guide' : 'Guide',
       value: en ? 'User guide included' : 'Användarguide finns',
     });
   } else if (specs[1]) {
@@ -111,7 +111,6 @@ export default async function GenericProductPage({
         >
           <BackIcon />
         </Link>
-        <span>{typeLabel}</span>
       </header>
 
       <section className="productHero2">
@@ -129,12 +128,14 @@ export default async function GenericProductPage({
         </div>
 
         <div className="productIdentity2">
-          <span className="productType2">{typeLabel}</span>
-          <h1>{product.brand} {product.name}</h1>
+          <h1>
+            <span className="productBrand2">{product.brand}</span>
+            <span className="productName2">{product.name}</span>
+          </h1>
           {product.price ? <div className="productPrice2">{formatPrice(product.price, en)}</div> : null}
           {shortDescription ? <p>{shortDescription}</p> : null}
           {product.rating != null && product.reviewCount != null ? (
-            <div className="productRating2" aria-label={en ? `${product.rating} out of 5, ${product.reviewCount} reviews` : `${product.rating} av 5, ${product.reviewCount} omdömen`}>
+            <div className="productRating2" aria-label={`${product.rating} ${en ? 'out of 5' : 'av 5'}, ${product.reviewCount} ${en ? 'reviews' : 'omdömen'}`}>
               <span aria-hidden="true">★</span>
               <strong>{product.rating.toFixed(1).replace('.', ',')}</strong>
               <span>({product.reviewCount} {en ? 'reviews' : 'omdömen'})</span>
@@ -161,7 +162,6 @@ export default async function GenericProductPage({
         {description ? (
           <details className="productAccordion2">
             <summary>
-              <span className="productSectionIcon2"><InfoIcon /></span>
               <span>{en ? 'Product description' : 'Produktbeskrivning'}</span>
               <ForwardIcon className="productChevron2" />
             </summary>
@@ -172,7 +172,6 @@ export default async function GenericProductPage({
         {included.length ? (
           <details className="productAccordion2">
             <summary>
-              <span className="productSectionIcon2"><CheckIcon /></span>
               <span>{en ? 'Included' : 'Detta ingår'}</span>
               <ForwardIcon className="productChevron2" />
             </summary>
@@ -190,7 +189,6 @@ export default async function GenericProductPage({
         {specs.length ? (
           <details className="productAccordion2">
             <summary>
-              <span className="productSectionIcon2"><ListIcon /></span>
               <span>{en ? 'Specifications' : 'Specifikationer'}</span>
               <ForwardIcon className="productChevron2" />
             </summary>
@@ -207,7 +205,6 @@ export default async function GenericProductPage({
 
         {product.guideAvailable ? (
           <Link className="productGuideRow2" href={`/${locale}/produkter/${product.slug}/guide`}>
-            <span className="productSectionIcon2"><BookIcon /></span>
             <span>{en ? 'User guide' : 'Användarguide'}</span>
             <ForwardIcon />
           </Link>
@@ -220,8 +217,7 @@ export default async function GenericProductPage({
         target="_blank"
         rel="noreferrer"
       >
-        <span>{en ? 'Book on Hygglo' : 'Boka på Hygglo'}</span>
-        <span aria-hidden="true">↗</span>
+        {en ? 'Book on Hygglo' : 'Boka på Hygglo'}
       </a>
     </div>
   );
