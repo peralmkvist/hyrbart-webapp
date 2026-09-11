@@ -35,7 +35,7 @@ const productProjection = `{
   hyggloUrl,
   supplierUrl,
   "guideAvailable": count(guideSections) > 0,
-  "owner": owner->{"id": _id, "name": displayName, city, "profileImage": profileImage.asset->url},
+  "owner": owner->{"id": _id, "name": displayName, city, "profileImage": profileImage.asset->url, responseTimeMinutes},
   "pickupLocation": pickupLocation->{"id": _id, name, city, area, "lat": location.lat, "lng": location.lng}
 }`;
 
