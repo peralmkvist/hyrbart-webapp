@@ -32,28 +32,30 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="pageShell homePage2">
-      <header className="brandHeader2" aria-label="Hyrbart">
-        <Link href={`/${locale}`} className="hyrbartWordmark2" aria-label="Hyrbart">
-          <span className="hyrbartWordmarkH2">H<i aria-hidden="true" /></span><span>yrbart</span>
-        </Link>
-      </header>
-
-      <section className="homeIntro2">
-        <h1>{en ? 'What do you want to rent?' : 'Vad vill du hyra?'}</h1>
-        <Link href={`/${locale}/produkter`} className="searchField2 homeSearch2">
-          <SearchIcon aria-hidden="true" />
-          <span>{en ? 'Search product, category or use' : 'Sök produkt, kategori eller tillfälle'}</span>
-        </Link>
-      </section>
-
-      <section className="homeCategories2" aria-label={en ? 'Categories' : 'Kategorier'}>
-        {categoryDefinitions.map((category) => (
-          <Link key={category.value} href={`/${locale}/produkter?category=${encodeURIComponent(category.value)}`}>
-            <span className="categoryIconBubble2"><CategoryIcon category={category.value} /></span>
-            <span>{en ? category.en : category.sv}</span>
+      <div className="homeSticky2">
+        <header className="brandHeader2" aria-label="Hyrbart">
+          <Link href={`/${locale}`} className="hyrbartWordmark2" aria-label="Hyrbart">
+            <span className="hyrbartWordmarkH2">H<i aria-hidden="true" /></span><span>yrbart</span>
           </Link>
-        ))}
-      </section>
+        </header>
+
+        <section className="homeIntro2">
+          <h1>{en ? 'What do you want to rent?' : 'Vad vill du hyra?'}</h1>
+          <Link href={`/${locale}/produkter`} className="searchField2 homeSearch2">
+            <SearchIcon aria-hidden="true" />
+            <span>{en ? 'Search product, category or use' : 'Sök produkt, kategori eller tillfälle'}</span>
+          </Link>
+        </section>
+
+        <section className="homeCategories2" aria-label={en ? 'Categories' : 'Kategorier'}>
+          {categoryDefinitions.map((category) => (
+            <Link key={category.value} href={`/${locale}/produkter?category=${encodeURIComponent(category.value)}`}>
+              <span className="categoryIconBubble2"><CategoryIcon category={category.value} /></span>
+              <span>{en ? category.en : category.sv}</span>
+            </Link>
+          ))}
+        </section>
+      </div>
 
       <section className="homeHeroCard2">
         <div>
