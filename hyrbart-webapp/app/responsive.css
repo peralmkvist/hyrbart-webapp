@@ -8,7 +8,7 @@ html,
 body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   overscroll-behavior-x: none;
   touch-action: pan-y;
 }
@@ -57,7 +57,9 @@ canvas {
   text-align: center;
 }
 
-/* Shared sticky top headers across the app. */
+/* Shared sticky top headers across the app.
+   Use overflow-x:clip above, not hidden: hidden creates a scroll container in iOS Safari and breaks position:sticky. */
+.homeSticky2,
 .rentSticky2,
 .ds2Header,
 .messagesHeader,
@@ -66,12 +68,13 @@ canvas {
 .productTopbar2,
 .guideHeaderSticky,
 .termsHeaderSticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 120;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 120 !important;
 }
 
+.homeSticky2,
 .ds2Header,
 .messagesHeader,
 .hostListingsHeader,
@@ -82,6 +85,11 @@ canvas {
   background: rgba(250,250,250,.97);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+}
+
+.homeSticky2 {
+  margin: calc(-1 * max(22px, env(safe-area-inset-top))) -18px 0;
+  padding: max(22px, env(safe-area-inset-top)) 18px 10px;
 }
 
 /* Give standalone title headers a clean sticky safe-area surface. */
