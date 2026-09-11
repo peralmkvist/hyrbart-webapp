@@ -15,6 +15,8 @@ type Props = {
   initiallyCollapsed?: boolean;
 };
 
+const RECENT_SEARCHES_KEY = 'hyrbartRecentSearches';
+
 function compactDate(value: string, en: boolean) {
   if (!value) return '';
   return new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { day: 'numeric', month: 'short' }).format(new Date(`${value}T12:00:00`));
@@ -39,11 +41,26 @@ export default function ProductSearchForm({ locale, initialQuery = '', category,
   const months = useMemo(() => Array.from({ length: 12 }, (_, i) => new Date(baseMonth.getFullYear(), baseMonth.getMonth() + i, 1)), [baseMonth]);
   const weekdays = en ? ['M','T','W','T','F','S','S'] : ['M','T','O','T','F','L','S'];
 
+  function rememberSearch(search: { q?: string; from?: string; to?: string; place?: string; radius?: string }) {
+    if (typeof window === 'undefined') return;
+    try {
+      const normalized = { q: search.q?.trim() || '', from: search.from || '', to: search.to || '', place: search.place?.trim() || '', radius: search.radius || '10', ts: Date.now() };
+      const key = `${normalized.q}|${normalized.from}|${normalized.to}|${normalized.place}|${normalized.radius}`;
+      const current = JSON.parse(window.localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+      const list = Array.isArray(current) ? current : [];
+      const deduped = list.filter((item) => `${item?.q || ''}|${item?.from || ''}|${item?.to || ''}|${item?.place || ''}|${item?.radius || '10'}` !== key);
+      window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify([normalized, ...deduped].slice(0, 5)));
+    } catch {}
+  }
+
   function navigate(next: { query?: string; from?: string; to?: string; place?: string; radius?: string } = {}, collapse = true) {
     const qv = next.query ?? query, fv = next.from ?? from, tv = next.to ?? to, pv = next.place ?? place, rv = next.radius ?? radius;
     const params = new URLSearchParams();
     if (qv.trim()) params.set('q', qv.trim()); if (category) params.set('category', category); if (fv) params.set('from', fv); if (tv) params.set('to', tv); if (pv.trim()) params.set('place', pv.trim()); if (rv) params.set('radius', rv);
-    if (collapse) { setCalendarOpen(false); setExpanded(false); window.scrollTo(0, 0); }
+    if (collapse) {
+      rememberSearch({ q: qv, from: fv, to: tv || fv, place: pv, radius: rv });
+      setCalendarOpen(false); setExpanded(false); window.scrollTo(0, 0);
+    }
     router.push(`/${locale}/produkter?${params.toString()}`, { scroll: collapse });
   }
   function handleSubmit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); navigate(); }
