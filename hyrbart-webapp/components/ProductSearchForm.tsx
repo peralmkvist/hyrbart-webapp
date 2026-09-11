@@ -35,6 +35,14 @@ export default function ProductSearchForm({locale,initialQuery='',category,initi
  const whatLabel=query||(en?'All products':'Alla produkter'),whereLabel=place?`${place} · ${radius} km`:(en?'Where do you need it?':'Var behöver du det?');
  if(!expanded)return <button type="button" className="rentalSearchCompact2" onClick={()=>{setExpanded(true);setSearchStarted(true)}} aria-label={en?'Edit search':'Ändra sökning'}><SearchIcon/><span><b>{whatLabel}</b><small>{dateLabel} · {whereLabel}</small></span><span className="rentalSearchEdit2">☰</span></button>;
  return <form ref={formRef} onSubmit={handleSubmit} className={`rentalSearchFlow2 ${calendarOpen?'calendarIsOpen':''}`}>
+  <style jsx global>{`
+   .rentalSearchFlow2 > .rentalSearchField2:first-child { min-height: 54px !important; height: 54px !important; }
+   .rentalSearchFlow2 > .rentalSearchField2:first-child input { height: 100% !important; }
+   .rentalSearchFlow2 .rentalSearchField2 input,
+   .rentalSearchFlow2 .rentalSearchRow2 small { font-size: 17px !important; line-height: 1.25 !important; }
+   .rentalSearchFlow2 .rentalSearchField2 input::placeholder,
+   .rentalSearchFlow2 .rentalSearchRow2 small { color: #747b8b !important; opacity: 1 !important; font-weight: 400 !important; }
+  `}</style>
   <label className="rentalSearchField2"><span><input value={query} onFocus={()=>setSearchStarted(true)} onChange={e=>setQuery(e.target.value)} onKeyDown={handleQueryKeyDown} enterKeyHint="next" placeholder={en?'What do you need?':'Vad behöver du?'}/></span><SearchIcon/></label>
   {searchStarted&&<>
   <div className="rentalWhenWrap2"><button type="button" className="rentalSearchRow2" onClick={()=>setCalendarOpen(v=>!v)}><span><small>{dateLabel}</small></span><span className="rentalPlus2">＋</span></button>
