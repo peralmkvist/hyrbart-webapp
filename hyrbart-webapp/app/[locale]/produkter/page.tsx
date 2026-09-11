@@ -17,6 +17,11 @@ const categoryDefinitions = [
   { value: 'Trädgård', sv: 'Trädgård', en: 'Garden' },
 ];
 
+function formatPrice(price: string, en: boolean) {
+  if (!en) return price;
+  return price.replace(/^fr\.\s*/i, 'from ').replace(/\s*kr\/dygn$/i, ' SEK/day');
+}
+
 export default async function ProductsPage({
   params,
   searchParams,
@@ -89,7 +94,7 @@ export default async function ProductsPage({
             <div className="productTileCopy2">
               <strong>{product.brand} {product.name}</strong>
               <span>{en ? (product.typeEn ?? product.type) : product.type}</span>
-              <b>{en ? product.price.replace('fr.', 'from') : product.price}</b>
+              <b>{formatPrice(product.price, en)}</b>
             </div>
           </Link>
         ))}
