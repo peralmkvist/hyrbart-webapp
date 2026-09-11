@@ -14,7 +14,12 @@ export default defineConfig({
   projectId: 'djps09z6',
   dataset: 'production',
   plugins: [structureTool(), svSELocale()],
-  schema: { types: [...schemaTypes, availabilityBlock] },
+  schema: {
+    types: [
+      ...schemaTypes.filter((type) => type.name !== 'availabilityBlock'),
+      availabilityBlock,
+    ],
+  },
   form: {
     components: {
       field: CompactField,
