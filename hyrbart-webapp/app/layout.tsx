@@ -9,6 +9,7 @@ import './pages2.css';
 import './guide-fixes.css';
 import './host-calendar.css';
 import './messages.css';
+import './heading-spacing.css';
 import BottomNav from '@/components/BottomNav';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--font-inter', display: 'swap' });
