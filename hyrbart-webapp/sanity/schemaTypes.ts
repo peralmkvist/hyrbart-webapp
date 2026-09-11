@@ -99,6 +99,26 @@ export const product = defineType({
   name: 'product',
   title: 'Produkt',
   type: 'document',
+  orderings: [
+    {
+      title: 'Namn A–Ö',
+      name: 'nameAsc',
+      by: [
+        { field: 'typeSv', direction: 'asc' },
+        { field: 'brand', direction: 'asc' },
+        { field: 'name', direction: 'asc' },
+      ],
+    },
+    {
+      title: 'Namn Ö–A',
+      name: 'nameDesc',
+      by: [
+        { field: 'typeSv', direction: 'desc' },
+        { field: 'brand', direction: 'desc' },
+        { field: 'name', direction: 'desc' },
+      ],
+    },
+  ],
   fieldsets: [
     {
       name: 'ratingInfo',
@@ -117,11 +137,7 @@ export const product = defineType({
     defineField({ name: 'typeEn', title: 'Produkttyp – engelska', type: 'string' }),
     defineField({ name: 'brand', title: 'Varumärke', type: 'string' }),
     defineField({ name: 'name', title: 'Produktnamn', type: 'string' }),
-    defineField({
-      name: 'cardHighlight',
-      title: 'Highlight',
-      type: 'localizedString',
-    }),
+    defineField({ name: 'cardHighlight', title: 'Highlight', type: 'localizedString' }),
     defineField({
       name: 'slug',
       title: 'Web-adress',
@@ -206,8 +222,6 @@ export const product = defineType({
       components: { input: TranslationToolInput },
       description: 'Översätter produktens svenska texter till engelska utan att ändra annan produktdata.',
     }),
-
-    // Äldre fält behålls dolt tills befintlig data är helt migrerad/rensad.
     defineField({
       name: 'detailCategory',
       title: 'Kategori på produktsidan (tidigare)',
