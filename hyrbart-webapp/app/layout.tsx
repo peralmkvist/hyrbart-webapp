@@ -14,7 +14,11 @@ export const metadata: Metadata = {
   title: 'Hyrbart',
   description: 'Det du behöver. När du behöver det.',
   manifest: '/manifest.webmanifest',
-  icons: { icon: '/icon.svg', shortcut: '/icon.svg', apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }] },
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: ['/icon.svg'],
+    apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+  },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hyrbart' },
 };
 
