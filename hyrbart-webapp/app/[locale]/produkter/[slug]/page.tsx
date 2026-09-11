@@ -10,8 +10,6 @@ import {
   CategoryIcon,
   CheckIcon,
   ForwardIcon,
-  InfoIcon,
-  ListIcon,
   MeasureIcon,
 } from '@/components/Icons';
 
@@ -132,6 +130,7 @@ export default async function GenericProductPage({
             <span className="productBrand2">{product.brand}</span>
             <span className="productName2">{product.name}</span>
           </h1>
+          <div className="productType2">{typeLabel}</div>
           {product.price ? <div className="productPrice2">{formatPrice(product.price, en)}</div> : null}
           {shortDescription ? <p>{shortDescription}</p> : null}
           {product.rating != null && product.reviewCount != null ? (
