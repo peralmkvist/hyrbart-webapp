@@ -20,7 +20,7 @@ export async function GET() {
           <div style={{ position: 'absolute', left: '10px', top: '6px', width: '24px', height: '88px', borderRadius: '7px', background: '#111111' }} />
           <div style={{ position: 'absolute', right: '10px', top: '6px', width: '24px', height: '88px', borderRadius: '7px', background: '#111111' }} />
           <div style={{ position: 'absolute', left: '28px', top: '42px', width: '56px', height: '22px', borderRadius: '7px', background: '#111111' }} />
-          <div style={{ position: 'absolute', left: '10px', top: '102px', width: '24px', height: '8px', borderRadius: '4px', background: '#ffcc00' }} />
+          <div style={{ position: 'absolute', left: '10px', top: '102px', width: '92px', height: '8px', borderRadius: '4px', background: '#ffcc00' }} />
         </div>
       </div>
     ),
