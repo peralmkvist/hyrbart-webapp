@@ -40,8 +40,8 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, view
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="sv" className={`${inter.variable} ${mono.variable}`} style={{ maxWidth: '100%', overflowX: 'hidden' }}>
-      <body style={{ maxWidth: '100%', overflowX: 'hidden' }}><main>{children}</main><BottomNav /></body>
+    <html lang="sv" className={`${inter.variable} ${mono.variable}`} style={{ maxWidth: '100%', overflowX: 'clip' }}>
+      <body style={{ maxWidth: '100%', overflowX: 'clip' }}><main>{children}</main><BottomNav /></body>
     </html>
   );
 }
