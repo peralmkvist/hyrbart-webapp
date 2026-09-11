@@ -3,19 +3,24 @@ import { getProducts } from '@/lib/sanity-products';
 import ProductVisual from '@/components/ProductVisual';
 import { ArrowIcon, CategoryIcon, SearchIcon } from '@/components/Icons';
 
-const categories = [
-  'Belysning',
-  'Biltillbehör',
-  'Borra & Skruva',
-  'Foto & Teknik',
-  'Hem & hushåll',
-  'Håltagning',
-  'Kontor',
-  'Mäta',
-  'Städa & Tvätta',
-  'Såga & Slipa',
-  'Trädgård',
+const categoryDefinitions = [
+  { value: 'Belysning', sv: 'Belysning', en: 'Lighting' },
+  { value: 'Biltillbehör', sv: 'Biltillbehör', en: 'Car accessories' },
+  { value: 'Borra & Skruva', sv: 'Borra & Skruva', en: 'Drilling & screwdriving' },
+  { value: 'Foto & Teknik', sv: 'Foto & Teknik', en: 'Photo & tech' },
+  { value: 'Hem & hushåll', sv: 'Hem & hushåll', en: 'Home & household' },
+  { value: 'Håltagning', sv: 'Håltagning', en: 'Hole making' },
+  { value: 'Kontor', sv: 'Kontor', en: 'Office' },
+  { value: 'Mäta', sv: 'Mäta', en: 'Measuring' },
+  { value: 'Städa & Tvätta', sv: 'Städa & Tvätta', en: 'Cleaning & washing' },
+  { value: 'Såga & Slipa', sv: 'Såga & Slipa', en: 'Sawing & sanding' },
+  { value: 'Trädgård', sv: 'Trädgård', en: 'Garden' },
 ];
+
+function formatPrice(price: string, en: boolean) {
+  if (!en) return price;
+  return price.replace(/^fr\.\s*/i, 'from ').replace(/\s*kr\/dygn$/i, ' SEK/day');
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -43,10 +48,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       <section className="homeCategories2" aria-label={en ? 'Categories' : 'Kategorier'}>
-        {categories.map((category) => (
-          <Link key={category} href={`/${locale}/produkter?category=${encodeURIComponent(category)}`}>
-            <span className="categoryIconBubble2"><CategoryIcon category={category} /></span>
-            <span>{category}</span>
+        {categoryDefinitions.map((category) => (
+          <Link key={category.value} href={`/${locale}/produkter?category=${encodeURIComponent(category.value)}`}>
+            <span className="categoryIconBubble2"><CategoryIcon category={category.value} /></span>
+            <span>{en ? category.en : category.sv}</span>
           </Link>
         ))}
       </section>
@@ -90,7 +95,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               </div>
               <strong>{product.brand} {product.name}</strong>
               <span>{en ? (product.typeEn ?? product.type) : product.type}</span>
-              <b>{en ? product.price.replace('fr.', 'from') : product.price}</b>
+              <b>{formatPrice(product.price, en)}</b>
             </Link>
           ))}
         </div>
