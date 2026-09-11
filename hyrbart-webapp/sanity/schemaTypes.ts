@@ -250,9 +250,9 @@ export const product = defineType({
     }),
   ],
   preview: {
-    select: { brand: 'brand', name: 'name', media: 'images.0' },
-    prepare({ brand, name, media }) {
-      return { title: `${brand ?? ''} ${name ?? ''}`.trim(), media };
+    select: { typeSv: 'typeSv', brand: 'brand', name: 'name', media: 'images.0' },
+    prepare({ typeSv, brand, name, media }) {
+      return { title: [typeSv, brand, name].filter(Boolean).join(' – '), media };
     },
   },
 });
