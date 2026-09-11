@@ -31,7 +31,7 @@ export type Product = {
   rating?: number;
   reviewCount?: number;
   cardHighlight?: LocalizedText;
-  owner?: { id?: string; name?: string; city?: string; profileImage?: string };
+  owner?: { id?: string; name?: string; city?: string; profileImage?: string; responseTimeMinutes?: number };
   pickupLocation?: { id?: string; name?: string; city?: string; area?: string; lat: number; lng: number };
 
   detailCategory?: LocalizedText;
