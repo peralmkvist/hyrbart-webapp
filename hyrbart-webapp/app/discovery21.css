@@ -1,0 +1,161 @@
+.discoveryHome21,
+.discoveryRent21 {
+  padding-top: max(26px, env(safe-area-inset-top));
+}
+
+.discoveryIntro21 { margin-top: 24px; }
+.discoveryIntro21 h1,
+.discoveryRentHeader21 h1 {
+  font-size: clamp(2.35rem, 10.5vw, 3.5rem);
+  line-height: .94;
+  letter-spacing: -.058em;
+  font-weight: 800;
+}
+
+.discoverySearch21 {
+  position: relative;
+  min-height: 56px;
+  border-radius: 16px;
+  padding: 0 10px 0 16px;
+  box-shadow: 0 5px 18px rgba(17,17,17,.055);
+}
+.discoverySearch21 input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: .95rem;
+}
+.discoverySearch21 input::placeholder { color: #8b8b8b; }
+.discoverySearch21 button {
+  min-width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #111;
+  color: #fff;
+  font-size: .76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.discoverySearch21 button svg { width: 17px; height: 17px; }
+.discoveryRentSearch21 button { padding: 0 13px; width: auto; }
+
+.discoveryCategories21 { margin-top: 18px; gap: 10px; }
+.discoveryCategories21 > a { width: 72px; flex-basis: 72px; }
+.discoveryCategories21 .categoryIconBubble2 {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  transition: transform .16s ease, background-color .16s ease;
+}
+.discoveryCategories21 > a:active .categoryIconBubble2 { transform: scale(.96); }
+
+.discoveryHero21 {
+  margin-top: 20px;
+  min-height: 225px;
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 1px rgba(17,17,17,.035);
+}
+.discoveryHero21 h2 { font-size: 1.72rem; }
+.discoveryHero21 .darkPillButton2 { border-radius: 13px; }
+
+.discoveryPopular21 { margin-top: 28px; }
+.discoveryRail21 { gap: 14px; }
+.discoveryPopularCard21 { width: 154px; flex-basis: 154px; }
+.discoveryPopularCard21 .popularVisual2 {
+  height: 132px;
+  border-radius: 15px;
+  background: #f0f0ee;
+}
+.discoveryPopularCard21 strong {
+  margin-top: 4px;
+  font-size: .86rem;
+  font-weight: 700;
+  line-height: 1.12;
+}
+.discoveryPopularCard21 b { margin-top: 7px; font-size: .8rem; }
+.discoveryType21 {
+  display: block;
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: .67rem;
+  line-height: 1.1;
+}
+
+.discoveryRentHeader21 { min-height: 50px; }
+.discoveryRentSearch21 { margin-top: 16px; }
+.discoveryCategoryStrip21 {
+  margin-top: 16px;
+  padding-bottom: 8px;
+  gap: 8px;
+}
+.discoveryCategoryStrip21 .categoryChip2 {
+  padding: 9px 13px;
+  border-radius: 11px;
+  background: #f0f0ee;
+  border: 1px solid transparent;
+}
+.discoveryCategoryStrip21 .categoryChip2.active {
+  background: #111;
+  color: #fff;
+}
+.discoveryMeta21 { margin-top: 12px; }
+.discoveryMeta21 a { color: var(--ink); font-weight: 650; }
+
+.discoveryGrid21 { gap: 16px 12px; }
+.discoveryTile21 { display: block; min-width: 0; }
+.discoveryTileVisual21 {
+  border-radius: 16px;
+  background: #f0f0ee;
+  transition: transform .15s ease;
+}
+.discoveryTile21:active .discoveryTileVisual21 { transform: scale(.985); }
+.discoveryTileCopy21 { padding: 9px 2px 4px; }
+.discoveryTileCopy21 .discoveryType21 { margin-top: 0; margin-bottom: 4px; }
+.discoveryTileCopy21 strong {
+  font-size: .88rem;
+  line-height: 1.12;
+  font-weight: 700;
+}
+.discoveryTileCopy21 b { margin-top: 7px; font-size: .8rem; }
+
+.discoveryEmpty21 {
+  margin-top: 34px;
+  padding: 30px 22px;
+  border-radius: 18px;
+  background: #f0f0ee;
+  text-align: center;
+}
+.discoveryEmpty21 h2 { margin: 0; font-size: 1.35rem; }
+.discoveryEmpty21 p { margin: 8px auto 18px; max-width: 300px; color: var(--muted); line-height: 1.45; }
+.discoveryEmpty21 a {
+  display: inline-flex;
+  padding: 11px 15px;
+  border-radius: 12px;
+  background: #111;
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.discoveryCategoryOverview21 {
+  margin-top: 34px;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+}
+.discoveryCategoryOverview21 a {
+  min-height: 96px;
+  border-radius: 15px;
+  background: #f0f0ee;
+}
+
+@media (min-width: 700px) {
+  .discoveryHome21,
+  .discoveryRent21 { padding-top: 38px; }
+  .discoveryCategoryOverview21 { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
