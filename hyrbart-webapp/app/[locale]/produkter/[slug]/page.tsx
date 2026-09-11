@@ -22,6 +22,11 @@ function firstSentence(text?: string) {
   return (match?.[1] ?? normalized).slice(0, 190);
 }
 
+function formatPrice(price: string, en: boolean) {
+  if (!en) return price;
+  return price.replace(/^fr\.\s*/i, 'from ').replace(/\s*kr\/dygn$/i, ' SEK/day');
+}
+
 type ProductFact = {
   key: string;
   icon: ReactNode;
@@ -84,7 +89,7 @@ export default async function GenericProductPage({
     keyFacts.push({
       key: 'guide',
       icon: <BookIcon />,
-      eyebrow: en ? 'Guide' : 'Guide',
+      eyebrow: 'Guide',
       value: en ? 'User guide included' : 'Användarguide finns',
     });
   } else if (specs[1]) {
@@ -126,10 +131,10 @@ export default async function GenericProductPage({
         <div className="productIdentity2">
           <span className="productType2">{typeLabel}</span>
           <h1>{product.brand} {product.name}</h1>
-          {product.price ? <div className="productPrice2">{en ? product.price.replace('fr.', 'from') : product.price}</div> : null}
+          {product.price ? <div className="productPrice2">{formatPrice(product.price, en)}</div> : null}
           {shortDescription ? <p>{shortDescription}</p> : null}
           {product.rating != null && product.reviewCount != null ? (
-            <div className="productRating2" aria-label={`${product.rating} av 5, ${product.reviewCount} omdömen`}>
+            <div className="productRating2" aria-label={en ? `${product.rating} out of 5, ${product.reviewCount} reviews` : `${product.rating} av 5, ${product.reviewCount} omdömen`}>
               <span aria-hidden="true">★</span>
               <strong>{product.rating.toFixed(1).replace('.', ',')}</strong>
               <span>({product.reviewCount} {en ? 'reviews' : 'omdömen'})</span>
