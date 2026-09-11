@@ -14,11 +14,11 @@ const mono = Roboto_Mono({ subsets: ['latin'], variable: '--font-mono', display:
 export const metadata: Metadata = {
   title: 'Hyrbart',
   description: 'Det du behöver. När du behöver det.',
-  manifest: '/manifest.webmanifest',
+  manifest: '/manifest.webmanifest?v=2',
   icons: {
-    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
-    shortcut: ['/icon.svg'],
-    apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/hyrbart-h-v2.svg', type: 'image/svg+xml' }],
+    shortcut: ['/hyrbart-h-v2.svg'],
+    apple: [{ url: '/hyrbart-h-v2.svg', type: 'image/svg+xml' }],
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hyrbart' },
 };
