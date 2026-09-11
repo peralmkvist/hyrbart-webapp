@@ -18,10 +18,38 @@ function formatPrice(price: string, en: boolean) {
   return price.replace(/^fr\.\s*/i, 'from ').replace(/\s*kr\/dygn$/i, ' SEK/day');
 }
 
+function dailyNumber(price: string) {
+  const match = price.match(/([0-9]+(?:[.,][0-9]+)?)/);
+  return match ? Number(match[1].replace(',', '.')) : null;
+}
+
+function rentalDays(from?: string, to?: string) {
+  if (!from) return null;
+  const start = new Date(`${from}T12:00:00`);
+  const end = new Date(`${to || from}T12:00:00`);
+  return Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000) + 1);
+}
+
+function formatRentalDate(value: string, en: boolean) {
+  return new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { day: 'numeric', month: 'short' })
+    .format(new Date(`${value}T12:00:00`))
+    .replace('.', '.');
+}
+
 type ProductFact = { key: string; icon: ReactNode; eyebrow: string; value: string };
 
-export default async function GenericProductPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+type SearchContext = {
+  q?: string;
+  category?: string;
+  from?: string;
+  to?: string;
+  place?: string;
+  radius?: string;
+};
+
+export default async function GenericProductPage({ params, searchParams }: { params: Promise<{ locale: string; slug: string }>; searchParams: Promise<SearchContext> }) {
   const { locale, slug } = await params;
+  const sp = await searchParams;
   const en = locale === 'en';
   const product = await getProduct(slug);
   if (!product) notFound();
@@ -40,10 +68,23 @@ export default async function GenericProductPage({ params }: { params: Promise<{
   if (product.guideAvailable) keyFacts.push({ key: 'guide', icon: <BookIcon />, eyebrow: 'Guide', value: en ? 'User guide included' : 'Användarguide finns' });
   else if (specs[1]) keyFacts.push({ key: 'spec-2', icon: <MeasureIcon />, eyebrow: en ? specs[1].label.en : specs[1].label.sv, value: specs[1].value });
 
+  const days = rentalDays(sp.from, sp.to);
+  const daily = product.price ? dailyNumber(product.price) : null;
+  const total = days && daily ? Math.round(days * daily) : null;
+  const hasRentalContext = Boolean(sp.from);
+  const resultsParams = new URLSearchParams();
+  if (sp.q) resultsParams.set('q', sp.q);
+  if (sp.category) resultsParams.set('category', sp.category);
+  if (sp.from) resultsParams.set('from', sp.from);
+  if (sp.to) resultsParams.set('to', sp.to);
+  if (sp.place) resultsParams.set('place', sp.place);
+  if (sp.radius) resultsParams.set('radius', sp.radius);
+  const resultsHref = `/${locale}/produkter${resultsParams.size ? `?${resultsParams.toString()}` : ''}`;
+
   return (
     <div className="productPage2">
       <header className="productTopbar2">
-        <Link href={`/${locale}/produkter`} className="productBack2" aria-label={en ? 'Back to products' : 'Tillbaka till produkter'}><BackIcon /></Link>
+        <Link href={resultsHref} className="productBack2" aria-label={en ? 'Back to products' : 'Tillbaka till produkter'}><BackIcon /></Link>
       </header>
 
       <section className="productHero2">
@@ -55,7 +96,9 @@ export default async function GenericProductPage({ params }: { params: Promise<{
         <div className="productIdentity2">
           <h1><span className="productBrand2">{product.brand}</span><span className="productName2">{product.name}</span></h1>
           <div className="productType2">{typeLabel}</div>
-          {product.price ? <div className="productPrice2">{formatPrice(product.price, en)}</div> : null}
+          {hasRentalContext && total && days ? (
+            <div className="productPrice2">{total} kr · {days} {en ? (days === 1 ? 'day' : 'days') : (days === 1 ? 'dag' : 'dagar')}</div>
+          ) : product.price ? <div className="productPrice2">{formatPrice(product.price, en)}</div> : null}
           {shortDescription ? <p>{shortDescription}</p> : null}
           {product.rating != null && product.reviewCount != null ? (
             <div className="productRating2" aria-label={`${product.rating} ${en ? 'out of 5' : 'av 5'}, ${product.reviewCount} ${en ? 'reviews' : 'omdömen'}`}>
@@ -64,6 +107,20 @@ export default async function GenericProductPage({ params }: { params: Promise<{
           ) : null}
         </div>
       </section>
+
+      {hasRentalContext && sp.from ? (
+        <section style={{margin:'18px 0 20px',padding:'18px',border:'1px solid var(--line)',borderRadius:20,background:'#fff',boxShadow:'0 5px 18px rgba(17,17,17,.05)'}} aria-label={en ? 'Selected rental period' : 'Vald hyresperiod'}>
+          <div style={{display:'flex',justifyContent:'space-between',gap:18,alignItems:'flex-start'}}>
+            <div>
+              <span style={{display:'block',fontSize:'.72rem',fontWeight:800,color:'var(--muted)',marginBottom:4}}>{en ? 'Selected dates' : 'Valda datum'}</span>
+              <strong style={{display:'block',fontSize:'1.05rem'}}>{formatRentalDate(sp.from,en)}{sp.to && sp.to !== sp.from ? ` – ${formatRentalDate(sp.to,en)}` : ''}</strong>
+              {sp.place ? <span style={{display:'block',marginTop:5,color:'var(--muted)',fontSize:'.82rem'}}>{sp.place}{sp.radius ? ` · ${sp.radius} km` : ''}</span> : null}
+            </div>
+            {total && days ? <div style={{textAlign:'right',flex:'0 0 auto'}}><span style={{display:'block',fontSize:'.72rem',fontWeight:800,color:'var(--muted)',marginBottom:4}}>{en ? 'Total' : 'Totalt'}</span><strong style={{fontSize:'1.1rem'}}>{total} kr</strong></div> : null}
+          </div>
+          <Link href={resultsHref} style={{display:'inline-flex',marginTop:16,color:'var(--ink)',fontWeight:750,fontSize:'.8rem',textDecoration:'underline',textUnderlineOffset:3}}>{en ? 'Change search' : 'Ändra sökning'}</Link>
+        </section>
+      ) : null}
 
       {keyFacts.length ? <section className="productFacts2" aria-label={en ? 'Key product facts' : 'Viktiga produktfakta'}>
         {keyFacts.slice(0, 4).map(({ key, icon, eyebrow, value }) => <div className="productFact2" key={key}><span className="productFactIcon2">{icon}</span><div><span>{eyebrow}</span><strong>{value}</strong></div></div>)}
