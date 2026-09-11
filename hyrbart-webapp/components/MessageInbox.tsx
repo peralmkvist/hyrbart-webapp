@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { SearchIcon } from './Icons';
 
 type Tab = 'all' | 'host' | 'renter' | 'support';
@@ -15,6 +16,8 @@ type MessageItem = {
   time: string;
   unread?: boolean;
 };
+
+type BookingRequestItem = { id:string; from:string; to:string; requestType:string; message?:string; status?:string; createdAt?:string; product?:string };
 
 const svItems: MessageItem[] = [
   { id: '1', tab: 'renter', name: 'Anna', initials: 'A', preview: 'Hej! Går det bra att hämta textiltvätten vid 18?', meta: 'Textiltvätt · bokning 12–13 sep', time: '10:02', unread: true },
@@ -40,9 +43,39 @@ const enItems: MessageItem[] = [
 
 export default function MessageInbox({ locale }: { locale: string }) {
   const en = locale === 'en';
+  const pathname = usePathname();
+  const hostMode = pathname.includes('/vard/');
   const [tab, setTab] = useState<Tab>('all');
   const [query, setQuery] = useState('');
-  const items = en ? enItems : svItems;
+  const [bookingItems, setBookingItems] = useState<MessageItem[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/booking-request', { cache:'no-store' }).then(async response => {
+      if (!response.ok) return;
+      const data = await response.json() as { requests?: BookingRequestItem[] };
+      if (!active) return;
+      const mapped = (data.requests ?? []).map((request): MessageItem => {
+        const created = request.createdAt ? new Date(request.createdAt) : null;
+        const time = created && Number.isFinite(created.getTime()) ? created.toLocaleTimeString(en?'en-GB':'sv-SE',{hour:'2-digit',minute:'2-digit'}) : '';
+        const isQuestion = request.requestType === 'reserve-question';
+        return {
+          id:`booking-${request.id}`,
+          tab: hostMode ? 'renter' : 'host',
+          name: hostMode ? (en?'New rental request':'Ny hyresförfrågan') : (en?'Booking request':'Bokningsförfrågan'),
+          initials: 'H',
+          preview: request.message?.trim() || (isQuestion ? (en?'Reservation with a question':'Reservation med fråga') : (en?'Booking request sent':'Bokningsförfrågan skickad')),
+          meta: `${request.product || (en?'Product':'Produkt')} · ${request.from} – ${request.to}${isQuestion ? (en?' · reserved':' · reserverad') : ''}`,
+          time,
+          unread: hostMode && request.status === 'pending',
+        };
+      });
+      setBookingItems(mapped);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [en, hostMode]);
+
+  const items = [...bookingItems, ...(en ? enItems : svItems)];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
