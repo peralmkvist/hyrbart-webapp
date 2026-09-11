@@ -43,13 +43,14 @@
 .productGallery2 .productGalleryImage,
 .productGallery2 .productPhoto { padding: 6px 12px 24px !important; object-fit: contain; }
 
+/* 2.0 identity hierarchy: brand + product name are peers; type and price are secondary. */
 .productIdentity2 { padding: 10px 2px 0; }
 .productIdentity2 h1 {
   margin: 0;
-  font-size: clamp(2rem, 9vw, 3.4rem);
-  font-weight: 850;
-  letter-spacing: -.05em;
-  line-height: .96;
+  font-size: clamp(1.5rem, 6.2vw, 2.15rem);
+  font-weight: 750;
+  letter-spacing: -.035em;
+  line-height: 1.02;
 }
 .productBrand2,
 .productName2 {
@@ -60,15 +61,17 @@
 }
 .productName2 { margin-top: 1px; }
 .productType2 {
-  margin-top: 8px;
+  margin-top: 7px;
   color: var(--muted);
-  font-size: .78rem;
-  font-weight: 650;
+  font-size: .8rem;
+  font-weight: 500;
+  line-height: 1.25;
 }
 .productPrice2 {
-  margin-top: 10px;
-  font-size: 1rem;
-  font-weight: 800;
+  margin-top: 8px;
+  font-size: .96rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
 }
 .productIdentity2 > p {
   margin: 10px 0 0;
@@ -88,7 +91,6 @@
 .productRating2 > span:first-child { color: var(--accent); font-size: .95rem; }
 .productRating2 strong { color: var(--ink); }
 
-/* Four lightweight USP items, matching the Designsystem 2.0 reference. */
 .productFacts2 {
   margin: 24px -4px 0;
   display: grid;
@@ -130,7 +132,6 @@
   overflow-wrap: anywhere;
 }
 
-/* Clean, flat accordion rows instead of card-like dropdowns. */
 .productSections2 {
   margin-top: 28px;
   border-top: 1px solid var(--line);
