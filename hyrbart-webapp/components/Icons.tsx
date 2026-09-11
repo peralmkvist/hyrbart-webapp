@@ -16,12 +16,7 @@ export function HomeIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export function PersonIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...common} {...props}>
-      <circle cx="12" cy="7.3" r="3.2" />
-      <path d="M5.7 20c.55-4 2.85-6.2 6.3-6.2s5.75 2.2 6.3 6.2" />
-    </svg>
-  );
+  return <svg {...common} {...props}><circle cx="12" cy="7.3" r="3.2"/><path d="M5.7 20c.55-4 2.85-6.2 6.3-6.2s5.75 2.2 6.3 6.2"/></svg>;
 }
 
 export function SearchIcon(props: SVGProps<SVGSVGElement>) {
@@ -32,12 +27,22 @@ export function BookIcon(props: SVGProps<SVGSVGElement>) {
   return <svg {...common} {...props}><path d="M4.5 5.1c2.4-.8 4.7-.6 7.5.8v13c-2.8-1.4-5.1-1.6-7.5-.8z"/><path d="M19.5 5.1c-2.4-.8-4.7-.6-7.5.8v13c2.8-1.4 5.1-1.6 7.5-.8z"/></svg>;
 }
 
-export function ArrowIcon(props: SVGProps<SVGSVGElement>) {
-  return <svg {...common} {...props}><path d="M5 12h14"/><path d="m14 7 5 5-5 5"/></svg>;
+// SL-inspired three-line menu icon used for the Mer tab.
+export function MenuIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg {...common} {...props}><path d="M5 7h14M5 12h14M5 17h14"/></svg>;
 }
 
+// Forward and back are deliberately mirrored versions of the same minimal chevron.
 export function BackIcon(props: SVGProps<SVGSVGElement>) {
-  return <svg {...common} {...props}><path d="m15 18-6-6 6-6"/></svg>;
+  return <svg {...common} {...props}><path d="m14.5 18-6-6 6-6"/></svg>;
+}
+
+export function ForwardIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg {...common} {...props}><path d="m9.5 6 6 6-6 6"/></svg>;
+}
+
+export function ArrowIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg {...common} {...props}><path d="M5 12h14"/><path d="m14 7 5 5-5 5"/></svg>;
 }
 
 export function CheckIcon(props: SVGProps<SVGSVGElement>) {
