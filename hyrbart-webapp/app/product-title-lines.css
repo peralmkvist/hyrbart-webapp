@@ -1,0 +1,18 @@
+/* Product titles: brand always occupies the first line and product name starts on the next. */
+.productTileTitle2,
+.productTileBrand2,
+.productTileName2,
+.productIdentity2 .productBrand2,
+.productIdentity2 .productName2 {
+  display: block;
+}
+
+/* Reserve the same two title rows on catalogue/search cards so metadata aligns. */
+.productTileCopy2 .productTileTitle2 {
+  min-height: calc(2 * 1.12em);
+}
+
+/* Popular rail uses the same two-line title structure without changing its compact typography. */
+.popularCard2 .productTileTitle2 {
+  min-height: calc(2 * 1.1em);
+}
