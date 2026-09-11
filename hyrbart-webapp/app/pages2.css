@@ -1,16 +1,16 @@
-/* Hyrbart 2.0 — top-level Guides + Menu alignment */
+/* Hyrbart 2.0 — shared exact top-level heading position */
 .ds2Page {
   max-width: 760px;
   min-height: 100svh;
   margin: 0 auto;
-  padding: calc(max(22px, env(safe-area-inset-top)) + 20px) 18px calc(92px + env(safe-area-inset-bottom));
+  padding: calc(max(22px, env(safe-area-inset-top)) + 66px) 18px calc(92px + env(safe-area-inset-bottom));
   background: var(--bg);
 }
 
 .ds2Header {
   min-height: 46px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .ds2Header h1 {
@@ -82,63 +82,28 @@
   border-bottom: 1px solid var(--line);
   font-weight: 700;
 }
-
-.moreAccordion {
-  border-top: 1px solid var(--line);
-}
-
-.moreAccordion details {
-  border-bottom: 1px solid var(--line);
-}
-
-.moreAccordion summary {
-  min-height: 62px;
-  display: grid;
-  grid-template-columns: minmax(0,1fr) 20px;
-  align-items: center;
-  gap: 12px;
-  padding: 0 2px;
-  list-style: none;
-  cursor: pointer;
-  font-size: .96rem;
-  font-weight: 700;
-}
-
-.moreAccordion summary::-webkit-details-marker { display: none; }
-.moreAccordion summary svg {
-  width: 18px;
-  height: 18px;
-  justify-self: end;
-  color: #71717a;
-  transition: transform .18s ease;
-}
-.moreAccordion details[open] summary svg { transform: rotate(90deg); }
-
-.moreAccordionBody {
-  padding: 0 2px 18px;
-  color: #4b5563;
-  font-size: .9rem;
-  line-height: 1.55;
-}
-.moreAccordionBody p { margin: 0 0 10px; }
-.moreAccordionBody p:last-child { margin-bottom: 0; }
-.moreAccordionBody h3 {
-  margin: 14px 0 5px;
-  color: var(--ink);
-  font-size: .9rem;
-}
+.moreAccordion { border-top: 1px solid var(--line); }
+.moreAccordion details { border-bottom: 1px solid var(--line); }
+.moreAccordion summary { min-height: 62px; display:grid; grid-template-columns:minmax(0,1fr) 20px; align-items:center; gap:12px; padding:0 2px; list-style:none; cursor:pointer; font-size:.96rem; font-weight:700; }
+.moreAccordion summary::-webkit-details-marker { display:none; }
+.moreAccordion summary svg { width:18px; height:18px; justify-self:end; color:#71717a; transition:transform .18s ease; }
+.moreAccordion details[open] summary svg { transform:rotate(90deg); }
+.moreAccordionBody { padding:0 2px 18px; color:#4b5563; font-size:.9rem; line-height:1.55; }
+.moreAccordionBody p { margin:0 0 10px; }
+.moreAccordionBody p:last-child { margin-bottom:0; }
+.moreAccordionBody h3 { margin:14px 0 5px; color:var(--ink); font-size:.9rem; }
 
 .hostListingsPage {
-  max-width: 760px;
-  min-height: 100svh;
-  margin: 0 auto;
-  padding: calc(max(22px, env(safe-area-inset-top)) + 66px) 18px calc(96px + env(safe-area-inset-bottom));
-  background: var(--bg);
+  max-width:760px;
+  min-height:100svh;
+  margin:0 auto;
+  padding:calc(max(22px, env(safe-area-inset-top)) + 66px) 18px calc(96px + env(safe-area-inset-bottom));
+  background:var(--bg);
 }
-.hostListingsHeader { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
-.hostListingsHeader h1 { margin: 0; font-size: clamp(2rem, 8.8vw, 3rem); line-height: .98; letter-spacing: -.055em; font-weight: 850; }
-.hostListingsHeader p { margin: 8px 0 0; color: var(--muted); font-size: .8rem; }
-.hostAddListingButton { min-height: 64px; margin-top: 22px; padding: 0 18px; border-radius: 18px; background: var(--accent); display: flex; align-items:center; justify-content:center; gap:10px; color:#111; font-size:1rem; font-weight:800; box-shadow:0 4px 16px rgba(17,17,17,.06); }
+.hostListingsHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.hostListingsHeader h1 { margin:0; font-size:clamp(2rem,8.8vw,3rem); line-height:.98; letter-spacing:-.055em; font-weight:850; }
+.hostListingsHeader p { margin:8px 0 0; color:var(--muted); font-size:.8rem; }
+.hostAddListingButton { min-height:64px; margin-top:22px; padding:0 18px; border-radius:18px; background:var(--accent); display:flex; align-items:center; justify-content:center; gap:10px; color:#111; font-size:1rem; font-weight:800; box-shadow:0 4px 16px rgba(17,17,17,.06); }
 .hostAddListingPlus { width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#111; color:#fff; font-size:1.2rem; line-height:1; }
 .hostListingsGrid { margin-top:22px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 12px; }
 .hostListingCard { min-width:0; }
