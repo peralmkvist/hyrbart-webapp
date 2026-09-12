@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ListIcon, ListingsIcon } from './Icons';
 import CalendarTodayJump from './CalendarTodayJump';
@@ -29,6 +30,7 @@ function monthDays(month: Date) {
 
 export default function RenterCalendar({ locale }: { locale: string }) {
   const en = locale === 'en';
+  const router = useRouter();
   const today = useMemo(() => new Date(), []);
   const todayMonth = useMemo(() => startOfMonth(today), [today]);
   const todayIso = iso(today);
@@ -94,7 +96,14 @@ export default function RenterCalendar({ locale }: { locale: string }) {
                   const showDot=dateIso!==todayIso && (booked||reserved);
                   const content=<><span>{date.getDate()}</span>{showDot&&<i className={booked?'calendarDotBooked':'calendarDotReserved'} />}</>;
                   return booking
-                    ? <Link key={dateIso} href={`/${locale}/bokningar/${booking.id}`} className={cls} aria-label={`${dateIso} ${en?'open booking':'öppna bokning'}`} style={{textDecoration:'none'}}>{content}</Link>
+                    ? <button
+                        type="button"
+                        key={dateIso}
+                        className={cls}
+                        aria-label={`${dateIso} ${en?'open booking':'öppna bokning'}`}
+                        onClick={() => router.push(`/${locale}/bokningar/${booking.id}`)}
+                        style={{textDecoration:'none',cursor:'pointer',touchAction:'manipulation',WebkitTapHighlightColor:'transparent'}}
+                      >{content}</button>
                     : <div key={dateIso} className={cls} aria-label={dateIso}>{content}</div>;
                 })}</div>
               </div>
