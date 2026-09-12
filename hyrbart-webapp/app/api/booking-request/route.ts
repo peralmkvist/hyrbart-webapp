@@ -24,7 +24,8 @@ export async function GET() {
     ]);
     if (error) throw error;
 
-    const counterpartIds = Array.from(new Set((data ?? []).map(row => row.owner_id === user.id ? row.renter_id : row.owner_id).filter(Boolean)));
+    const rows = data ?? [];
+    const counterpartIds = Array.from(new Set(rows.map(row => row.owner_id === user.id ? row.renter_id : row.owner_id).filter(Boolean)));
     const profilesById = new Map<string, { display_name?: string | null }>();
     if (counterpartIds.length) {
       const { data: profiles, error: profilesError } = await admin.from('profiles').select('id,display_name').in('id', counterpartIds);
@@ -32,11 +33,28 @@ export async function GET() {
       for (const profile of profiles ?? []) profilesById.set(profile.id, profile);
     }
 
-    const requests = (data ?? []).map(row => {
+    const bookingIds = rows.map(row => row.id);
+    const latestByBooking = new Map<string, { body: string; created_at: string; sender_id: string; read_at?: string | null }>();
+    const unreadByBooking = new Set<string>();
+    if (bookingIds.length) {
+      const { data: messages, error: messagesError } = await admin
+        .from('booking_messages')
+        .select('booking_id,body,created_at,sender_id,read_at')
+        .in('booking_id', bookingIds)
+        .order('created_at', { ascending: false });
+      if (messagesError) throw messagesError;
+      for (const message of messages ?? []) {
+        if (!latestByBooking.has(message.booking_id)) latestByBooking.set(message.booking_id, message);
+        if (message.sender_id !== user.id && !message.read_at) unreadByBooking.add(message.booking_id);
+      }
+    }
+
+    const requests = rows.map(row => {
       const product = products.find(item => item.id === row.product_id);
       const role = row.owner_id === user.id ? 'owner' : 'renter';
       const counterpartId = role === 'owner' ? row.renter_id : row.owner_id;
       const counterpart = counterpartId ? profilesById.get(counterpartId) : undefined;
+      const latest = latestByBooking.get(row.id);
       return {
         id: row.id,
         from: row.start_date,
@@ -48,8 +66,11 @@ export async function GET() {
         role,
         product: product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt',
         participantName: counterpart?.display_name || (role === 'owner' ? 'Hyrare' : 'Uthyrare'),
+        latestMessage: latest?.body || null,
+        latestMessageAt: latest?.created_at || null,
+        unreadMessage: unreadByBooking.has(row.id),
       };
-    });
+    }).sort((a,b) => new Date(b.latestMessageAt || b.createdAt).getTime() - new Date(a.latestMessageAt || a.createdAt).getTime());
 
     return NextResponse.json({ requests });
   } catch (error) {
@@ -121,6 +142,10 @@ export async function POST(request: Request) {
       .select('id,status,total_price')
       .single();
     if (insertError) throw insertError;
+
+    if (message.trim()) {
+      await admin.from('booking_messages').insert({ booking_id: booking.id, sender_id: user.id, body: message.trim().slice(0, 2000) });
+    }
 
     return NextResponse.json({ ok: true, bookingId: booking.id, status: booking.status, total: booking.total_price, reserved: requestType === 'reserve-question' });
   } catch (error) {
