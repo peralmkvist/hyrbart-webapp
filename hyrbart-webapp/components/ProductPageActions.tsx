@@ -2,30 +2,60 @@
 
 import { useEffect, useState } from 'react';
 
-const FAVORITES_KEY = 'hyrbartFavorites';
+const EVENT = 'hyrbart:favorites-changed';
 
-function readFavorites(): string[] {
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(FAVORITES_KEY) || '[]');
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
-  } catch {
-    return [];
-  }
+function loginPath() {
+  const en = /\/(?:topsecret\/)?en(?:\/|$)/.test(window.location.pathname);
+  return `/topsecret/${en ? 'en' : 'sv'}/logga-in`;
 }
 
 export default function ProductPageActions({ slug, title, locale }: { slug: string; title: string; locale: string }) {
   const en = locale === 'en';
   const [favorite, setFavorite] = useState(false);
+  const [savingFavorite, setSavingFavorite] = useState(false);
   const [shared, setShared] = useState(false);
 
-  useEffect(() => { setFavorite(readFavorites().includes(slug)); }, [slug]);
+  async function syncFavorite() {
+    try {
+      const response = await fetch('/api/favorites', { cache: 'no-store' });
+      if (response.status === 401) {
+        setFavorite(false);
+        return;
+      }
+      if (!response.ok) return;
+      const data = await response.json() as { favorites?: string[] };
+      setFavorite((data.favorites ?? []).includes(slug));
+    } catch {}
+  }
 
-  function toggleFavorite() {
-    const current = readFavorites();
-    const next = current.includes(slug) ? current.filter((item) => item !== slug) : [slug, ...current].slice(0, 100);
-    window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-    setFavorite(next.includes(slug));
-    window.dispatchEvent(new Event('hyrbart:favorites-changed'));
+  useEffect(() => {
+    void syncFavorite();
+    const listener = () => void syncFavorite();
+    window.addEventListener(EVENT, listener);
+    return () => window.removeEventListener(EVENT, listener);
+  }, [slug]);
+
+  async function toggleFavorite() {
+    if (savingFavorite) return;
+    setSavingFavorite(true);
+    try {
+      const next = !favorite;
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slug, favorite: next }),
+      });
+      if (response.status === 401) {
+        window.location.href = loginPath();
+        return;
+      }
+      if (!response.ok) throw new Error('Could not update favorite');
+      const data = await response.json() as { favorites?: string[] };
+      setFavorite((data.favorites ?? []).includes(slug));
+      window.dispatchEvent(new Event(EVENT));
+    } catch {} finally {
+      setSavingFavorite(false);
+    }
   }
 
   async function share() {
@@ -43,7 +73,7 @@ export default function ProductPageActions({ slug, title, locale }: { slug: stri
   }
 
   return <div className="productPageActions2">
-    <button type="button" className={`productCircleAction2 ${favorite ? 'active' : ''}`} onClick={toggleFavorite} aria-pressed={favorite} aria-label={favorite ? (en ? 'Remove from favorites' : 'Ta bort från favoriter') : (en ? 'Add to favorites' : 'Lägg till i favoriter')}>
+    <button type="button" className={`productCircleAction2 ${favorite ? 'active' : ''}`} onClick={toggleFavorite} disabled={savingFavorite} aria-pressed={favorite} aria-label={favorite ? (en ? 'Remove from favorites' : 'Ta bort från favoriter') : (en ? 'Add to favorites' : 'Lägg till i favoriter')}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/></svg>
     </button>
     <button type="button" className="productCircleAction2" onClick={share} aria-label={en ? 'Share listing' : 'Dela annons'}>
