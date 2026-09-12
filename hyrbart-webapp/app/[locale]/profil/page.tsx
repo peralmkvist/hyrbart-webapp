@@ -1,14 +1,34 @@
 import Link from 'next/link';
 import ProfileLanguageSetting from '@/components/ProfileLanguageSetting';
-import { getProducts } from '@/lib/sanity-products';
+import { createClient } from '@/lib/supabase/server';
 
 const MenuChevron = () => <span className="profileChevron" aria-hidden="true">›</span>;
+
+type Profile = {
+  display_name: string | null;
+  city: string | null;
+  avatar_url: string | null;
+};
 
 export default async function ProfilePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const en = locale === 'en';
-  const products = await getProducts();
-  const owner = products.find(product => product.owner?.name === 'Per')?.owner ?? products.find(product => product.owner)?.owner;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let profile: Profile | null = null;
+
+  if (user) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('display_name, city, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle();
+    profile = data;
+  }
+
+  const displayName = profile?.display_name || 'Per';
+  const city = profile?.city || 'Danderyd';
+  const initial = displayName.trim().charAt(0).toUpperCase() || 'P';
   const publicProfileHref = `/${locale}/profil/per`;
   const menu = en
     ? ['Account settings', 'Host settings', 'Get help', 'View profile', 'Terms', 'Privacy', 'Log out']
@@ -24,10 +44,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
           aria-label={en ? 'View your public profile' : 'Visa din profil'}
           style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
         >
-          {owner?.profileImage
-            ? <img className="profileAvatar" src={owner.profileImage} alt={owner.name || 'Per'} style={{ objectFit: 'cover' }}/>
-            : <div className="profileAvatar">P</div>}
-          <div><h2>{owner?.name || 'Per'}</h2><p>Danderyd, Sverige</p></div>
+          {profile?.avatar_url
+            ? <img className="profileAvatar" src={profile.avatar_url} alt={displayName} style={{ objectFit: 'cover' }}/>
+            : <div className="profileAvatar">{initial}</div>}
+          <div><h2>{displayName}</h2><p>{city}, Sverige</p></div>
         </Link>
         <div className="profileStats"><div><strong>12</strong><span>{en ? 'rentals' : 'hyror'}</span></div><div><strong>8</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>4,94</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
       </div>
