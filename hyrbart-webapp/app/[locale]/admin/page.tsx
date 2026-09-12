@@ -44,6 +44,8 @@ export default async function AdminOverview({params}:{params:Promise<{locale:str
       <Link className="modeSwitchButton" href={`/${locale}/admin/arenden`}>Support, skador & tvister →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/historik`}>Verifiera extern historik →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/importer`}>Hantera annonsimporter →</Link>
+      <Link className="modeSwitchButton" href={`/${locale}/admin/ekonomi`}>Betalningar & payouts →</Link>
+      <Link className="modeSwitchButton" href={`/${locale}/admin/audit`}>Audit log →</Link>
     </section>
 
     <section className="adminQueue">
