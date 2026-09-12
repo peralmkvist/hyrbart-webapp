@@ -26,6 +26,8 @@
   isolation: auto !important;
 }
 
+.liquidNav.renterNav { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+
 .liquidNav::before,
 .liquidNav::after {
   display: none !important;
