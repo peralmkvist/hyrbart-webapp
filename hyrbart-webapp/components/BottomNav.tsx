@@ -19,8 +19,8 @@ export default function BottomNav() {
   const hostMode = appPath === `/${locale}/vard` || appPath.startsWith(`/${locale}/vard/`);
 
   const renterLabels = isEnglish
-    ? { explore: 'Explore', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
-    : { explore: 'Utforska', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
+    ? { explore: 'Explore', calendar: 'Calendar', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
+    : { explore: 'Utforska', calendar: 'Kalender', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
     ? { calendar: 'Calendar', listings: 'Listings', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
@@ -35,13 +35,14 @@ export default function BottomNav() {
       ]
     : [
         { href: base, label: renterLabels.explore, Icon: SearchIcon, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
+        { href: `${base}/kalender`, label: renterLabels.calendar, Icon: CalendarIcon, match: (p: string) => p.startsWith(`/${locale}/kalender`) },
         { href: `${base}/onskelista`, label: renterLabels.wishlist, Icon: HeartIcon, match: (p: string) => p.startsWith(`/${locale}/onskelista`) },
         { href: `${base}/meddelanden`, label: renterLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/meddelanden`) },
         { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
       ];
 
   return (
-    <nav className="liquidNav" aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
+    <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
       {items.map(({ href, label, Icon, match }) => {
         const active = match(appPath);
         return (
