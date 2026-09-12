@@ -10,6 +10,13 @@ export default async function DemoHostBookingPage({params}:{params:Promise<{loca
       <h1>{en?'Booking':'Bokning'}</h1>
     </header>
 
+    <section className={styles.productCard}>
+      <span>{en?'Product':'Produkt'}</span>
+      <strong>Bosch</strong>
+      <h2>GKS 18V-57 G</h2>
+      <small>{en?'Circular saw':'Cirkelsåg'}</small>
+    </section>
+
     <section className={styles.hero}>
       <img src="/images/demo-renter-avatar.svg" alt="Anna Lindberg" className={styles.avatar}/>
       <div><span>{en?'Rented by':'Hyresperson'}</span><h2>Anna Lindberg</h2></div>
