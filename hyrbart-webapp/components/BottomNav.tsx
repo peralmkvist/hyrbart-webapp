@@ -47,8 +47,8 @@ export default function BottomNav() {
   const hostMode = appPath === `/${locale}/vard` || appPath.startsWith(`/${locale}/vard/`);
 
   const renterLabels = isEnglish
-    ? { explore: 'Explore', calendar: 'Calendar', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
-    : { explore: 'Utforska', calendar: 'Kalender', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
+    ? { explore: 'Explore', calendar: 'Bookings', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
+    : { explore: 'Utforska', calendar: 'Bokningar', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
     ? { calendar: 'Bookings', listings: 'Listings', add: 'Add', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
