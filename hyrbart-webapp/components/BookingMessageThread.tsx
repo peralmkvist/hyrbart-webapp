@@ -14,18 +14,26 @@ export default function BookingMessageThread({ bookingId, locale, counterpartNam
   const [error, setError] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
-  async function load() {
+  async function load(silent = false) {
     try {
       const response = await fetch(`/api/bookings/${bookingId}/messages`, { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Kunde inte hämta meddelanden.');
       setMessages(data.messages ?? []);
       setCurrentUserId(data.currentUserId ?? '');
-    } catch (err) { setError(err instanceof Error ? err.message : 'Kunde inte hämta meddelanden.'); }
-    finally { setLoading(false); }
+      if (!silent) setError('');
+    } catch (err) { if (!silent) setError(err instanceof Error ? err.message : 'Kunde inte hämta meddelanden.'); }
+    finally { if (!silent) setLoading(false); }
   }
 
-  useEffect(() => { load(); }, [bookingId]);
+  useEffect(() => {
+    let active = true;
+    load();
+    const timer = window.setInterval(() => { if (active && document.visibilityState === 'visible') load(true); }, 4000);
+    const onVisibility = () => { if (document.visibilityState === 'visible') load(true); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { active = false; window.clearInterval(timer); document.removeEventListener('visibilitychange', onVisibility); };
+  }, [bookingId]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [messages.length]);
 
   async function send(event: FormEvent) {
@@ -39,18 +47,18 @@ export default function BookingMessageThread({ bookingId, locale, counterpartNam
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || (en ? 'Could not send message.' : 'Kunde inte skicka meddelandet.'));
-      setMessages(prev => [...prev, data.message]);
+      setMessages(prev => prev.some(item => item.id === data.message.id) ? prev : [...prev, data.message]);
       setBody('');
     } catch (err) { setError(err instanceof Error ? err.message : (en ? 'Could not send message.' : 'Kunde inte skicka meddelandet.')); }
     finally { setSending(false); }
   }
 
   return <section className="bookingMessageCard">
-    <div className="bookingMessageHeader"><div><span>{en ? 'Messages' : 'Meddelanden'}</span><strong>{counterpartName}</strong></div></div>
+    <div className="bookingMessageHeader"><div><span>{en ? 'Messages' : 'Meddelanden'}</span><strong>{counterpartName}</strong></div><small className="bookingMessageLive">{en ? 'Live' : 'Live'}</small></div>
     <div className="bookingMessageList" aria-live="polite">
       {loading ? <p className="bookingMessageEmpty">{en ? 'Loading…' : 'Laddar…'}</p> : messages.length === 0 ? <p className="bookingMessageEmpty">{en ? 'No messages yet. Start the conversation here.' : 'Inga meddelanden ännu. Starta konversationen här.'}</p> : messages.map(message => {
         const mine = message.sender_id === currentUserId;
-        return <div className={`bookingBubbleRow ${mine ? 'mine' : 'theirs'}`} key={message.id}><div className="bookingBubble"><p>{message.body}</p><time>{new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }).format(new Date(message.created_at))}</time></div></div>;
+        return <div className={`bookingBubbleRow ${mine ? 'mine' : 'theirs'}`} key={message.id}><div className="bookingBubble"><p>{message.body}</p><div className="bookingBubbleMeta"><time>{new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }).format(new Date(message.created_at))}</time>{mine ? <span>{message.read_at ? (en ? 'Read' : 'Läst') : (en ? 'Sent' : 'Skickat')}</span> : null}</div></div></div>;
       })}
       <div ref={endRef}/>
     </div>
