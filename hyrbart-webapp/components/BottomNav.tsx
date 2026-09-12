@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { CalendarIcon, HeartIcon, ListingsIcon, MessageIcon, PersonIcon, SearchIcon } from './Icons';
 
 function AddCircleIcon({ className }: { className?: string }) {
@@ -13,9 +14,32 @@ function AddCircleIcon({ className }: { className?: string }) {
   );
 }
 
+type BookingRequest = { status?: string };
+
 export default function BottomNav() {
   const pathname = usePathname();
+  const [hasUnresolvedMessage, setHasUnresolvedMessage] = useState(false);
   const isPrivateApp = pathname === '/topsecret' || pathname.startsWith('/topsecret/');
+
+  useEffect(() => {
+    if (!isPrivateApp) return;
+    let active = true;
+    const load = () => {
+      fetch('/api/booking-request', { cache: 'no-store' })
+        .then(async response => response.ok ? response.json() : { requests: [] })
+        .then((data: { requests?: BookingRequest[] }) => {
+          if (!active) return;
+          const unresolved = (data.requests ?? []).some(request => ['requested', 'reserved'].includes(request.status || ''));
+          setHasUnresolvedMessage(unresolved);
+        })
+        .catch(() => { if (active) setHasUnresolvedMessage(false); });
+    };
+    load();
+    const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { active = false; document.removeEventListener('visibilitychange', onVisibility); };
+  }, [isPrivateApp, pathname]);
+
   if (!isPrivateApp) return null;
 
   const appPath = pathname.replace(/^\/topsecret/, '') || '/sv';
@@ -55,10 +79,14 @@ export default function BottomNav() {
     <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
       {items.map(({ href, label, Icon, match }) => {
         const active = match(appPath);
+        const isMessages = href.endsWith('/meddelanden');
         return (
           <Link key={href} href={href} className={`navItem ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
             <span className="activeLens" aria-hidden="true" />
-            <Icon className="navIcon" />
+            <span className="navIconWrap">
+              <Icon className="navIcon" />
+              {isMessages && hasUnresolvedMessage ? <i className="messageNotificationDot" aria-label={isEnglish ? 'Unresolved message' : 'Olöst meddelande'} /> : null}
+            </span>
             <span>{label}</span>
           </Link>
         );
