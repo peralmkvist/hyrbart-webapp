@@ -1,8 +1,10 @@
-/* Hyrbart 2.0 bottom navigation.
-   Loaded after legacy styles so the old dark Liquid Glass menu cannot leak through. */
+/* Hyrbart 2.0 — canonical bottom navigation.
+   All bottom-nav positioning lives here. Do not override .liquidNav in globals/responsive/page CSS. */
 
 :root {
-  --bottom-nav-safe: 0px;
+  --bottom-nav-content-h: 58px;
+  --bottom-nav-safe: env(safe-area-inset-bottom, 0px);
+  --bottom-nav-h: calc(var(--bottom-nav-content-h) + var(--bottom-nav-safe));
 }
 
 .liquidNav {
@@ -10,15 +12,15 @@
   z-index: 200 !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: 10px !important;
+  bottom: 0 !important;
   transform: none !important;
   width: 100% !important;
   max-width: none !important;
-  height: 64px !important;
-  padding: 6px max(10px, env(safe-area-inset-left)) 0 max(10px, env(safe-area-inset-right)) !important;
+  height: var(--bottom-nav-h) !important;
+  padding: 4px max(10px, env(safe-area-inset-left)) var(--bottom-nav-safe) max(10px, env(safe-area-inset-right)) !important;
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  align-items: end !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
   border: 0 !important;
   border-top: 1px solid rgba(17, 17, 17, .08) !important;
   border-radius: 0 !important;
@@ -27,15 +29,8 @@
   box-shadow: none !important;
   backdrop-filter: blur(18px) !important;
   -webkit-backdrop-filter: blur(18px) !important;
+  overflow: visible !important;
   isolation: auto !important;
-}
-
-.liquidNav.renterNav,
-.liquidNav.hostNav { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
-
-/* Calendar uses a fixed-height internal scroller, so keep its nav flush to the viewport edge. */
-.liquidNav.calendarNav {
-  bottom: 0 !important;
 }
 
 .liquidNav::before,
@@ -47,8 +42,8 @@
 .liquidNav .navItem {
   position: relative !important;
   min-width: 0 !important;
-  height: 54px !important;
-  padding: 5px 4px 2px !important;
+  height: var(--bottom-nav-content-h) !important;
+  padding: 5px 4px 3px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -63,8 +58,8 @@
   font-size: 11px !important;
   line-height: 1 !important;
   font-weight: 550 !important;
-  -webkit-tap-highlight-color: transparent;
   transform: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .liquidNav .navItem .navIcon {
@@ -107,5 +102,5 @@
 }
 
 main {
-  padding-bottom: 74px !important;
+  padding-bottom: var(--bottom-nav-h) !important;
 }
