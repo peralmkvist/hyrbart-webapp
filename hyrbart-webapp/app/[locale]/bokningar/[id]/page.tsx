@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getProducts } from '@/lib/sanity-products';
 import styles from '../demo/page.module.css';
 
-function formatDate(value:string, locale:string, withYear=false){
-  return new Intl.DateTimeFormat(locale==='en'?'en-GB':'sv-SE',{day:'numeric',month:'short',...(withYear?{year:'numeric'}:{})}).format(new Date(`${value}T12:00:00`));
+function formatDate(value:string, locale:string){
+  return new Intl.DateTimeFormat(locale==='en'?'en-GB':'sv-SE',{day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));
 }
 function statusLabel(status:string,en:boolean){
   const sv:Record<string,string>={requested:'Förfrågan skickad',reserved:'Reserverad',accepted:'Godkänd',paid:'Betald',active:'Pågående',returned:'Återlämnad',completed:'Slutförd',declined:'Nekad',cancelled:'Avbokad',disputed:'Tvist',refunded:'Återbetald'};
@@ -28,6 +28,7 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
   const ownerImage=owner?.avatar_url||product?.owner?.profileImage;
   const reference=`HYR-${booking.id.replace(/-/g,'').slice(0,8).toUpperCase()}`;
   const total=Number(booking.total_price||0).toLocaleString(en?'en-GB':'sv-SE');
+  const productName=product?.name || (en?'Listing':'Annons');
 
   return <main className={styles.page}>
     <header className={styles.topbar}>
@@ -38,7 +39,7 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
     <section className={styles.productCard}>
       <span>{en?'Product':'Produkt'}</span>
       <strong>{product?.brand||''}</strong>
-      <h2>{product?.name||en?'Listing':'Annons'}</h2>
+      <h2>{productName}</h2>
       {product?<small>{en?(product.typeEn||product.type):product.type}</small>:null}
     </section>
 
