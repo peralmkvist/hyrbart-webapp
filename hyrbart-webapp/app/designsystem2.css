@@ -14,11 +14,6 @@
 html, body, button, input, textarea, select { font-family: var(--font-body-stack); }
 body { background: var(--bg); color: var(--ink); }
 h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading-stack); }
-.liquidNav { grid-template-columns: repeat(4,minmax(0,1fr)); width:min(calc(100% - 24px),620px); height:var(--nav-h); bottom:max(8px,env(safe-area-inset-bottom)); border:1px solid rgba(17,17,17,.06); border-radius:24px; background:rgba(255,255,255,.96); box-shadow:0 8px 28px rgba(17,17,17,.10); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
-.navItem { gap:3px; color:#6b7280; font-size:.68rem; font-weight:500; }
-.navItem.active { color:var(--ink); font-weight:750; }
-.navIcon { width:22px; height:22px; }
-.activeLens { display:none; }
 .ds2Page { max-width:760px; margin:0 auto; padding:var(--top-page-y) 20px 40px; }
 .ds2Page h1 { margin:0 0 28px; font-size:clamp(2.2rem,9vw,3.6rem); line-height:.95; letter-spacing:-.05em; }
 .ds2List { overflow:hidden; border:1px solid var(--line); border-radius:20px; background:var(--surface); }
