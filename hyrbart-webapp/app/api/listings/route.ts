@@ -17,14 +17,15 @@ export async function POST(request:Request){
     const {data:{user}}=await supabase.auth.getUser();
     if(!user)return NextResponse.json({error:'Logga in för att skapa en annons.'},{status:401});
 
-    const {data:profile,error:profileError}=await supabase.from('profiles').select('sanity_profile_id,payout_method_ready').eq('id',user.id).maybeSingle();
+    const {data:profile,error:profileError}=await supabase.from('profiles').select('sanity_profile_id,payout_method_ready,payout_provider_account_id,bankid_verified').eq('id',user.id).maybeSingle();
     if(profileError)throw profileError;
     if(!profile?.sanity_profile_id)return NextResponse.json({error:'Din uthyrarprofil är inte färdigkonfigurerad.'},{status:409});
 
     const form=await request.formData();
     const get=(key:string)=>String(form.get(key)||'').trim();
     const mode=get('mode')==='draft'?'draft':'publish';
-    if(mode==='publish'&&!profile.payout_method_ready)return NextResponse.json({error:'Koppla ett utbetalningskonto innan du kan publicera en annons.',code:'PAYOUT_METHOD_REQUIRED'},{status:409});
+    if(mode==='publish'&&!(profile.payout_method_ready&&profile.payout_provider_account_id))return NextResponse.json({error:'Koppla ett utbetalningskonto innan du kan publicera en annons.',code:'PAYOUT_METHOD_REQUIRED'},{status:409});
+    if(mode==='publish'&&!profile.bankid_verified)return NextResponse.json({error:'Verifiera din identitet med BankID innan du kan publicera en annons.',code:'BANKID_REQUIRED'},{status:409});
 
     const typeSv=get('typeSv'); const category=get('category'); const brand=get('brand'); const name=get('name'); const description=get('description'); const city=get('city');
     const dailyPrice=Number(get('dailyPrice')); const multiDayDiscountPercent=Number(get('multiDay')||0); const weeklyDiscountPercent=Number(get('weekly')||0); const availableNow=get('availableNow')!=='false';
