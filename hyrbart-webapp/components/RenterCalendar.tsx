@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ListIcon, ListingsIcon } from './Icons';
+import CalendarTodayJump from './CalendarTodayJump';
 
 type Booking = {
   id: string;
@@ -29,8 +30,8 @@ function monthDays(month: Date) {
 export default function RenterCalendar({ locale }: { locale: string }) {
   const en = locale === 'en';
   const today = useMemo(() => new Date(), []);
+  const todayMonth = useMemo(() => startOfMonth(today), [today]);
   const todayIso = iso(today);
-  const [baseMonth, setBaseMonth] = useState(startOfMonth(today));
   const [view, setView] = useState<'month'|'list'>('month');
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -56,7 +57,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
 
   const allBookings = useMemo(() => [demoBooking, ...bookings], [demoBooking, bookings]);
   const weekdayLabels = en ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
-  const months = useMemo(() => Array.from({ length: 12 }, (_, index) => addMonths(baseMonth, index)), [baseMonth]);
+  const months = useMemo(() => Array.from({ length: 49 }, (_, index) => addMonths(todayMonth, index - 24)), [todayMonth]);
   const bookingsOnDate = (date:string) => allBookings.filter(booking => booking.from <= date && booking.to >= date && !['rejected','declined'].includes(booking.status || ''));
   const upcomingBookings = useMemo(() => allBookings
     .filter(booking => booking.to >= todayIso && !['rejected','declined'].includes(booking.status || ''))
@@ -65,22 +66,12 @@ export default function RenterCalendar({ locale }: { locale: string }) {
     if (booking.status === 'accepted' || booking.status === 'booked') return en ? 'Booked' : 'Bokad';
     return en ? 'Reserved' : 'Reserverad';
   };
-  const goToToday = () => {
-    setBaseMonth(startOfMonth(today));
-    setView('month');
-    setViewMenuOpen(false);
-    requestAnimationFrame(() => {
-      document.querySelector<HTMLElement>('.renterCalendarPage .hostCalendarMonthsScroll')?.scrollTo({ top: 0, behavior: 'smooth' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  };
 
   return (
     <section className="hostCalendarPage renterCalendarPage">
       <div className="hostCalendarTop">
         <h1 style={{margin:0,marginRight:'auto',fontSize:'1.75rem',lineHeight:1.08,letterSpacing:'-.035em'}}>{en?'Your booking calendar':'Din bokningskalender'}</h1>
         <div className="hostCalendarTopActions">
-          <button type="button" className="hostCalendarToday" onClick={goToToday}>{en?'Today':'Idag'}</button>
           <div className="hostCalendarViewPicker">
             <button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={() => setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>
             {viewMenuOpen&&<div className="hostCalendarViewMenu" role="menu"><button type="button" className={view==='list'?'active':''} onClick={()=>{setView('list');setViewMenuOpen(false)}}><span>{en?'List':'Lista'}</span><ListIcon/></button><button type="button" className={view==='month'?'active':''} onClick={()=>{setView('month');setViewMenuOpen(false)}}><span>{en?'Calendar':'Kalender'}</span><ListingsIcon/></button></div>}
@@ -93,7 +84,8 @@ export default function RenterCalendar({ locale }: { locale: string }) {
           {months.map((month) => {
             const monthLabel = new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { month: 'long', year: 'numeric' }).format(month);
             const cells = monthDays(month);
-            return <section className="hostCalendarMonthSection" key={`${month.getFullYear()}-${month.getMonth()}`}>
+            const currentMonth = month.getFullYear() === todayMonth.getFullYear() && month.getMonth() === todayMonth.getMonth();
+            return <section className="hostCalendarMonthSection" data-current-month={currentMonth ? 'true' : undefined} key={`${month.getFullYear()}-${month.getMonth()}`}>
               <strong className="hostCalendarMonthTitle">{monthLabel}</strong>
               <div className="hostCalendarCard hostCalendarStackedCard">
                 <div className="hostCalendarWeekdays">{weekdayLabels.map(label=><span key={label}>{label}</span>)}</div>
@@ -116,6 +108,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
           })}
         </div>
         <div className="hostCalendarLegend"><span><i className="calendarDotBooked"/>{en?'Booked':'Bokad'}</span><span><i className="calendarDotReserved"/>{en?'Reserved':'Reserverad'}</span></div>
+        <CalendarTodayJump active={view==='month'} />
       </> : <div className="hostCalendarList">
         {loading&&bookings.length===0?<div className="hostCalendarListEmpty"><strong>{en?'Loading…':'Laddar…'}</strong></div>:upcomingBookings.length?upcomingBookings.map(booking=>{
           const name=[booking.product?.brand,booking.product?.name].filter(Boolean).join(' ') || (en?'Product':'Produkt');
