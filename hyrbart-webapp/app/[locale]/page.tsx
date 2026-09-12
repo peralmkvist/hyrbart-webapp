@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import ProductSearchForm from '@/components/ProductSearchForm';
-import { CategoryIcon } from '@/components/Icons';
+import { ArrowIcon, CategoryIcon } from '@/components/Icons';
 
 const popularCategories = [
   { sv: 'Verktyg', en: 'Tools', icon: 'Borra & Skruva' },
@@ -49,14 +49,17 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
-      <a href="https://www.byggmax.se/" target="_blank" rel="noreferrer sponsored" className="partnerImageAd" aria-label={en ? 'Advertisement from Byggmax' : 'Annons från Byggmax'}>
-        <img src="/byggmax-hyrbart-ad.webp" alt="Hyrbart × Byggmax – Sveriges prylar ska användas mer" />
+      <a href="https://www.byggmax.se/" target="_blank" rel="noreferrer sponsored" className="partnerAd3" aria-label={en ? 'Advertisement from Byggmax' : 'Annons från Byggmax'}>
+        <div className="partnerAdCopy3">
+          <div className="partnerLockup3"><strong>Hyrbart</strong><span>×</span><b>BYGGMAX</b></div>
+          <h2>{en ? 'Sweden’s things should be used more.' : 'Sveriges prylar ska användas mer.'}</h2>
+          <p>{en ? 'Rent what you only need sometimes.' : 'Hyr det du bara behöver ibland.'}<br/>{en ? 'Buy what you need all the time.' : 'Köp det du behöver hela tiden.'}</p>
+          <span className="partnerAdButton3">{en ? 'Visit Byggmax' : 'Till Byggmax'}<ArrowIcon /></span>
+        </div>
+        <div className="partnerAdVisual3" aria-hidden="true">
+          <img src="/byggmax-hyrbart-env.svg" alt="" />
+        </div>
       </a>
-
-      <style>{`
-        .partnerImageAd{display:block;width:100%;margin:28px 0 8px}
-        .partnerImageAd img{display:block;width:100%;height:auto}
-      `}</style>
     </div>
   );
 }
