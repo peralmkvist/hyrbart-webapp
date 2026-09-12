@@ -34,7 +34,7 @@ export async function POST(request:Request){
   const sourceProfileUrl=parseUrl(body.sourceProfileUrl,sourcePlatform);
   if(!sourceProfileUrl)return NextResponse.json({error:'INVALID_PROFILE_URL'},{status:400});
 
-  const rating=body.claimedRating==null||body.claimedRating===''?null:Number(body.claimedRating);
+  const rating=body.claimedRating==null||body.claimedRating===''?null:Number(String(body.claimedRating).replace(',','.'));
   const reviewCount=body.claimedReviewCount==null||body.claimedReviewCount===''?null:Number(body.claimedReviewCount);
   if(rating!=null&&(!Number.isFinite(rating)||rating<1||rating>5))return NextResponse.json({error:'INVALID_RATING'},{status:400});
   if(reviewCount!=null&&(!Number.isInteger(reviewCount)||reviewCount<0))return NextResponse.json({error:'INVALID_REVIEW_COUNT'},{status:400});
