@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -34,7 +35,7 @@ export default function BookingActions({ slug, from, to, locale }: Props) {
     try {
       const response = await fetch('/api/booking-request-safe', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, from, to, requestType, message }),
+        body: JSON.stringify({ slug, from, to, requestType, message, locale }),
       });
       const data = await response.json() as { error?: string; code?: string; reserved?: boolean; bookingId?: string };
       if (response.status === 401) {
@@ -61,6 +62,7 @@ export default function BookingActions({ slug, from, to, locale }: Props) {
     <button type="button" className="bookingPrimary2" disabled={sending || checking || unavailable} onClick={() => send('booking')}>{checking ? (en ? 'Checking availability…' : 'Kontrollerar tillgänglighet…') : sending ? (en ? 'Sending…' : 'Skickar…') : (en ? 'Send booking request' : 'Skicka bokningsförfrågan')}</button>
     <button type="button" className="bookingSecondary2" disabled={sending || checking || unavailable} onClick={() => setMode('reserve-question')}>{en ? 'Reserve and ask a question' : 'Reservera och skicka fråga'}</button>
     {!unavailable ? <p className="bookingHelper2">{en ? 'Reservation temporarily blocks the selected dates while you wait for an answer.' : 'En reservation blockerar tillfälligt de valda datumen medan du väntar på svar.'}</p> : null}
+    <p className="bookingHelper2">{en ? 'By sending a request you accept Hyrbart’s ' : 'Genom att skicka en förfrågan godkänner du Hyrbarts '}<Link href={`/topsecret/${locale}/hyresvillkor`}>{en ? 'rental terms' : 'hyresvillkor'}</Link>.</p>
     {feedback ? <p className="bookingFeedback2" role="status">{feedback}</p> : null}
     {mode === 'reserve-question' ? <div className="bookingQuestionOverlay2" role="dialog" aria-modal="true" onClick={() => !sending && setMode(null)}>
       <div className="bookingQuestionSheet2" onClick={(event) => event.stopPropagation()}>
