@@ -1,11 +1,5 @@
 /* Hyrbart 2.0 — canonical bottom navigation.
-   All bottom-nav positioning lives here. Do not override .liquidNav in globals/responsive/page CSS. */
-
-:root {
-  --bottom-nav-content-h: 58px;
-  --bottom-nav-safe: env(safe-area-inset-bottom, 0px);
-  --bottom-nav-h: calc(var(--bottom-nav-content-h) + var(--bottom-nav-safe));
-}
+   All bottom-nav positioning lives here. Shared measurements come from tokens.css. */
 
 .liquidNav {
   position: fixed !important;
@@ -72,14 +66,14 @@
 
 .liquidNav .navItem.active,
 .liquidNav .navItem[aria-current="page"] {
-  color: #111 !important;
+  color: var(--ink) !important;
   font-weight: 750 !important;
   text-shadow: none !important;
 }
 
 .liquidNav .navItem.active .navIcon,
 .liquidNav .navItem[aria-current="page"] .navIcon {
-  color: #111 !important;
+  color: currentColor !important;
   stroke: currentColor !important;
 }
 
@@ -97,7 +91,7 @@
   height: 3px !important;
   transform: translateX(-50%) !important;
   border-radius: 999px !important;
-  background: #ffcc00 !important;
+  background: var(--accent) !important;
   box-shadow: none !important;
 }
 
