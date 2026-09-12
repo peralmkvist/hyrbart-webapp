@@ -27,6 +27,13 @@
   isolation: auto !important;
 }
 
+/* iOS standalone renders the non-scrollable renter landing page one nav-content
+   height above the bottom viewport edge. Keep the canonical nav for every other
+   route and compensate only on the renter home route. */
+.liquidNav.renterHomeNav {
+  transform: translateY(var(--bottom-nav-content-h)) !important;
+}
+
 .liquidNav::before,
 .liquidNav::after {
   display: none !important;
