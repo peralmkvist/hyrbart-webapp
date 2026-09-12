@@ -180,7 +180,7 @@ export default function HostCalendar({ locale }: { locale: string }) {
 
   const bookingStatusLabel = (block:Block) => {
     switch (block.bookingStatus) {
-      case 'requested': return en?'Request':'Förfrågan';
+      case 'requested': return en?'Booking request received':'Bokningsförfrågan mottagen';
       case 'reserved': return en?'Reserved':'Reserverad';
       case 'accepted': return en?'Approved':'Godkänd';
       case 'paid': return en?'Paid':'Betald';
