@@ -84,7 +84,7 @@
   align-items: center;
   gap: 0;
   min-height: 142px;
-  margin: 0 0 20px;
+  margin: 28px 0 20px;
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 20px;
@@ -246,6 +246,7 @@
   .ownerCard {
     grid-template-columns: 1fr 1fr;
     min-height: 0;
+    margin-top: 32px;
     padding: 16px;
   }
 
