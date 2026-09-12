@@ -26,12 +26,19 @@ async function enrichMessages(rows: any[]) {
 async function notifyCounterpart(booking: { renter_id: string; owner_id: string; product_id: string }, senderId: string, bookingId: string, body: string) {
   const recipientId = booking.renter_id === senderId ? booking.owner_id : booking.renter_id;
   if (!recipientId) return;
-  const products = await getProducts();
+
+  const admin = createAdminClient();
+  const [{ data: senderProfile }, products] = await Promise.all([
+    admin.from('profiles').select('display_name').eq('id', senderId).maybeSingle(),
+    getProducts(),
+  ]);
+  const senderName = senderProfile?.display_name?.trim() || 'Hyrbart-användare';
   const product = products.find(item => item.id === booking.product_id);
   const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt';
   const message = body.length > 120 ? `${body.slice(0, 117)}…` : body;
+
   await sendPushToUser(recipientId, {
-    title: 'Nytt meddelande',
+    title: `Nytt meddelande från ${senderName}`,
     body: `${productName}\n${message}`,
     url: `/topsecret/sv/bokningar/${bookingId}`,
     tag: `booking-message-${bookingId}`,
