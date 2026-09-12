@@ -32,24 +32,17 @@ export default function BookingActions({ slug, from, to, locale }: Props) {
     if (requestType === 'reserve-question' && !message.trim()) return;
     setSending(true); setFeedback('');
     try {
-      const availabilityResponse = await fetch(`/api/availability/check?${new URLSearchParams({ slug, from, to }).toString()}`, { cache: 'no-store' });
-      const availabilityData = await availabilityResponse.json() as { available?: boolean };
-      if (availabilityResponse.ok && !availabilityData.available) {
-        setAvailable(false);
-        setFeedback(en ? 'These dates are no longer available. Choose another rental period.' : 'Datumen är inte längre tillgängliga. Välj en annan hyresperiod.');
-        return;
-      }
-      const response = await fetch('/api/booking-request', {
+      const response = await fetch('/api/booking-request-safe', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, from, to, requestType, message }),
       });
-      const data = await response.json() as { error?: string; reserved?: boolean; bookingId?: string };
+      const data = await response.json() as { error?: string; code?: string; reserved?: boolean; bookingId?: string };
       if (response.status === 401) {
         const next = encodeURIComponent(window.location.pathname + window.location.search);
         router.push(`/topsecret/${locale}/logga-in?next=${next}`); return;
       }
       if (!response.ok) {
-        if (response.status === 409 && data.error?.toLowerCase().includes('tillgäng')) setAvailable(false);
+        if (data.code === 'DATES_UNAVAILABLE' || (response.status === 409 && data.error?.toLowerCase().includes('tillgäng'))) setAvailable(false);
         throw new Error(data.error || (en ? 'Could not send request.' : 'Kunde inte skicka förfrågan.'));
       }
       if (data.bookingId) { router.push(`/topsecret/${locale}/bokningar/${data.bookingId}`); return; }
