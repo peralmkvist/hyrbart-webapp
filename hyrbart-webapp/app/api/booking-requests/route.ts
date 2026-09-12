@@ -13,8 +13,8 @@ export async function GET() {
     const [{ data: rows, error }, products] = await Promise.all([
       supabase
         .from('bookings')
-        .select('id,product_id,start_date,end_date,status,request_type,total_price,created_at')
-        .eq('renter_id', user.id)
+        .select('id,product_id,start_date,end_date,status,request_type,total_price,created_at,renter_id,owner_id')
+        .or(`renter_id.eq.${user.id},owner_id.eq.${user.id}`)
         .order('start_date', { ascending: true }),
       getProducts(),
     ]);
@@ -30,6 +30,7 @@ export async function GET() {
         requestType: row.request_type,
         total: row.total_price,
         createdAt: row.created_at,
+        role: row.owner_id === user.id ? 'owner' : 'renter',
         product: product ? { slug: product.slug, brand: product.brand, name: product.name, image: product.image } : undefined,
       };
     });
