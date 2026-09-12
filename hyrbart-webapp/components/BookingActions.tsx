@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Props = {
   slug: string;
@@ -11,6 +12,7 @@ type Props = {
 
 export default function BookingActions({ slug, from, to, locale }: Props) {
   const en = locale === 'en';
+  const router = useRouter();
   const [mode, setMode] = useState<'booking'|'reserve-question'|null>(null);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -25,8 +27,17 @@ export default function BookingActions({ slug, from, to, locale }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, from, to, requestType, message }),
       });
-      const data = await response.json() as { error?: string; reserved?: boolean };
+      const data = await response.json() as { error?: string; reserved?: boolean; bookingId?: string };
+      if (response.status === 401) {
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        router.push(`/topsecret/${locale}/logga-in?next=${next}`);
+        return;
+      }
       if (!response.ok) throw new Error(data.error || (en ? 'Could not send request.' : 'Kunde inte skicka förfrågan.'));
+      if (data.bookingId) {
+        router.push(`/topsecret/${locale}/bokningar/${data.bookingId}`);
+        return;
+      }
       setFeedback(requestType === 'reserve-question'
         ? (en ? 'Reserved while the host answers your question.' : 'Produkten är reserverad medan uthyraren svarar på din fråga.')
         : (en ? 'Booking request sent.' : 'Bokningsförfrågan är skickad.'));
@@ -37,7 +48,7 @@ export default function BookingActions({ slug, from, to, locale }: Props) {
   }
 
   return <section className="bookingActions2" aria-label={en ? 'Booking actions' : 'Bokningsalternativ'}>
-    <button type="button" className="bookingPrimary2" disabled={sending} onClick={() => send('booking')}>{en ? 'Send booking request' : 'Skicka bokningsförfrågan'}</button>
+    <button type="button" className="bookingPrimary2" disabled={sending} onClick={() => send('booking')}>{sending ? (en ? 'Sending…' : 'Skickar…') : (en ? 'Send booking request' : 'Skicka bokningsförfrågan')}</button>
     <button type="button" className="bookingSecondary2" disabled={sending} onClick={() => setMode('reserve-question')}>{en ? 'Reserve and ask a question' : 'Reservera och skicka fråga'}</button>
     <p className="bookingHelper2">{en ? 'Reservation temporarily blocks the selected dates while you wait for an answer.' : 'En reservation blockerar tillfälligt de valda datumen medan du väntar på svar.'}</p>
     {feedback ? <p className="bookingFeedback2" role="status">{feedback}</p> : null}
