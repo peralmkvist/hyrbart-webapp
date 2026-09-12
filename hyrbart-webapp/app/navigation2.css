@@ -1,6 +1,11 @@
 /* Hyrbart 2.0 bottom navigation.
    Loaded after legacy styles so the old dark Liquid Glass menu cannot leak through. */
 
+:root {
+  /* Clamp iOS safe-area so a bad/inflated inset can never make the nav float high. */
+  --bottom-nav-safe: min(env(safe-area-inset-bottom), 22px);
+}
+
 .liquidNav {
   position: fixed !important;
   z-index: 200 !important;
@@ -10,8 +15,8 @@
   transform: none !important;
   width: 100% !important;
   max-width: none !important;
-  height: calc(64px + env(safe-area-inset-bottom)) !important;
-  padding: 5px max(10px, env(safe-area-inset-left)) env(safe-area-inset-bottom) max(10px, env(safe-area-inset-right)) !important;
+  height: calc(58px + var(--bottom-nav-safe)) !important;
+  padding: 4px max(10px, env(safe-area-inset-left)) var(--bottom-nav-safe) max(10px, env(safe-area-inset-right)) !important;
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   align-items: stretch !important;
@@ -38,8 +43,8 @@
 .liquidNav .navItem {
   position: relative !important;
   min-width: 0 !important;
-  height: 59px !important;
-  padding: 6px 4px 5px !important;
+  height: 54px !important;
+  padding: 5px 4px 4px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -87,7 +92,7 @@
   content: "" !important;
   position: absolute !important;
   left: 50% !important;
-  top: 2px !important;
+  top: 1px !important;
   width: 22px !important;
   height: 3px !important;
   transform: translateX(-50%) !important;
@@ -97,5 +102,5 @@
 }
 
 main {
-  padding-bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(64px + var(--bottom-nav-safe)) !important;
 }
