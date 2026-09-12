@@ -58,6 +58,8 @@ export default function RenterCalendar({ locale }: { locale: string }) {
     return en ? 'Reserved' : 'Reserverad';
   };
 
+  const legend = <div className="hostCalendarLegend renterCalendarInlineLegend"><span><i className="calendarDotBooked"/>{en?'Booked':'Bokad'}</span><span><i className="calendarDotReserved"/>{en?'Reserved':'Reserverad'}</span></div>;
+
   return (
     <section className="hostCalendarPage renterCalendarPage">
       <div className="hostCalendarTop">
@@ -77,7 +79,9 @@ export default function RenterCalendar({ locale }: { locale: string }) {
             const cells = monthDays(month);
             const currentMonth = month.getFullYear() === todayMonth.getFullYear() && month.getMonth() === todayMonth.getMonth();
             return <section className="hostCalendarMonthSection" data-current-month={currentMonth ? 'true' : undefined} key={`${month.getFullYear()}-${month.getMonth()}`}>
-              <strong className="hostCalendarMonthTitle">{monthLabel}</strong>
+              {currentMonth
+                ? <div className="renterCalendarMonthHeading"><strong className="hostCalendarMonthTitle">{monthLabel}</strong>{legend}</div>
+                : <strong className="hostCalendarMonthTitle">{monthLabel}</strong>}
               <div className="hostCalendarCard hostCalendarStackedCard">
                 <div className="hostCalendarWeekdays">{weekdayLabels.map(label=><span key={label}>{label}</span>)}</div>
                 <div className="hostCalendarGrid hostCalendarStackedGrid">{cells.map((date,index)=>{
@@ -98,7 +102,6 @@ export default function RenterCalendar({ locale }: { locale: string }) {
             </section>;
           })}
         </div>
-        <div className="hostCalendarLegend"><span><i className="calendarDotBooked"/>{en?'Booked':'Bokad'}</span><span><i className="calendarDotReserved"/>{en?'Reserved':'Reserverad'}</span></div>
         <CalendarTodayJump active={view==='month'} />
       </> : <div className="hostCalendarList">
         {loading&&bookings.length===0?<div className="hostCalendarListEmpty"><strong>{en?'Loading…':'Laddar…'}</strong></div>:upcomingBookings.length?upcomingBookings.map(booking=>{
