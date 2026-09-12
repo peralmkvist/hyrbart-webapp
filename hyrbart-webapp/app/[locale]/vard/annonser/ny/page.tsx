@@ -8,6 +8,6 @@ export default async function NewListingPage({ params }: { params: Promise<{ loc
   const {data:{user}}=await supabase.auth.getUser();
   if(!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/${locale}/vard/annonser/ny`)}`);
   const {data:profile}=await supabase.from('profiles').select('display_name,city,payout_method_ready,sanity_profile_id').eq('id',user.id).maybeSingle();
-  if(!profile?.display_name||!profile?.city||!profile?.sanity_profile_id||!profile?.payout_method_ready) redirect(`/${locale}/vard/onboarding`);
-  return <NewListingFlow locale={locale} />;
+  if(!profile?.display_name||!profile?.city||!profile?.sanity_profile_id) redirect(`/${locale}/vard/onboarding`);
+  return <NewListingFlow locale={locale} payoutReady={Boolean(profile.payout_method_ready)} />;
 }
