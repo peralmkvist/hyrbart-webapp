@@ -221,9 +221,14 @@ export default function ProductSearchForm({
     setShowLocationSuggestions(false);
     setExpanded(true);
     setSearchStarted(false);
+    (document.activeElement as HTMLElement | null)?.blur();
     queryInputRef.current?.blur();
     placeInputRef.current?.blur();
-    router.push(`/${locale}`, { scroll: false });
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    window.setTimeout(() => {
+      router.replace(`/${locale}`, { scroll: true });
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }));
+    }, 180);
   }
 
   function closeWhat() {
@@ -345,7 +350,7 @@ export default function ProductSearchForm({
     <div className={`rentalSearchSection2 whatSection2 ${activeStep === 'what' ? 'active' : ''}`}>
       <label className="rentalSearchField2 rentalWhatField2">
         <button type="button" className="rentalLeadingIcon2" onPointerDown={event => event.preventDefault()} onClick={() => activeStep === 'what' ? closeWhat() : activateWhat()} aria-label={activeStep === 'what' ? (en ? 'Back' : 'Tillbaka') : (en ? 'Search' : 'Sök')}>{activeStep === 'what' ? <BackIcon /> : <SearchIcon />}</button>
-        <span>{activeStep === 'what' && <b>{en ? 'What' : 'Vad'}</b>}<input ref={queryInputRef} value={query} onFocus={activateWhat} onChange={e => { setQuery(e.target.value); setShowProductSuggestions(true); }} onKeyDown={queryKeyDown} enterKeyHint="next" autoComplete="off" placeholder={activeStep === 'what' ? (en ? 'Search rental items' : 'Sök hyresobjekt') : (en ? 'What do you need?' : 'Vad behöver du?')} /></span>
+        <span>{activeStep === 'what' && <b>{en ? 'What' : 'Vad'}</b>}<input ref={queryInputRef} value={query} onFocus={activateWhat} onChange={e => { setQuery(e.target.value); setShowProductSuggestions(true); }} onKeyDown={queryKeyDown} enterKeyHint="next" autoComplete="off" placeholder={activeStep === 'what' ? (en ? 'Search rental items' : 'Sök hyresobjekt') : (en ? 'Start your search' : 'Påbörja din sökning')} /></span>
       </label>
       {activeStep === 'what' && showProductSuggestions && <div className="searchSuggestMenu2 whatSuggestMenu2" role="listbox">
         {query.trim() && productSuggestions.map(item => <button type="button" className="searchSuggestItem2" key={`${item.kind}-${item.label}`} onPointerDown={e => e.preventDefault()} onClick={() => pickProduct(item.label)}><span>{item.label}</span><small>{item.kind === 'product' ? (en ? 'product' : 'produkt') : item.kind === 'category' ? (en ? 'category' : 'kategori') : (en ? 'type' : 'typ')}</small></button>)}
