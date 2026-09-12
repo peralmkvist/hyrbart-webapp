@@ -38,14 +38,28 @@ export async function GET() {
         ? await supabase.from('profiles').select('id,display_name').in('id', renterIds)
         : { data: [] as Array<{id:string;display_name:string|null}> };
       const renterNames = new Map((renters ?? []).map(renter => [renter.id, renter.display_name || 'Hyrestagare']));
-      bookingBlocks = (rows ?? []).map(row => ({
-        id: row.id,
-        productId: row.product_id,
-        from: row.start_date,
-        to: row.end_date,
-        status: ['accepted','paid','active','returned'].includes(row.status) ? 'booked' : 'reserved',
-        note: renterNames.get(row.renter_id),
-      }));
+      bookingBlocks = (rows ?? []).map(row => {
+        const renter = renterNames.get(row.renter_id) || 'Hyrestagare';
+        const workflowLabel = row.status === 'requested'
+          ? 'Bokningsförfrågan'
+          : row.status === 'reserved'
+            ? 'Reserverad'
+            : row.status === 'accepted'
+              ? 'Godkänd'
+              : row.status === 'paid'
+                ? 'Betald'
+                : row.status === 'active'
+                  ? 'Pågående'
+                  : 'Återlämnad';
+        return {
+          id: row.id,
+          productId: row.product_id,
+          from: row.start_date,
+          to: row.end_date,
+          status: ['accepted','paid','active','returned'].includes(row.status) ? 'booked' : 'reserved',
+          note: `${workflowLabel} · ${renter}`,
+        };
+      });
     }
     return NextResponse.json({ products, blocks: [...sanityBlocks, ...bookingBlocks] });
   } catch (error) {
@@ -89,7 +103,7 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error('Availability POST failed', error);
+    console.error('Sanity mutation failed', error);
     return NextResponse.json({ error: 'Kunde inte spara blockeringen.' }, { status: 502 });
   }
 }
