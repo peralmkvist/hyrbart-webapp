@@ -23,14 +23,23 @@ export async function GET(request: Request) {
       cache: 'no-store',
     });
     if (!response.ok) return NextResponse.json({ results: [] }, { status: 200 });
-    const data = await response.json() as Array<{ display_name?: string; lat?: string; lon?: string; type?: string }>;
+    const data = await response.json() as Array<{ display_name?: string; lat?: string; lon?: string; type?: string; address?: Record<string,string> }>;
     return NextResponse.json({
-      results: data.map((item) => ({
-        label: item.display_name || '',
-        lat: Number(item.lat),
-        lng: Number(item.lon),
-        type: item.type || '',
-      })).filter((item) => item.label && Number.isFinite(item.lat) && Number.isFinite(item.lng)),
+      results: data.map((item) => {
+        const a=item.address||{};
+        const city=a.city||a.town||a.village||a.municipality||a.county||'';
+        const area=a.suburb||a.neighbourhood||a.quarter||a.city_district||'';
+        const address=[a.road,a.house_number].filter(Boolean).join(' ');
+        return {
+          label: item.display_name || '',
+          lat: Number(item.lat),
+          lng: Number(item.lon),
+          type: item.type || '',
+          city,
+          area,
+          address,
+        };
+      }).filter((item) => item.label && Number.isFinite(item.lat) && Number.isFinite(item.lng)),
     });
   } catch {
     return NextResponse.json({ results: [] });
