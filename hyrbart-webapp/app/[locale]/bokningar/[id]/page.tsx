@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getProducts } from '@/lib/sanity-products';
+import OwnerBookingActions from '@/components/OwnerBookingActions';
+import BookingMessageThread from '@/components/BookingMessageThread';
 import styles from '../demo/page.module.css';
 
 function formatDate(value:string, locale:string){
@@ -21,18 +23,24 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
 
   const {data:booking,error}=await supabase.from('bookings').select('*').eq('id',id).maybeSingle();
   if(error||!booking) notFound();
+  if(booking.renter_id!==user.id && booking.owner_id!==user.id) notFound();
+
   const products=await getProducts();
   const product=products.find(item=>item.id===booking.product_id);
-  const {data:owner}=await supabase.from('profiles').select('display_name,avatar_url,city').eq('id',booking.owner_id).maybeSingle();
-  const ownerName=owner?.display_name||product?.owner?.name||'Uthyrare';
-  const ownerImage=owner?.avatar_url||product?.owner?.profileImage;
+  const isOwner=booking.owner_id===user.id;
+  const counterpartId=isOwner?booking.renter_id:booking.owner_id;
+  const {data:counterpart}=await supabase.from('profiles').select('display_name,avatar_url,city').eq('id',counterpartId).maybeSingle();
+  const fallbackName=isOwner?(en?'Renter':'Hyrare'):(product?.owner?.name||(en?'Owner':'Uthyrare'));
+  const counterpartName=counterpart?.display_name||fallbackName;
+  const counterpartImage=counterpart?.avatar_url||(!isOwner?product?.owner?.profileImage:undefined);
   const reference=`HYR-${booking.id.replace(/-/g,'').slice(0,8).toUpperCase()}`;
   const total=Number(booking.total_price||0).toLocaleString(en?'en-GB':'sv-SE');
   const productName=product?.name || (en?'Listing':'Annons');
+  const backHref=isOwner?`/topsecret/${locale}/vard`:`/topsecret/${locale}/kalender`;
 
   return <main className={styles.page}>
     <header className={styles.topbar}>
-      <Link href={`/topsecret/${locale}/kalender`} className={styles.back} aria-label={en?'Back':'Tillbaka'}>‹</Link>
+      <Link href={backHref} className={styles.back} aria-label={en?'Back':'Tillbaka'}>‹</Link>
       <h1>{en?'Booking':'Bokning'}</h1>
     </header>
 
@@ -44,9 +52,11 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
     </section>
 
     <section className={styles.ownerCard}>
-      {ownerImage?<img src={ownerImage} alt={ownerName} className={styles.ownerAvatarImage}/>:<div className={styles.ownerAvatar}>{ownerName.slice(0,1)}</div>}
-      <div><span>{en?'Owner':'Uthyrare'}</span><h2>{ownerName}</h2>{owner?.city?<small>{owner.city}</small>:null}</div>
+      {counterpartImage?<img src={counterpartImage} alt={counterpartName} className={styles.ownerAvatarImage}/>:<div className={styles.ownerAvatar}>{counterpartName.slice(0,1)}</div>}
+      <div><span>{isOwner?(en?'Renter':'Hyrare'):(en?'Owner':'Uthyrare')}</span><h2>{counterpartName}</h2>{counterpart?.city?<small>{counterpart.city}</small>:null}</div>
     </section>
+
+    {isOwner?<OwnerBookingActions bookingId={booking.id} status={booking.status} locale={locale}/>:null}
 
     <section className={styles.card}>
       <div className={styles.split}><div><span>{en?'Pickup':'Utlämning'}</span><strong>{formatDate(booking.start_date,locale)}</strong></div><div><span>{en?'Return':'Återlämning'}</span><strong>{formatDate(booking.end_date,locale)}</strong></div></div>
@@ -61,7 +71,7 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
       <div className={styles.infoRow}><div><span>{en?'Booking reference':'Bokningsreferens'}</span><strong>{reference}</strong></div></div>
     </section>
 
-    {booking.message?<section className={styles.card}><div className={styles.infoRow}><div><span>{en?'Your question':'Din fråga'}</span><strong>{booking.message}</strong></div></div></section>:null}
-    <Link href={`/topsecret/${locale}/meddelanden`} className={styles.message}>{en?'Send message':'Skicka meddelande'}</Link>
+    {booking.message?<section className={styles.card}><div className={styles.infoRow}><div><span>{isOwner?(en?'Renter question':'Hyrarens fråga'):(en?'Your question':'Din fråga')}</span><strong>{booking.message}</strong></div></div></section>:null}
+    <BookingMessageThread bookingId={booking.id} locale={locale} counterpartName={counterpartName}/>
   </main>;
 }
