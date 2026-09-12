@@ -57,7 +57,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <p>{en ? 'Rent what you only need sometimes.' : 'Hyr det du bara behöver ibland.'}<br/><strong>{en ? 'Buy what you need all the time.' : 'Köp det du behöver hela tiden.'}</strong></p>
           <a href="https://www.byggmax.se/" target="_blank" rel="noreferrer sponsored" className="partnerAdButton3">{en ? 'Visit Byggmax' : 'Till Byggmax'}<ArrowIcon /></a>
         </div>
-        <div className="partnerAdVisual3" aria-hidden="true"><span className="partnerAdShape3" /></div>
+        <div className="partnerAdVisual3" aria-hidden="true">
+          <img src="/byggmax-hyrbart-env.svg" alt="" />
+        </div>
       </section>
     </div>
   );
