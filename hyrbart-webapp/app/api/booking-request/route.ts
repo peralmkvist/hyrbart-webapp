@@ -98,6 +98,19 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Logga in för att skicka en bokningsförfrågan.' }, { status: 401 });
 
+    const { data: renterProfile, error: renterProfileError } = await admin
+      .from('profiles')
+      .select('payment_method_ready')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (renterProfileError) throw renterProfileError;
+    if (!renterProfile?.payment_method_ready) {
+      return NextResponse.json({
+        error: 'Lägg till en betalningsmetod innan du kan boka.',
+        code: 'PAYMENT_METHOD_REQUIRED',
+      }, { status: 409 });
+    }
+
     const product = await getProduct(slug);
     if (!product?.id) return NextResponse.json({ error: 'Annonsen hittades inte.' }, { status: 404 });
     if (!product.owner?.id) return NextResponse.json({ error: 'Annonsen saknar en kopplad uthyrare.' }, { status: 409 });
