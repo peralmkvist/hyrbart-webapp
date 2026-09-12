@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getProducts } from '@/lib/sanity-products';
 import OwnerBookingActions from '@/components/OwnerBookingActions';
+import BookingPaymentActions from '@/components/BookingPaymentActions';
 import BookingMessageThread from '@/components/BookingMessageThread';
 import BookingConditionEvidence from '@/components/BookingConditionEvidence';
 import styles from '../demo/page.module.css';
@@ -11,10 +12,11 @@ function formatDate(value:string, locale:string){
   return new Intl.DateTimeFormat(locale==='en'?'en-GB':'sv-SE',{day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));
 }
 function statusLabel(status:string,en:boolean){
-  const sv:Record<string,string>={requested:'Förfrågan skickad',reserved:'Reserverad',accepted:'Godkänd',paid:'Betald',active:'Pågående',returned:'Återlämnad',completed:'Slutförd',declined:'Nekad',cancelled:'Avbokad',disputed:'Tvist',refunded:'Återbetald'};
-  const english:Record<string,string>={requested:'Request sent',reserved:'Reserved',accepted:'Accepted',paid:'Paid',active:'Active',returned:'Returned',completed:'Completed',declined:'Declined',cancelled:'Cancelled',disputed:'Disputed',refunded:'Refunded'};
+  const sv:Record<string,string>={requested:'Förfrågan skickad',reserved:'Reserverad',accepted:'Väntar på betalning',paid:'Betald',active:'Pågående',returned:'Återlämnad',completed:'Slutförd',declined:'Nekad',cancelled:'Avbokad',disputed:'Tvist',refunded:'Återbetald'};
+  const english:Record<string,string>={requested:'Request sent',reserved:'Reserved',accepted:'Awaiting payment',paid:'Paid',active:'Active',returned:'Returned',completed:'Completed',declined:'Declined',cancelled:'Cancelled',disputed:'Disputed',refunded:'Refunded'};
   return (en?english:sv)[status]??status;
 }
+function money(value:unknown, locale:string){ return Number(value||0).toLocaleString(locale==='en'?'en-GB':'sv-SE'); }
 
 export default async function BookingPage({params}:{params:Promise<{locale:string;id:string}>}){
   const {locale,id}=await params; const en=locale==='en';
@@ -35,7 +37,6 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
   const counterpartName=counterpart?.display_name||fallbackName;
   const counterpartImage=counterpart?.avatar_url||(!isOwner?product?.owner?.profileImage:undefined);
   const reference=`HYR-${booking.id.replace(/-/g,'').slice(0,8).toUpperCase()}`;
-  const total=Number(booking.total_price||0).toLocaleString(en?'en-GB':'sv-SE');
   const productName=product?.name || (en?'Listing':'Annons');
   const backHref=isOwner?`/topsecret/${locale}/vard`:`/topsecret/${locale}/kalender`;
 
@@ -57,13 +58,18 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
       <div><span>{isOwner?(en?'Renter':'Hyrare'):(en?'Owner':'Uthyrare')}</span><h2>{counterpartName}</h2>{counterpart?.city?<small>{counterpart.city}</small>:null}</div>
     </section>
 
-    {isOwner?<OwnerBookingActions bookingId={booking.id} status={booking.status} locale={locale}/>:null}
+    {isOwner?<OwnerBookingActions bookingId={booking.id} status={booking.status} locale={locale}/>:<BookingPaymentActions bookingId={booking.id} status={booking.status} locale={locale}/>} 
 
     <BookingConditionEvidence bookingId={booking.id} status={booking.status} locale={locale} isRenter={!isOwner}/>
 
     <section className={styles.card}>
       <div className={styles.split}><div><span>{en?'Pickup':'Utlämning'}</span><strong>{formatDate(booking.start_date,locale)}</strong></div><div><span>{en?'Return':'Återlämning'}</span><strong>{formatDate(booking.end_date,locale)}</strong></div></div>
-      <div className={styles.total}><span>{en?'Total':'Totalsumma'}</span><strong>{total} kr</strong></div>
+      <div className={styles.divider}/>
+      <div className={styles.infoRow}><div><span>{en?'Rental':'Hyra'}</span><strong>{money(booking.rental_price,locale)} kr</strong></div></div>
+      <div className={styles.divider}/>
+      <div className={styles.infoRow}><div><span>{en?'Service fee':'Serviceavgift'}</span><strong>{money(booking.service_fee,locale)} kr</strong></div></div>
+      <div className={styles.total}><span>{en?'Total':'Totalsumma'}</span><strong>{money(booking.total_price,locale)} kr</strong></div>
+      <small style={{display:'block',marginTop:10,color:'var(--muted)'}}>{en?'This price is locked to this booking and will not change if the listing price changes later.':'Priset är låst till den här bokningen och ändras inte om annonspriset ändras senare.'}</small>
     </section>
 
     <section className={styles.card}>
