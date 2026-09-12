@@ -1,0 +1,2 @@
+import Link from'next/link';import{redirect}from'next/navigation';import{requireAdmin}from'@/lib/admin';import AdminCaseDetail from'@/components/AdminCaseDetail';
+export default async function Page({params}:{params:Promise<{locale:string;id:string}>}){const{locale,id}=await params,user=await requireAdmin();if(!user)redirect(`/${locale}`);return <main className="adminPage"><header className="adminDetailTop"><Link href={`/${locale}/admin/arenden`}>‹</Link><div><span>HYRBART SUPPORT</span><h1>Ärende</h1></div></header><AdminCaseDetail caseId={id}/></main>}
