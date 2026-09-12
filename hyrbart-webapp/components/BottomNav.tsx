@@ -26,6 +26,7 @@ export default function BottomNav() {
   const locale = isEnglish ? 'en' : 'sv';
   const base = `/topsecret/${locale}`;
   const hostMode = appPath === `/${locale}/vard` || appPath.startsWith(`/${locale}/vard/`);
+  const calendarMode = appPath.startsWith(`/${locale}/kalender`);
 
   const renterLabels = isEnglish
     ? { explore: 'Explore', calendar: 'Calendar', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
@@ -52,7 +53,7 @@ export default function BottomNav() {
       ];
 
   return (
-    <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
+    <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'} ${calendarMode ? 'calendarNav' : ''}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
       {items.map(({ href, label, Icon, match }) => {
         const active = match(appPath);
         return (
