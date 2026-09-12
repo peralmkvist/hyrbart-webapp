@@ -1,11 +1,35 @@
 import Link from 'next/link';
 import ProfileLanguageSetting from '@/components/ProfileLanguageSetting';
+import { createClient } from '@/lib/supabase/server';
 
 const MenuChevron = () => <span className="profileChevron" aria-hidden="true">›</span>;
+
+type Profile = {
+  display_name: string | null;
+  city: string | null;
+  avatar_url: string | null;
+};
 
 export default async function HostProfilePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const en = locale === 'en';
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let profile: Profile | null = null;
+
+  if (user) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('display_name, city, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle();
+    profile = data;
+  }
+
+  const displayName = profile?.display_name || 'Per';
+  const city = profile?.city || 'Danderyd';
+  const initial = displayName.trim().charAt(0).toUpperCase() || 'P';
+  const publicProfileHref = `/${locale}/profil/per`;
   const menu = en
     ? ['Account settings', 'Host settings', 'Get help', 'View profile', 'Terms', 'Privacy', 'Log out']
     : ['Kontoinställningar', 'Uthyrarinställningar', 'Få hjälp', 'Visa profil', 'Allmänna villkor', 'Sekretess', 'Logga ut'];
@@ -13,10 +37,24 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
   return (
     <section className="ds2Page profileDashboard">
       <header className="ds2Header"><h1>{en ? 'Profile' : 'Profil'}</h1></header>
-      <div className="profileIdentityCard"><div className="profileIdentityMain"><div className="profileAvatar">P</div><div><h2>Per</h2><p>Danderyd, Sverige</p></div></div><div className="profileStats"><div><strong>35</strong><span>{en ? 'rentals' : 'uthyrningar'}</span></div><div><strong>24</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>4,96</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div></div>
+      <div className="profileIdentityCard">
+        <Link href={publicProfileHref} className="profileIdentityMain" aria-label={en ? 'View your public profile' : 'Visa din profil'} style={{ color:'inherit', textDecoration:'none' }}>
+          {profile?.avatar_url
+            ? <img className="profileAvatar" src={profile.avatar_url} alt={displayName} style={{ objectFit:'cover' }}/>
+            : <div className="profileAvatar">{initial}</div>}
+          <div><h2>{displayName}</h2><p>{city}, Sverige</p></div>
+        </Link>
+        <div className="profileStats"><div><strong>35</strong><span>{en ? 'rentals' : 'uthyrningar'}</span></div><div><strong>24</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>4,96</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
+      </div>
       <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? 'SEK 7,294 this month' : '7 294 kr den här månaden'}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><div className="profileInsightCard"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{en ? '24 reviews' : '24 omdömen'}</p><div className="profileRating"><span>★</span><strong>4,96</strong></div></div></div>
       <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}/profil`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
-      <div className="profileMenuList"><ProfileLanguageSetting locale={locale}/>{menu.map((label) => (<div className={`profileMenuRow ${label === 'Logga ut' || label === 'Log out' ? 'logout' : ''}`} key={label}><span>{label}</span><MenuChevron /></div>))}</div>
+      <div className="profileMenuList"><ProfileLanguageSetting locale={locale}/>{menu.map((label) => {
+        const isViewProfile = label === 'Visa profil' || label === 'View profile';
+        const row = <><span>{label}</span><MenuChevron /></>;
+        return isViewProfile
+          ? <Link className="profileMenuRow" href={publicProfileHref} key={label} style={{ color:'inherit', textDecoration:'none' }}>{row}</Link>
+          : <div className={`profileMenuRow ${label === 'Logga ut' || label === 'Log out' ? 'logout' : ''}`} key={label}>{row}</div>;
+      })}</div>
     </section>
   );
 }
