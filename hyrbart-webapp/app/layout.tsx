@@ -15,6 +15,7 @@ import './rental-search-polish.css';
 import './product-title-lines.css';
 import './new-listing.css';
 import './auth.css';
+import './booking-flow.css';
 import './navigation2.css';
 import BottomNav from '@/components/BottomNav';
 
