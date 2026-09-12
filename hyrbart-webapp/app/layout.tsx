@@ -11,6 +11,7 @@ import './host-calendar.css';
 import './messages.css';
 import './heading-spacing.css';
 import './rental-search.css';
+import './rental-search-polish.css';
 import './product-title-lines.css';
 import './new-listing.css';
 import './auth.css';
