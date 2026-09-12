@@ -34,7 +34,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
   const today = useMemo(() => new Date(), []);
   const todayMonth = useMemo(() => startOfMonth(today), [today]);
   const todayIso = iso(today);
-  const [view, setView] = useState<'month'|'list'>('month');
+  const [view, setView] = useState<'month'|'list'>('list');
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
   return (
     <section className="hostCalendarPage renterCalendarPage">
       <div className="hostCalendarTop">
-        <h1>{en?'Calendar':'Kalender'}</h1>
+        <h1>{en?'Bookings':'Bokningar'}</h1>
         <div className="hostCalendarTopActions">
           <div className="hostCalendarViewPicker">
             <button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={() => setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>
