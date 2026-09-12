@@ -2,8 +2,7 @@
    Loaded after legacy styles so the old dark Liquid Glass menu cannot leak through. */
 
 :root {
-  /* Clamp iOS safe-area so a bad/inflated inset can never make the nav float high. */
-  --bottom-nav-safe: min(env(safe-area-inset-bottom), 22px);
+  --bottom-nav-safe: 0px;
 }
 
 .liquidNav {
@@ -15,11 +14,11 @@
   transform: none !important;
   width: 100% !important;
   max-width: none !important;
-  height: calc(58px + var(--bottom-nav-safe)) !important;
-  padding: 4px max(10px, env(safe-area-inset-left)) var(--bottom-nav-safe) max(10px, env(safe-area-inset-right)) !important;
+  height: 64px !important;
+  padding: 8px max(10px, env(safe-area-inset-left)) 0 max(10px, env(safe-area-inset-right)) !important;
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  align-items: stretch !important;
+  align-items: end !important;
   border: 0 !important;
   border-top: 1px solid rgba(17, 17, 17, .08) !important;
   border-radius: 0 !important;
@@ -44,7 +43,7 @@
   position: relative !important;
   min-width: 0 !important;
   height: 54px !important;
-  padding: 5px 4px 4px !important;
+  padding: 7px 4px 1px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -60,6 +59,7 @@
   line-height: 1 !important;
   font-weight: 550 !important;
   -webkit-tap-highlight-color: transparent;
+  transform: translateY(4px) !important;
 }
 
 .liquidNav .navItem .navIcon {
@@ -102,5 +102,5 @@
 }
 
 main {
-  padding-bottom: calc(64px + var(--bottom-nav-safe)) !important;
+  padding-bottom: 64px !important;
 }
