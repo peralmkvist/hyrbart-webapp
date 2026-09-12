@@ -14,7 +14,12 @@ export default function CalendarTodayJump({ active = true }: { active?: boolean 
     const todayMonth = root?.querySelector<HTMLElement>('[data-current-month="true"]');
     if (!scroller || !todayMonth) return;
 
-    const todayTop = () => Math.max(0, todayMonth.offsetTop - 4);
+    const todayTop = () => {
+      const scrollerRect = scroller.getBoundingClientRect();
+      const monthRect = todayMonth.getBoundingClientRect();
+      return Math.max(0, scroller.scrollTop + monthRect.top - scrollerRect.top);
+    };
+
     const updateDirection = () => {
       setDirection(scroller.scrollTop < todayTop() - 24 ? 'down' : 'up');
     };
@@ -33,7 +38,11 @@ export default function CalendarTodayJump({ active = true }: { active?: boolean 
     const scroller = root?.querySelector<HTMLElement>('.hostCalendarMonthsScroll');
     const todayMonth = root?.querySelector<HTMLElement>('[data-current-month="true"]');
     if (!scroller || !todayMonth) return;
-    scroller.scrollTo({ top: Math.max(0, todayMonth.offsetTop - 4), behavior: 'smooth' });
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const monthRect = todayMonth.getBoundingClientRect();
+    const target = Math.max(0, scroller.scrollTop + monthRect.top - scrollerRect.top);
+    scroller.scrollTo({ top: target, behavior: 'smooth' });
   };
 
   if (!active) return null;
@@ -45,7 +54,7 @@ export default function CalendarTodayJump({ active = true }: { active?: boolean 
       className="calendarTodayJump"
       onClick={jumpToToday}
       aria-label={direction === 'down' ? 'Gå fram till idag' : 'Gå tillbaka till idag'}
-      title={direction === 'down' ? 'Till idag' : 'Till idag'}
+      title="Till idag"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
         {direction === 'down'
