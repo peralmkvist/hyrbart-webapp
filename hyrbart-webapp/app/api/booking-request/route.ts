@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getProduct } from '@/lib/sanity-products';
 import { calculateRentalPricing } from '@/lib/rental-pricing';
 
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
 
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Logga in för att skicka en bokningsförfrågan.' }, { status: 401 });
 
@@ -47,7 +49,7 @@ export async function POST(request: Request) {
     if (!product?.id) return NextResponse.json({ error: 'Annonsen hittades inte.' }, { status: 404 });
     if (!product.owner?.id) return NextResponse.json({ error: 'Annonsen saknar en kopplad uthyrare.' }, { status: 409 });
 
-    const { data: owner, error: ownerError } = await supabase
+    const { data: owner, error: ownerError } = await admin
       .from('profiles')
       .select('id')
       .eq('sanity_profile_id', product.owner.id)
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
     const pricing = calculateRentalPricing(product.price, from, to, product.rentalPrices, product.discounts);
     if (!pricing) return NextResponse.json({ error: 'Kunde inte beräkna priset för bokningen.' }, { status: 409 });
 
-    const { data: overlapping, error: overlapError } = await supabase
+    const { data: overlapping, error: overlapError } = await admin
       .from('bookings')
       .select('id,status')
       .eq('product_id', product.id)
@@ -70,7 +72,7 @@ export async function POST(request: Request) {
     if ((overlapping ?? []).length > 0) return NextResponse.json({ error: 'Datumen är inte längre tillgängliga.' }, { status: 409 });
 
     const status = requestType === 'reserve-question' ? 'reserved' : 'requested';
-    const { data: booking, error: insertError } = await supabase
+    const { data: booking, error: insertError } = await admin
       .from('bookings')
       .insert({
         renter_id: user.id,
