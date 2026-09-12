@@ -18,50 +18,8 @@ import './host-onboarding.css';
 import './host-listings.css';
 import './auth.css';
 import './booking-flow.css';
+import './reviews.css';
 import './navigation2.css';
 import BottomNav from '@/components/BottomNav';
-
-const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--font-inter', display: 'swap' });
-const mono = Roboto_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
-
-export const metadata: Metadata = {
-  title: 'Hyrbart',
-  description: 'Det du behöver. När du behöver det.',
-  manifest: '/manifest.webmanifest?v=6',
-  robots: {
-    index: false,
-    follow: false,
-    noarchive: true,
-    nosnippet: true,
-    nocache: true,
-    googleBot: {
-      index: false,
-      follow: false,
-      noimageindex: true,
-      nosnippet: true,
-    },
-  },
-  icons: {
-    icon: [{ url: '/hyrbart-h-v2.svg?v=6', type: 'image/svg+xml' }],
-    shortcut: ['/hyrbart-h-v2.svg?v=6'],
-    apple: [{ url: '/apple-touch-icon.png?v=6', sizes: '180x180', type: 'image/png' }],
-  },
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hyrbart' },
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-  themeColor: '#fafafa',
-};
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="sv" className={`${inter.variable} ${mono.variable}`} style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
-      <body style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}><main>{children}</main><BottomNav /></body>
-    </html>
-  );
-}
+const inter=Inter({subsets:['latin'],weight:['400','500','600','700','800','900'],variable:'--font-inter',display:'swap'});const mono=Roboto_Mono({subsets:['latin'],variable:'--font-mono',display:'swap'});
+export const metadata:Metadata={title:'Hyrbart',description:'Det du behöver. När du behöver det.',manifest:'/manifest.webmanifest?v=6',robots:{index:false,follow:false,noarchive:true,nosnippet:true,nocache:true,googleBot:{index:false,follow:false,noimageindex:true,nosnippet:true}},icons:{icon:[{url:'/hyrbart-h-v2.svg?v=6',type:'image/svg+xml'}],shortcut:['/hyrbart-h-v2.svg?v=6'],apple:[{url:'/apple-touch-icon.png?v=6',sizes:'180x180',type:'image/png'}]},appleWebApp:{capable:true,statusBarStyle:'black-translucent',title:'Hyrbart'}};export const viewport:Viewport={width:'device-width',initialScale:1,maximumScale:1,userScalable:false,viewportFit:'cover',themeColor:'#fafafa'};export default function RootLayout({children}:Readonly<{children:React.ReactNode}>){return <html lang="sv" className={`${inter.variable} ${mono.variable}`} style={{width:'100%',maxWidth:'100%',overflowX:'hidden'}}><body style={{width:'100%',maxWidth:'100%',overflowX:'hidden'}}><main>{children}</main><BottomNav/></body></html>}
