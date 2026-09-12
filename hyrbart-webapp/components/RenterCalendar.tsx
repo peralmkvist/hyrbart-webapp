@@ -10,6 +10,7 @@ type Booking = {
   to: string;
   status?: string;
   requestType?: string;
+  demo?: boolean;
   product?: { slug?: string; brand?: string; name?: string; image?: string };
 };
 
@@ -44,12 +45,22 @@ export default function RenterCalendar({ locale }: { locale: string }) {
     return () => { active = false; };
   }, []);
 
+  const demoBooking: Booking = useMemo(() => ({
+    id: 'demo-renter-booking',
+    from: '2026-09-26',
+    to: '2026-09-27',
+    status: 'booked',
+    demo: true,
+    product: { brand: 'Bosch', name: 'GKS 18V-57 G' },
+  }), []);
+
+  const allBookings = useMemo(() => [demoBooking, ...bookings], [demoBooking, bookings]);
   const weekdayLabels = en ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
   const months = useMemo(() => Array.from({ length: 12 }, (_, index) => addMonths(baseMonth, index)), [baseMonth]);
-  const bookingsOnDate = (date:string) => bookings.filter(booking => booking.from <= date && booking.to >= date && !['rejected','declined'].includes(booking.status || ''));
-  const upcomingBookings = useMemo(() => bookings
+  const bookingsOnDate = (date:string) => allBookings.filter(booking => booking.from <= date && booking.to >= date && !['rejected','declined'].includes(booking.status || ''));
+  const upcomingBookings = useMemo(() => allBookings
     .filter(booking => booking.to >= todayIso && !['rejected','declined'].includes(booking.status || ''))
-    .sort((a,b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to)), [bookings, todayIso]);
+    .sort((a,b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to)), [allBookings, todayIso]);
   const statusLabel = (booking:Booking) => {
     if (booking.status === 'accepted' || booking.status === 'booked') return en ? 'Booked' : 'Bokad';
     return en ? 'Pending' : 'Inväntar svar';
@@ -81,10 +92,14 @@ export default function RenterCalendar({ locale }: { locale: string }) {
                   if (!date) return <span className="hostCalendarBlankDay" key={`blank-${index}`} />;
                   const dateIso = iso(date);
                   const dayBookings=bookingsOnDate(dateIso);
+                  const demoDay=dayBookings.some(b=>b.demo);
                   const booked=dayBookings.some(b=>b.status==='accepted'||b.status==='booked');
                   const pending=dayBookings.some(b=>!['accepted','booked','rejected','declined'].includes(b.status||''));
                   const cls=`hostCalendarDay ${dateIso===todayIso?'today ':''}${dayBookings.length?'blocked ':''}`;
-                  return <div key={dateIso} className={cls} aria-label={dateIso} style={dayBookings.length?{background:'#f0f0ed'}:undefined}><span>{date.getDate()}</span>{dayBookings.length>0&&<i style={{width:6,height:6,borderRadius:'50%',background:booked?'#111':pending?'var(--accent)':'#aaa',position:'absolute',bottom:5}}/>}</div>;
+                  const content=<><span>{date.getDate()}</span>{dayBookings.length>0&&<i style={{width:6,height:6,borderRadius:'50%',background:booked?'#111':pending?'var(--accent)':'#aaa',position:'absolute',bottom:5}}/>}</>;
+                  return demoDay
+                    ? <Link key={dateIso} href={`/${locale}/bokningar/demo`} className={cls} aria-label={`${dateIso} ${en?'open booking':'öppna bokning'}`} style={{textDecoration:'none'}}>{content}</Link>
+                    : <div key={dateIso} className={cls} aria-label={dateIso}>{content}</div>;
                 })}</div>
               </div>
             </section>;
@@ -92,9 +107,10 @@ export default function RenterCalendar({ locale }: { locale: string }) {
         </div>
         <div className="hostCalendarLegend"><span><i className="available"/>{en?'No booking':'Ingen bokning'}</span><span><i className="booked"/>{en?'Booked':'Bokad'}</span><span><i style={{background:'var(--accent)'}}/>{en?'Pending':'Inväntar svar'}</span></div>
       </> : <div className="hostCalendarList">
-        {loading?<div className="hostCalendarListEmpty"><strong>{en?'Loading…':'Laddar…'}</strong></div>:upcomingBookings.length?upcomingBookings.map(booking=>{
+        {loading&&bookings.length===0?<div className="hostCalendarListEmpty"><strong>{en?'Loading…':'Laddar…'}</strong></div>:upcomingBookings.length?upcomingBookings.map(booking=>{
           const name=[booking.product?.brand,booking.product?.name].filter(Boolean).join(' ') || (en?'Product':'Produkt');
           const content=<><strong>{name}</strong><div style={{color:'var(--muted)',marginTop:4}}>{booking.from}{booking.to!==booking.from?` – ${booking.to}`:''} · {statusLabel(booking)}</div></>;
+          if (booking.demo) return <Link href={`/${locale}/bokningar/demo`} key={booking.id} style={{display:'block',padding:'14px 4px',borderBottom:'1px solid var(--line)',color:'inherit'}}>{content}</Link>;
           return booking.product?.slug ? <Link href={`/${locale}/produkter/${booking.product.slug}`} key={booking.id} style={{display:'block',padding:'14px 4px',borderBottom:'1px solid var(--line)',color:'inherit'}}>{content}</Link> : <div key={booking.id} style={{padding:'14px 4px',borderBottom:'1px solid var(--line)'}}>{content}</div>;
         }):<div className="hostCalendarListEmpty"><ListIcon/><strong>{en?'No upcoming bookings':'Inga kommande bokningar'}</strong></div>}
       </div>}
