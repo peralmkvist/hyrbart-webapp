@@ -1,0 +1,114 @@
+'use client';
+
+import { ChangeEvent, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const categories=['Barnartiklar','Belysning','Biltillbehör','Borra & Skruva','Handverktyg','Hem & hushåll','Håltagning','Kontor','Luftverktyg','Mäta','Städa & Tvätta','Såga & Slipa','Trädgård','Värme'];
+
+type Props={locale:string};
+type Draft={typeSv:string;category:string;brand:string;name:string;highlight:string;description:string;included:string;dailyPrice:string;multiDay:string;weekly:string;address:string;city:string;lat?:number;lng?:number};
+
+const initial:Draft={typeSv:'',category:'',brand:'',name:'',highlight:'',description:'',included:'',dailyPrice:'',multiDay:'',weekly:'',address:'',city:'Danderyd'};
+
+export default function NewListingFlow({locale}:Props){
+  const en=locale==='en';
+  const router=useRouter();
+  const [step,setStep]=useState(0);
+  const [draft,setDraft]=useState<Draft>(initial);
+  const [files,setFiles]=useState<File[]>([]);
+  const [previews,setPreviews]=useState<string[]>([]);
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState('');
+  const steps=en?['Product','Photos','Details','Price','Location','Preview']:['Produkt','Bilder','Detaljer','Pris','Plats','Förhandsgranska'];
+
+  const canContinue=useMemo(()=>{
+    if(step===0)return Boolean(draft.typeSv&&draft.category&&draft.name);
+    if(step===1)return files.length>0;
+    if(step===2)return Boolean(draft.description);
+    if(step===3)return Number(draft.dailyPrice)>0;
+    if(step===4)return Boolean(draft.city);
+    return true;
+  },[step,draft,files]);
+
+  function patch<K extends keyof Draft>(key:K,value:Draft[K]){setDraft(v=>({...v,[key]:value}));}
+  function addImages(e:ChangeEvent<HTMLInputElement>){
+    const next=Array.from(e.target.files||[]).slice(0,8-files.length);
+    if(!next.length)return;
+    setFiles(v=>[...v,...next]);
+    setPreviews(v=>[...v,...next.map(file=>URL.createObjectURL(file))]);
+    e.target.value='';
+  }
+  function removeImage(index:number){setFiles(v=>v.filter((_,i)=>i!==index));setPreviews(v=>v.filter((_,i)=>i!==index));}
+  function useMyLocation(){
+    if(!navigator.geolocation){setError(en?'Location is not available in this browser.':'Platsinformation stöds inte i den här webbläsaren.');return;}
+    navigator.geolocation.getCurrentPosition(pos=>{patch('lat',pos.coords.latitude);patch('lng',pos.coords.longitude);setError('');},()=>setError(en?'Could not access your location.':'Kunde inte hämta din plats.'));
+  }
+  async function publish(){
+    setBusy(true);setError('');
+    try{
+      const body=new FormData();
+      Object.entries(draft).forEach(([key,value])=>{if(value!==undefined&&value!=='')body.append(key,String(value));});
+      files.forEach(file=>body.append('images',file));
+      const response=await fetch('/api/listings',{method:'POST',body});
+      const data=await response.json() as {slug?:string;error?:string};
+      if(!response.ok)throw new Error(data.error||'Kunde inte skapa annonsen.');
+      router.push(`/${locale}/vard/annonser`);
+      router.refresh();
+    }catch(err){setError(err instanceof Error?err.message:(en?'Could not create listing.':'Kunde inte skapa annonsen.'));}
+    finally{setBusy(false)}
+  }
+
+  return <section className="newListingFlow">
+    <header className="newListingFlowHeader">
+      <button type="button" className="newListingBack" onClick={()=>step?setStep(step-1):router.back()} aria-label={en?'Back':'Tillbaka'}>‹</button>
+      <div className="newListingProgress" aria-label={`${step+1} / ${steps.length}`}><i style={{width:`${((step+1)/steps.length)*100}%`}}/></div>
+      <span className="newListingStepCount">{step+1}/{steps.length}</span>
+    </header>
+
+    <div className="newListingBody">
+      {step===0&&<>
+        <span className="newListingEyebrow">{en?'Step 1':'Steg 1'}</span>
+        <h1>{en?'What do you want to rent out?':'Vad vill du hyra ut?'}</h1>
+        <p className="newListingIntro">{en?'Start with what the item is. You can fine-tune the listing in the next steps.':'Börja med vad prylen är. Du finjusterar annonsen i nästa steg.'}</p>
+        <label className="newListingField"><span>{en?'Product type':'Produkttyp'}</span><input autoFocus value={draft.typeSv} onChange={e=>patch('typeSv',e.target.value)} placeholder="Ex. Cirkelsåg"/></label>
+        <label className="newListingField"><span>{en?'Category':'Kategori'}</span><select value={draft.category} onChange={e=>patch('category',e.target.value)}><option value="">{en?'Choose category':'Välj kategori'}</option>{categories.map(c=><option key={c}>{c}</option>)}</select></label>
+        <div className="newListingTwoCols"><label className="newListingField"><span>{en?'Brand':'Varumärke'}</span><input value={draft.brand} onChange={e=>patch('brand',e.target.value)} placeholder="Bosch"/></label><label className="newListingField"><span>{en?'Model / product name':'Modell / produktnamn'}</span><input value={draft.name} onChange={e=>patch('name',e.target.value)} placeholder="GKS 18V-57 G"/></label></div>
+      </>}
+
+      {step===1&&<>
+        <span className="newListingEyebrow">{en?'Step 2':'Steg 2'}</span><h1>{en?'Add photos':'Lägg till bilder'}</h1><p className="newListingIntro">{en?'Clear photos make it easier to choose your item. The first photo becomes the main image.':'Tydliga bilder gör det enklare att välja din pryl. Första bilden blir huvudbild.'}</p>
+        <label className="newListingPhotoPicker"><input type="file" accept="image/*" multiple onChange={addImages}/><b>＋</b><strong>{en?'Add photos':'Lägg till bilder'}</strong><span>{en?'Up to 8 photos':'Upp till 8 bilder'}</span></label>
+        {previews.length>0&&<div className="newListingPhotoGrid">{previews.map((src,i)=><div key={src} className="newListingPhoto"><img src={src} alt=""/>{i===0&&<span>{en?'Main photo':'Huvudbild'}</span>}<button type="button" onClick={()=>removeImage(i)}>×</button></div>)}</div>}
+      </>}
+
+      {step===2&&<>
+        <span className="newListingEyebrow">{en?'Step 3':'Steg 3'}</span><h1>{en?'Tell renters about it':'Berätta om prylen'}</h1>
+        <label className="newListingField"><span>Highlight</span><input value={draft.highlight} onChange={e=>patch('highlight',e.target.value)} placeholder="Ex. Batteri och laddare ingår." maxLength={70}/><small>{draft.highlight.length}/70</small></label>
+        <label className="newListingField"><span>{en?'Description':'Produktbeskrivning'}</span><textarea value={draft.description} onChange={e=>patch('description',e.target.value)} rows={6} placeholder={en?'Describe condition, use and anything useful to know.':'Beskriv skick, användningsområde och sådant som är bra att veta.'}/></label>
+        <label className="newListingField"><span>{en?'What is included?':'Detta ingår'}</span><textarea value={draft.included} onChange={e=>patch('included',e.target.value)} rows={4} placeholder={en?'One item per line':'En sak per rad'}/></label>
+      </>}
+
+      {step===3&&<>
+        <span className="newListingEyebrow">{en?'Step 4':'Steg 4'}</span><h1>{en?'Set your price':'Sätt ditt pris'}</h1><p className="newListingIntro">{en?'Choose a daily price and optional automatic discounts.':'Välj ett dygnspris och eventuella automatiska rabatter.'}</p>
+        <label className="newListingMoney"><span>{en?'Price per day':'Pris per dygn'}</span><div><input inputMode="numeric" value={draft.dailyPrice} onChange={e=>patch('dailyPrice',e.target.value.replace(/\D/g,''))} placeholder="150"/><b>kr</b></div></label>
+        <div className="newListingDiscounts"><label><span>{en?'2–6 days':'2–6 dagar'}</span><div><input inputMode="numeric" value={draft.multiDay} onChange={e=>patch('multiDay',e.target.value.replace(/\D/g,''))} placeholder="0"/><b>%</b></div><small>{en?'Multi-day discount':'Flerdagsrabatt'}</small></label><label><span>{en?'7+ days':'7+ dagar'}</span><div><input inputMode="numeric" value={draft.weekly} onChange={e=>patch('weekly',e.target.value.replace(/\D/g,''))} placeholder="0"/><b>%</b></div><small>{en?'Weekly discount':'Veckorabatt'}</small></label></div>
+      </>}
+
+      {step===4&&<>
+        <span className="newListingEyebrow">{en?'Step 5':'Steg 5'}</span><h1>{en?'Where is it picked up?':'Var hämtas den?'}</h1><p className="newListingIntro">{en?'Renters only see the approximate area before booking.':'Hyrare ser bara det ungefärliga området före bokning.'}</p>
+        <button type="button" className="newListingLocationButton" onClick={useMyLocation}>⌖ <span>{en?'Use my location':'Använd min plats'}</span>{draft.lat&&<b>✓</b>}</button>
+        <label className="newListingField"><span>{en?'Address':'Adress'}</span><input value={draft.address} onChange={e=>patch('address',e.target.value)} placeholder="Nora Torg 11"/></label>
+        <label className="newListingField"><span>{en?'City':'Ort'}</span><input value={draft.city} onChange={e=>patch('city',e.target.value)} placeholder="Danderyd"/></label>
+      </>}
+
+      {step===5&&<>
+        <span className="newListingEyebrow">{en?'Final step':'Sista steget'}</span><h1>{en?'Preview your listing':'Förhandsgranska annonsen'}</h1><p className="newListingIntro">{en?'This is how the essential information will appear to renters.':'Så här kommer den viktigaste informationen att möta hyraren.'}</p>
+        <div className="newListingPreviewCard">{previews[0]?<img src={previews[0]} alt=""/>:<div className="newListingPreviewPlaceholder">H</div>}<div className="newListingPreviewCopy"><span>{draft.typeSv}</span><strong>{draft.brand||en?'Brand':'Varumärke'}</strong><h2>{draft.name}</h2>{draft.highlight&&<b>{draft.highlight}</b>}<p>{draft.description}</p><div className="newListingPreviewPrice">{draft.dailyPrice} kr/dygn</div><small>{draft.city}</small></div></div>
+        <div className="newListingReviewRows"><div><span>{en?'Category':'Kategori'}</span><b>{draft.category}</b></div><div><span>{en?'Discounts':'Rabatter'}</span><b>{draft.multiDay||0}% / {draft.weekly||0}%</b></div><div><span>{en?'Photos':'Bilder'}</span><b>{files.length}</b></div></div>
+      </>}
+      {error&&<p className="newListingError">{error}</p>}
+    </div>
+
+    <footer className="newListingFooter">{step<steps.length-1?<button type="button" disabled={!canContinue} onClick={()=>setStep(v=>v+1)}>{en?'Continue':'Fortsätt'} →</button>:<button type="button" disabled={busy} onClick={publish}>{busy?(en?'Publishing…':'Publicerar…'):(en?'Publish listing':'Publicera annons')}</button>}</footer>
+  </section>
+}
