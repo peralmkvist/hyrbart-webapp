@@ -74,14 +74,13 @@ export default function RenterCalendar({ locale }: { locale: string }) {
 
       {view==='month' ? <>
         <div className="hostCalendarMonthsScroll">
+          <div className="renterCalendarLegendDock">{legend}</div>
           {months.map((month) => {
             const monthLabel = new Intl.DateTimeFormat(en ? 'en-GB' : 'sv-SE', { month: 'long', year: 'numeric' }).format(month);
             const cells = monthDays(month);
             const currentMonth = month.getFullYear() === todayMonth.getFullYear() && month.getMonth() === todayMonth.getMonth();
             return <section className="hostCalendarMonthSection" data-current-month={currentMonth ? 'true' : undefined} key={`${month.getFullYear()}-${month.getMonth()}`}>
-              {currentMonth
-                ? <div className="renterCalendarMonthHeading"><strong className="hostCalendarMonthTitle">{monthLabel}</strong>{legend}</div>
-                : <strong className="hostCalendarMonthTitle">{monthLabel}</strong>}
+              <strong className="hostCalendarMonthTitle">{monthLabel}</strong>
               <div className="hostCalendarCard hostCalendarStackedCard">
                 <div className="hostCalendarWeekdays">{weekdayLabels.map(label=><span key={label}>{label}</span>)}</div>
                 <div className="hostCalendarGrid hostCalendarStackedGrid">{cells.map((date,index)=>{
