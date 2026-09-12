@@ -5,6 +5,7 @@ const allowedTransitions: Record<string, string[]> = {
   requested: ['accepted', 'declined'],
   reserved: ['accepted', 'declined'],
   accepted: ['cancelled'],
+  returned: ['completed'],
 };
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
