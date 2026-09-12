@@ -58,6 +58,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
   return (
     <section className="hostCalendarPage renterCalendarPage">
       <div className="hostCalendarTop">
+        <h1 style={{margin:0,marginRight:'auto',fontSize:'1.75rem',lineHeight:1.08,letterSpacing:'-.035em'}}>{en?'Your booking calendar':'Din bokningskalender'}</h1>
         <div className="hostCalendarTopActions">
           <button type="button" className="hostCalendarToday" onClick={() => setBaseMonth(startOfMonth(today))}>{en?'Today':'Idag'}</button>
           <div className="hostCalendarViewPicker">
@@ -65,10 +66,6 @@ export default function RenterCalendar({ locale }: { locale: string }) {
             {viewMenuOpen&&<div className="hostCalendarViewMenu" role="menu"><button type="button" className={view==='list'?'active':''} onClick={()=>{setView('list');setViewMenuOpen(false)}}><span>{en?'List':'Lista'}</span><ListIcon/></button><button type="button" className={view==='month'?'active':''} onClick={()=>{setView('month');setViewMenuOpen(false)}}><span>{en?'Calendar':'Kalender'}</span><ListingsIcon/></button></div>}
           </div>
         </div>
-      </div>
-
-      <div className="hostCalendarToolbar">
-        <div><span className="hostCalendarEyebrow">{en?'Your bookings':'Dina bokningar'}</span><strong>{view==='month' ? (en?'Upcoming months':'Kommande månader') : (en?'Upcoming bookings':'Kommande bokningar')}</strong></div>
       </div>
 
       {view==='month' ? <>
