@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { sendPushToUser } from '@/lib/push';
+
+const statusCopy: Record<string, string> = {
+  accepted: 'Din bokning har godkänts.',
+  declined: 'Din bokningsförfrågan har nekats.',
+  cancelled: 'Bokningen har avbokats.',
+  refunded: 'Bokningen har avbokats och återbetalning har registrerats.',
+  completed: 'Bokningen är avslutad.',
+};
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -28,9 +37,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     let nextStatus = requestedStatus;
     let allowed = false;
 
-    if (isOwner && ['requested', 'reserved'].includes(booking.status) && ['accepted', 'declined'].includes(requestedStatus)) {
-      allowed = true;
-    }
+    if (isOwner && ['requested', 'reserved'].includes(booking.status) && ['accepted', 'declined'].includes(requestedStatus)) allowed = true;
 
     if (requestedStatus === 'cancelled') {
       if (isRenter && ['requested', 'reserved', 'accepted'].includes(booking.status)) allowed = true;
@@ -41,9 +48,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }
     }
 
-    if (isOwner && booking.status === 'returned' && requestedStatus === 'completed') {
-      allowed = true;
-    }
+    if (isOwner && booking.status === 'returned' && requestedStatus === 'completed') allowed = true;
 
     if (!allowed) return NextResponse.json({ error: 'Den statusändringen är inte tillåten.' }, { status: 409 });
 
@@ -54,6 +59,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .select('id,status')
       .single();
     if (updateError) throw updateError;
+
+    const recipientId = isOwner ? booking.renter_id : booking.owner_id;
+    if (recipientId) {
+      await sendPushToUser(recipientId, {
+        title: 'Bokningen har uppdaterats',
+        body: statusCopy[updated.status] || 'Statusen för din bokning har ändrats.',
+        url: `/topsecret/sv/bokningar/${id}`,
+        tag: `booking-status-${id}`,
+      });
+    }
 
     return NextResponse.json({
       ok: true,
