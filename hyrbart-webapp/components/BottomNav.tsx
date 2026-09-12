@@ -87,14 +87,15 @@ export default function BottomNav() {
       ];
 
   return (
-    <nav className={`bottomNav ${hostMode ? 'hostBottomNav' : ''}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
+    <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
       {items.map(({ href, label, Icon, booking, match }) => {
         const active = match(appPath);
         return (
-          <Link key={href} href={href} className={`bottomNavItem ${active ? 'active' : ''}`}>
-            <span className="bottomNavIconWrap">
-              <Icon className="bottomNavIcon" />
-              {booking && hasBookingAction ? <span className="bottomNavNotification" aria-label="Ny bokningsförfrågan" /> : null}
+          <Link key={href} href={href} className={`navItem ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
+            <span className="activeLens" aria-hidden="true" />
+            <span className="navIconWrap">
+              <Icon className="navIcon" />
+              {booking && hasBookingAction ? <span className="bookingNotificationDot" aria-label="Ny bokningsförfrågan" /> : null}
             </span>
             <span>{label}</span>
           </Link>
