@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getProducts } from '@/lib/sanity-products';
 import OwnerBookingActions from '@/components/OwnerBookingActions';
 import BookingMessageThread from '@/components/BookingMessageThread';
+import BookingConditionEvidence from '@/components/BookingConditionEvidence';
 import styles from '../demo/page.module.css';
 
 function formatDate(value:string, locale:string){
@@ -57,6 +58,8 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
     </section>
 
     {isOwner?<OwnerBookingActions bookingId={booking.id} status={booking.status} locale={locale}/>:null}
+
+    <BookingConditionEvidence bookingId={booking.id} status={booking.status} locale={locale} isRenter={!isOwner}/>
 
     <section className={styles.card}>
       <div className={styles.split}><div><span>{en?'Pickup':'Utlämning'}</span><strong>{formatDate(booking.start_date,locale)}</strong></div><div><span>{en?'Return':'Återlämning'}</span><strong>{formatDate(booking.end_date,locale)}</strong></div></div>
