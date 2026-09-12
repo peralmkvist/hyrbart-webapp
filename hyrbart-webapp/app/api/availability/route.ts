@@ -25,7 +25,17 @@ export async function GET() {
       querySanity<Array<{id:string;productId:string;from:string;to:string;status:string;note?:string}>>(`*[_type == "availabilityBlock"] | order(from asc){"id":_id,"productId":product._ref,from,to,status,note}`),
     ]);
 
-    let bookingBlocks:Array<{id:string;productId:string;from:string;to:string;status:'reserved'|'booked';note?:string}> = [];
+    let bookingBlocks:Array<{
+      id:string;
+      productId:string;
+      from:string;
+      to:string;
+      status:'reserved'|'booked';
+      note?:string;
+      bookingStatus:string;
+      renterName:string;
+    }> = [];
+
     if (user) {
       const { data: rows, error } = await supabase
         .from('bookings')
@@ -33,34 +43,24 @@ export async function GET() {
         .eq('owner_id', user.id)
         .in('status', ['requested','reserved','accepted','paid','active','returned']);
       if (error) throw error;
+
       const renterIds = Array.from(new Set((rows ?? []).map(row => row.renter_id)));
       const { data: renters } = renterIds.length
         ? await supabase.from('profiles').select('id,display_name').in('id', renterIds)
         : { data: [] as Array<{id:string;display_name:string|null}> };
       const renterNames = new Map((renters ?? []).map(renter => [renter.id, renter.display_name || 'Hyrestagare']));
-      bookingBlocks = (rows ?? []).map(row => {
-        const renter = renterNames.get(row.renter_id) || 'Hyrestagare';
-        const workflowLabel = row.status === 'requested'
-          ? 'Bokningsförfrågan'
-          : row.status === 'reserved'
-            ? 'Reserverad'
-            : row.status === 'accepted'
-              ? 'Godkänd'
-              : row.status === 'paid'
-                ? 'Betald'
-                : row.status === 'active'
-                  ? 'Pågående'
-                  : 'Återlämnad';
-        return {
-          id: row.id,
-          productId: row.product_id,
-          from: row.start_date,
-          to: row.end_date,
-          status: ['accepted','paid','active','returned'].includes(row.status) ? 'booked' : 'reserved',
-          note: `${workflowLabel} · ${renter}`,
-        };
-      });
+
+      bookingBlocks = (rows ?? []).map(row => ({
+        id: row.id,
+        productId: row.product_id,
+        from: row.start_date,
+        to: row.end_date,
+        status: ['accepted','paid','active','returned'].includes(row.status) ? 'booked' : 'reserved',
+        bookingStatus: row.status,
+        renterName: renterNames.get(row.renter_id) || 'Hyrestagare',
+      }));
     }
+
     return NextResponse.json({ products, blocks: [...sanityBlocks, ...bookingBlocks] });
   } catch (error) {
     console.error('Availability GET failed', error);
