@@ -15,7 +15,7 @@ export async function POST(request:Request){
     const form=await request.formData();
     const get=(key:string)=>String(form.get(key)||'').trim();
     const typeSv=get('typeSv'); const category=get('category'); const brand=get('brand'); const name=get('name'); const description=get('description'); const city=get('city');
-    const dailyPrice=Number(get('dailyPrice')); const multiDayDiscountPercent=Number(get('multiDay')||0); const weeklyDiscountPercent=Number(get('weekly')||0);
+    const dailyPrice=Number(get('dailyPrice')); const multiDayDiscountPercent=Number(get('multiDay')||0); const weeklyDiscountPercent=Number(get('weekly')||0); const availableNow=get('availableNow')!=='false';
     if(!typeSv||!category||!name||!description||!dailyPrice)return NextResponse.json({error:'Fyll i alla obligatoriska fält.'},{status:400});
 
     const imageFiles=form.getAll('images').filter((item):item is File=>item instanceof File&&item.size>0);
@@ -27,14 +27,17 @@ export async function POST(request:Request){
     const included=get('included').split('\n').map(v=>v.trim()).filter(Boolean).map((sv,index)=>({_key:`included-${index}-${Date.now()}`,_type:'localizedString',sv}));
     const slugBase=slugify([brand,name].filter(Boolean).join('-')||name);
     const slug=`${slugBase}-${Date.now().toString(36).slice(-5)}`;
-    const doc:any={_type:'product',category,typeSv,brand,name,slug:{_type:'slug',current:slug},description:{_type:'localizedText',sv:description},dailyPrice,multiDayDiscountPercent,weeklyDiscountPercent,included};
+    const productId=`product-${slug}`;
+    const doc:{[key:string]:unknown}={_id:productId,_type:'product',category,typeSv,brand,name,slug:{_type:'slug',current:slug},description:{_type:'localizedText',sv:description},dailyPrice,multiDayDiscountPercent,weeklyDiscountPercent,included};
     const highlight=get('highlight'); if(highlight)doc.cardHighlight={_type:'localizedString',sv:highlight};
     if(owner?._id)doc.owner={_type:'reference',_ref:owner._id};
     if(pickup?._id)doc.pickupLocation={_type:'reference',_ref:pickup._id};
     if(assetIds.length)doc.images=assetIds.map((id,index)=>({_key:`image-${index}-${Date.now()}`,_type:'image',asset:{_type:'reference',_ref:id}}));
     if(city&&!pickup?._id)doc.detailCategory={_type:'localizedString',sv:city};
 
-    const mutation=await fetch(`https://${projectId}.api.sanity.io/v${apiVersion}/data/mutate/${dataset}?returnIds=true`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({mutations:[{create:doc}]})});
+    const mutations:Array<Record<string,unknown>>=[{create:doc}];
+    if(!availableNow)mutations.push({create:{_type:'availabilityBlock',product:{_type:'reference',_ref:productId},from:new Date().toISOString().slice(0,10),to:'2099-12-31',status:'blocked',note:'Pausad vid publicering'}});
+    const mutation=await fetch(`https://${projectId}.api.sanity.io/v${apiVersion}/data/mutate/${dataset}?returnIds=true`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({mutations})});
     if(!mutation.ok){const text=await mutation.text();throw new Error(`Sanity mutation failed (${mutation.status}): ${text.slice(0,220)}`)}
     return NextResponse.json({ok:true,slug});
   }catch(error){console.error('Could not create listing',error);return NextResponse.json({error:error instanceof Error?error.message:'Kunde inte skapa annonsen.'},{status:500})}
