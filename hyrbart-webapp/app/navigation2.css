@@ -10,12 +10,12 @@
   z-index: 200 !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: 0 !important;
+  bottom: 10px !important;
   transform: none !important;
   width: 100% !important;
   max-width: none !important;
   height: 64px !important;
-  padding: 8px max(10px, env(safe-area-inset-left)) 0 max(10px, env(safe-area-inset-right)) !important;
+  padding: 6px max(10px, env(safe-area-inset-left)) 0 max(10px, env(safe-area-inset-right)) !important;
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   align-items: end !important;
@@ -33,6 +33,11 @@
 .liquidNav.renterNav,
 .liquidNav.hostNav { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
 
+/* Calendar uses a fixed-height internal scroller, so keep its nav flush to the viewport edge. */
+.liquidNav.calendarNav {
+  bottom: 0 !important;
+}
+
 .liquidNav::before,
 .liquidNav::after {
   display: none !important;
@@ -43,7 +48,7 @@
   position: relative !important;
   min-width: 0 !important;
   height: 54px !important;
-  padding: 7px 4px 1px !important;
+  padding: 5px 4px 2px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -59,7 +64,7 @@
   line-height: 1 !important;
   font-weight: 550 !important;
   -webkit-tap-highlight-color: transparent;
-  transform: translateY(4px) !important;
+  transform: none !important;
 }
 
 .liquidNav .navItem .navIcon {
@@ -102,5 +107,5 @@
 }
 
 main {
-  padding-bottom: 64px !important;
+  padding-bottom: 74px !important;
 }
