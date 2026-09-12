@@ -4,6 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CalendarIcon, HeartIcon, ListingsIcon, MessageIcon, PersonIcon, SearchIcon } from './Icons';
 
+function AddCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 8v8M8 12h8" />
+    </svg>
+  );
+}
+
 export default function BottomNav() {
   const pathname = usePathname();
   const isPrivateApp = pathname === '/topsecret' || pathname.startsWith('/topsecret/');
@@ -23,13 +32,14 @@ export default function BottomNav() {
     : { explore: 'Utforska', calendar: 'Kalender', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
-    ? { calendar: 'Calendar', listings: 'Listings', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
-    : { calendar: 'Kalender', listings: 'Annonser', messages: 'Meddelanden', profile: 'Profil', aria: 'Uthyrarmeny' };
+    ? { calendar: 'Calendar', listings: 'Listings', add: 'Add', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
+    : { calendar: 'Kalender', listings: 'Annonser', add: 'Lägg till', messages: 'Meddelanden', profile: 'Profil', aria: 'Uthyrarmeny' };
 
   const items = hostMode
     ? [
-        { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, match: (p: string) => p.startsWith(`/${locale}/vard/annonser`) },
+        { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, match: (p: string) => p === `/${locale}/vard/annonser` },
         { href: `${base}/vard`, label: hostLabels.calendar, Icon: CalendarIcon, match: (p: string) => p === `/${locale}/vard` },
+        { href: `${base}/vard/annonser/ny`, label: hostLabels.add, Icon: AddCircleIcon, match: (p: string) => p.startsWith(`/${locale}/vard/annonser/ny`) },
         { href: `${base}/vard/meddelanden`, label: hostLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/vard/meddelanden`) },
         { href: `${base}/vard/profil`, label: hostLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/vard/profil`) || p.startsWith(`/${locale}/vard/meny`) },
       ]
