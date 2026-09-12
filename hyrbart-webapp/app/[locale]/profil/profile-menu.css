@@ -50,3 +50,32 @@
 .profileDashboard .profileChevron {
   margin-left: auto;
 }
+
+.pushSettingCard {
+  margin-top: var(--profile-section-gap);
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.pushSettingCopy { min-width: 0; display: grid; gap: 4px; }
+.pushSettingCopy strong { font-size: 1rem; }
+.pushSettingCopy span, .pushSettingCopy small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+.pushSettingCopy small { color: var(--ink); }
+.pushSettingCard button {
+  flex: 0 0 auto;
+  min-width: 92px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 800;
+}
+.pushSettingCard button:disabled { opacity: .5; }
