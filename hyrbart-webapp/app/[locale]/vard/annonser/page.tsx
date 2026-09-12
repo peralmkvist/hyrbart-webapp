@@ -26,11 +26,6 @@ export default async function HostListingsPage({ params }: { params: Promise<{ l
         </div>
       </header>
 
-      <Link className="hostAddListingButton" href={`/topsecret/${locale}/vard/annonser/ny`}>
-        <span className="hostAddListingPlus" aria-hidden="true">+</span>
-        <span>{en ? 'Create new listing' : 'Lägg upp ny annons'}</span>
-      </Link>
-
       <div className="hostListingsGrid">
         {sortedProducts.map((product) => (
           <Link href={`/topsecret/${locale}/produkter/${product.slug}`} className="hostListingCard" key={product.slug}>
