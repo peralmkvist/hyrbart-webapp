@@ -1,0 +1,2 @@
+import{redirect}from'next/navigation';import{requireAdmin}from'@/lib/admin';import AdminCaseQueue from'@/components/AdminCaseQueue';
+export default async function AdminCases({params}:{params:Promise<{locale:string}>}){const{locale}=await params,user=await requireAdmin();if(!user)redirect(`/${locale}`);return <main className="adminPage"><header className="adminHeader"><div><span>HYRBART SUPPORT</span><h1>Ärenden</h1><p>Granska problem, skador, tvister och avbokningar.</p></div><div className="adminAvatar">H</div></header><AdminCaseQueue locale={locale}/></main>}
