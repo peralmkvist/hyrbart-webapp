@@ -17,12 +17,14 @@
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "sanity": "^3.99.0",
-    "styled-components": "^6.1.15"
+    "styled-components": "^6.1.15",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.2",
+    "@types/web-push": "^3.6.4",
     "typescript": "^5.7.2"
   }
 }
