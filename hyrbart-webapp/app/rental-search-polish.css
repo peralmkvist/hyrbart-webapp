@@ -7,9 +7,22 @@
   padding: 0 18px 10px !important;
 }
 
+/* Cover the safe-area above the sticky header so scrolled products never show behind the status bar/Dynamic Island. */
+.rentPage2::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: max(22px, env(safe-area-inset-top));
+  background: var(--bg);
+  z-index: 499;
+  pointer-events: none;
+}
+
 /* Make the recent-search dropdown read as a distinct layer instead of another white form row. */
 .whatSuggestMenu2 {
-  top: calc(100% + 12px) !important;
+  top: calc(100% + 6px) !important;
   border-color: #cfd2d0 !important;
   box-shadow: 0 20px 52px rgba(17, 17, 17, .18), 0 2px 8px rgba(17, 17, 17, .08) !important;
 }
@@ -21,6 +34,26 @@
 .whatSuggestMenu2 .searchSuggestItem2 {
   padding-left: 18px;
   padding-right: 18px;
+}
+
+/* Airbnb-like idle search field: centered call-to-action while the magnifier stays anchored left. */
+.whatSection2:not(.active) .rentalWhatField2 {
+  position: relative;
+  justify-content: center;
+}
+.whatSection2:not(.active) .rentalWhatField2 .rentalLeadingIcon2 {
+  position: absolute;
+  left: 17px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.whatSection2:not(.active) .rentalWhatField2 > span {
+  flex: 1 1 100%;
+  padding: 0 48px;
+  align-items: center;
+}
+.whatSection2:not(.active) .rentalWhatField2 input {
+  text-align: center;
 }
 
 /* One continuous yellow pill for a selected date range. */
