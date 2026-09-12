@@ -1,38 +1,49 @@
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PRIVATE_PREFIX = '/topsecret';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  let response: NextResponse;
 
   if (pathname === '/sv' || pathname.startsWith('/sv/') || pathname === '/en' || pathname.startsWith('/en/')) {
     const url = request.nextUrl.clone();
     url.pathname = `${PRIVATE_PREFIX}${pathname}`;
-    const response = NextResponse.redirect(url, 307);
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
-    return response;
-  }
-
-  if (pathname === PRIVATE_PREFIX) {
+    response = NextResponse.redirect(url, 307);
+  } else if (pathname === PRIVATE_PREFIX) {
     const url = request.nextUrl.clone();
     url.pathname = `${PRIVATE_PREFIX}/sv`;
-    const response = NextResponse.redirect(url, 307);
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
-    return response;
-  }
-
-  if (pathname.startsWith(`${PRIVATE_PREFIX}/`)) {
+    response = NextResponse.redirect(url, 307);
+  } else if (pathname.startsWith(`${PRIVATE_PREFIX}/`)) {
     const internalPath = pathname.slice(PRIVATE_PREFIX.length) || '/sv';
     const url = request.nextUrl.clone();
     url.pathname = internalPath;
-    const response = NextResponse.rewrite(url);
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
-    return response;
+    response = NextResponse.rewrite(url);
+  } else {
+    response = NextResponse.next({ request });
   }
 
-  const response = NextResponse.next();
   response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseUrl || !supabaseKey) return response;
+
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+      },
+    },
+  });
+
+  await supabase.auth.getUser();
   return response;
 }
 
