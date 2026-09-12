@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Roboto_Mono } from 'next/font/google';
 import './globals.css';
+import './tokens.css';
 import './responsive.css';
 import './designsystem2.css';
 import './product2.css';
