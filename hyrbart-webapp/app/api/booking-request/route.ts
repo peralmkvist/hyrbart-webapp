@@ -7,6 +7,11 @@ import { sendPushToUser } from '@/lib/push';
 
 export const runtime = 'nodejs';
 
+function formatDateRange(from: string, to: string) {
+  const format = (value: string) => new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`));
+  return `${format(from)} – ${format(to)}`;
+}
+
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -57,18 +62,11 @@ export async function GET() {
       const counterpart = counterpartId ? profilesById.get(counterpartId) : undefined;
       const latest = latestByBooking.get(row.id);
       return {
-        id: row.id,
-        from: row.start_date,
-        to: row.end_date,
-        requestType: row.request_type,
-        message: row.message,
-        status: row.status,
-        createdAt: row.created_at,
-        role,
+        id: row.id, from: row.start_date, to: row.end_date, requestType: row.request_type,
+        message: row.message, status: row.status, createdAt: row.created_at, role,
         product: product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt',
         participantName: counterpart?.display_name || (role === 'owner' ? 'Hyrare' : 'Uthyrare'),
-        latestMessage: latest?.body || null,
-        latestMessageAt: latest?.created_at || null,
+        latestMessage: latest?.body || null, latestMessageAt: latest?.created_at || null,
         unreadMessage: unreadByBooking.has(row.id),
       };
     }).sort((a,b) => new Date(b.latestMessageAt || b.createdAt).getTime() - new Date(a.latestMessageAt || a.createdAt).getTime());
@@ -89,9 +87,7 @@ export async function POST(request: Request) {
   if (!slug || !from || !to || !datePattern.test(from) || !datePattern.test(to) || from > to || !['booking','reserve-question'].includes(requestType)) {
     return NextResponse.json({ error: 'Ogiltiga bokningsuppgifter.' }, { status: 400 });
   }
-  if (requestType === 'reserve-question' && !message.trim()) {
-    return NextResponse.json({ error: 'Skriv din fråga innan du reserverar.' }, { status: 400 });
-  }
+  if (requestType === 'reserve-question' && !message.trim()) return NextResponse.json({ error: 'Skriv din fråga innan du reserverar.' }, { status: 400 });
 
   try {
     const supabase = await createClient();
@@ -99,28 +95,15 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Logga in för att skicka en bokningsförfrågan.' }, { status: 401 });
 
-    const { data: renterProfile, error: renterProfileError } = await admin
-      .from('profiles')
-      .select('payment_method_ready')
-      .eq('id', user.id)
-      .maybeSingle();
+    const { data: renterProfile, error: renterProfileError } = await admin.from('profiles').select('payment_method_ready').eq('id', user.id).maybeSingle();
     if (renterProfileError) throw renterProfileError;
-    if (!renterProfile?.payment_method_ready) {
-      return NextResponse.json({
-        error: 'Lägg till en betalningsmetod innan du kan boka.',
-        code: 'PAYMENT_METHOD_REQUIRED',
-      }, { status: 409 });
-    }
+    if (!renterProfile?.payment_method_ready) return NextResponse.json({ error: 'Lägg till en betalningsmetod innan du kan boka.', code: 'PAYMENT_METHOD_REQUIRED' }, { status: 409 });
 
     const product = await getProduct(slug);
     if (!product?.id) return NextResponse.json({ error: 'Annonsen hittades inte.' }, { status: 404 });
     if (!product.owner?.id) return NextResponse.json({ error: 'Annonsen saknar en kopplad uthyrare.' }, { status: 409 });
 
-    const { data: owner, error: ownerError } = await admin
-      .from('profiles')
-      .select('id')
-      .eq('sanity_profile_id', product.owner.id)
-      .maybeSingle();
+    const { data: owner, error: ownerError } = await admin.from('profiles').select('id').eq('sanity_profile_id', product.owner.id).maybeSingle();
     if (ownerError) throw ownerError;
     if (!owner?.id) return NextResponse.json({ error: 'Uthyraren har ännu inget Hyrbart-konto.' }, { status: 409 });
     if (owner.id === user.id) return NextResponse.json({ error: 'Du kan inte boka din egen annons.' }, { status: 400 });
@@ -128,43 +111,24 @@ export async function POST(request: Request) {
     const pricing = calculateRentalPricing(product.price, from, to, product.rentalPrices, product.discounts);
     if (!pricing) return NextResponse.json({ error: 'Kunde inte beräkna priset för bokningen.' }, { status: 409 });
 
-    const { data: overlapping, error: overlapError } = await admin
-      .from('bookings')
-      .select('id,status')
-      .eq('product_id', product.id)
-      .lte('start_date', to)
-      .gte('end_date', from)
-      .in('status', ['requested','reserved','accepted','paid','active','returned']);
+    const { data: overlapping, error: overlapError } = await admin.from('bookings').select('id,status').eq('product_id', product.id).lte('start_date', to).gte('end_date', from).in('status', ['requested','reserved','accepted','paid','active','returned']);
     if (overlapError) throw overlapError;
     if ((overlapping ?? []).length > 0) return NextResponse.json({ error: 'Datumen är inte längre tillgängliga.' }, { status: 409 });
 
     const status = requestType === 'reserve-question' ? 'reserved' : 'requested';
-    const { data: booking, error: insertError } = await admin
-      .from('bookings')
-      .insert({
-        renter_id: user.id,
-        owner_id: owner.id,
-        product_id: product.id,
-        start_date: from,
-        end_date: to,
-        status,
-        request_type: requestType,
-        message: message.trim().slice(0, 2000) || null,
-        rental_price: pricing.rentalCost,
-        service_fee: pricing.bookingFee,
-      })
-      .select('id,status,total_price')
-      .single();
+    const { data: booking, error: insertError } = await admin.from('bookings').insert({
+      renter_id: user.id, owner_id: owner.id, product_id: product.id, start_date: from, end_date: to,
+      status, request_type: requestType, message: message.trim().slice(0, 2000) || null,
+      rental_price: pricing.rentalCost, service_fee: pricing.bookingFee,
+    }).select('id,status,total_price').single();
     if (insertError) throw insertError;
 
-    if (message.trim()) {
-      await admin.from('booking_messages').insert({ booking_id: booking.id, sender_id: user.id, body: message.trim().slice(0, 2000) });
-    }
+    if (message.trim()) await admin.from('booking_messages').insert({ booking_id: booking.id, sender_id: user.id, body: message.trim().slice(0, 2000) });
 
-    const productName = [product.brand, product.name].filter(Boolean).join(' ') || 'en produkt';
+    const productName = [product.brand, product.name].filter(Boolean).join(' ') || 'Produkt';
     await sendPushToUser(owner.id, {
-      title: requestType === 'reserve-question' ? 'Ny reservation på Hyrbart' : 'Ny bokningsförfrågan på Hyrbart',
-      body: `${productName} · ${from}–${to}`,
+      title: requestType === 'reserve-question' ? 'Ny reservation' : 'Ny bokningsförfrågan',
+      body: `${productName}\n${formatDateRange(from, to)}`,
       url: `/topsecret/sv/bokningar/${booking.id}`,
       tag: `booking-request-${booking.id}`,
     });
