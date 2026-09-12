@@ -63,7 +63,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
     .sort((a,b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to)), [allBookings, todayIso]);
   const statusLabel = (booking:Booking) => {
     if (booking.status === 'accepted' || booking.status === 'booked') return en ? 'Booked' : 'Bokad';
-    return en ? 'Pending' : 'Inväntar svar';
+    return en ? 'Reserved' : 'Reserverad';
   };
   const goToToday = () => {
     setBaseMonth(startOfMonth(today));
@@ -103,9 +103,10 @@ export default function RenterCalendar({ locale }: { locale: string }) {
                   const dayBookings=bookingsOnDate(dateIso);
                   const demoDay=dayBookings.some(b=>b.demo);
                   const booked=dayBookings.some(b=>b.status==='accepted'||b.status==='booked');
-                  const pending=dayBookings.some(b=>!['accepted','booked','rejected','declined'].includes(b.status||''));
+                  const reserved=dayBookings.length>0 && !booked;
                   const cls=`hostCalendarDay ${dateIso===todayIso?'today ':''}${dayBookings.length?'blocked ':''}`;
-                  const content=<><span>{date.getDate()}</span>{dayBookings.length>0&&<i style={{width:6,height:6,borderRadius:'50%',background:booked?'#111':pending?'var(--accent)':'#aaa',position:'absolute',bottom:5}}/>}</>;
+                  const showDot=dateIso!==todayIso && (booked||reserved);
+                  const content=<><span>{date.getDate()}</span>{showDot&&<i className={booked?'calendarDotBooked':'calendarDotReserved'} />}</>;
                   return demoDay
                     ? <Link key={dateIso} href={`/${locale}/bokningar/demo`} className={cls} aria-label={`${dateIso} ${en?'open booking':'öppna bokning'}`} style={{textDecoration:'none'}}>{content}</Link>
                     : <div key={dateIso} className={cls} aria-label={dateIso}>{content}</div>;
@@ -114,7 +115,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
             </section>;
           })}
         </div>
-        <div className="hostCalendarLegend"><span><i className="available"/>{en?'No booking':'Ingen bokning'}</span><span><i className="booked"/>{en?'Booked':'Bokad'}</span><span><i style={{background:'var(--accent)'}}/>{en?'Pending':'Inväntar svar'}</span></div>
+        <div className="hostCalendarLegend"><span><i className="calendarDotBooked"/>{en?'Booked':'Bokad'}</span><span><i className="calendarDotReserved"/>{en?'Reserved':'Reserverad'}</span></div>
       </> : <div className="hostCalendarList">
         {loading&&bookings.length===0?<div className="hostCalendarListEmpty"><strong>{en?'Loading…':'Laddar…'}</strong></div>:upcomingBookings.length?upcomingBookings.map(booking=>{
           const name=[booking.product?.brand,booking.product?.name].filter(Boolean).join(' ') || (en?'Product':'Produkt');
