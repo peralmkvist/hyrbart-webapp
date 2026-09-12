@@ -35,13 +35,16 @@ export default function BottomNav() {
   useEffect(() => {
     let active = true;
     const load = () => {
+      if (!hostMode) {
+        setHasBookingAction(false);
+        return;
+      }
       fetch('/api/booking-requests', { cache: 'no-store' })
         .then(async response => response.ok ? response.json() : { bookings: [] })
         .then((data: { bookings?: BookingSummary[] }) => {
           if (!active) return;
-          const expectedRole = hostMode ? 'owner' : 'renter';
           const needsAction = (data.bookings ?? []).some(
-            booking => booking.role === expectedRole && (booking.status === 'requested' || booking.status === 'reserved')
+            booking => booking.role === 'owner' && (booking.status === 'requested' || booking.status === 'reserved')
           );
           setHasBookingAction(needsAction);
         })
