@@ -59,10 +59,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     .order('created_at', { ascending: true });
   if (error) return NextResponse.json({ error: 'Kunde inte hämta meddelanden.' }, { status: 500 });
 
-  const unreadIds = (messages ?? []).filter(m => m.sender_id !== user.id && !m.read_at).map(m => m.id);
-  if (unreadIds.length) await supabase.from('booking_messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds);
+  let visibleMessages = messages ?? [];
+  const unreadIds = visibleMessages.filter(m => m.sender_id !== user.id && !m.read_at).map(m => m.id);
+  if (unreadIds.length) {
+    const readAt = new Date().toISOString();
+    const { error: readError } = await supabase.from('booking_messages').update({ read_at: readAt }).in('id', unreadIds);
+    if (!readError) {
+      const unreadSet = new Set(unreadIds);
+      visibleMessages = visibleMessages.map(message => unreadSet.has(message.id) ? { ...message, read_at: readAt } : message);
+    }
+  }
 
-  return NextResponse.json({ messages: await enrichMessages(messages ?? []), currentUserId: user.id });
+  return NextResponse.json({ messages: await enrichMessages(visibleMessages), currentUserId: user.id });
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
