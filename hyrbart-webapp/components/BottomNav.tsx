@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { CalendarIcon, HeartIcon, ListingsIcon, MessageIcon, PersonIcon, SearchIcon } from './Icons';
+import { CalendarIcon, HeartIcon, ListingsIcon, PersonIcon, SearchIcon } from './Icons';
 
 function AddCircleIcon({ className }: { className?: string }) {
   return (
@@ -14,26 +14,12 @@ function AddCircleIcon({ className }: { className?: string }) {
   );
 }
 
+type BookingSummary = { status?: string; role?: 'owner' | 'renter' };
+
 export default function BottomNav() {
   const pathname = usePathname();
-  const [hasUnresolvedMessage, setHasUnresolvedMessage] = useState(false);
+  const [hasBookingAction, setHasBookingAction] = useState(false);
   const isPrivateApp = pathname === '/topsecret' || pathname.startsWith('/topsecret/');
-
-  useEffect(() => {
-    if (!isPrivateApp) return;
-    let active = true;
-    const load = () => {
-      fetch('/api/messages/unread', { cache: 'no-store' })
-        .then(async response => response.ok ? response.json() : { unread: false })
-        .then((data: { unread?: boolean }) => { if (active) setHasUnresolvedMessage(Boolean(data.unread)); })
-        .catch(() => { if (active) setHasUnresolvedMessage(false); });
-    };
-    load();
-    const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('focus', load);
-    return () => { active = false; document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('focus', load); };
-  }, [isPrivateApp, pathname]);
 
   if (!isPrivateApp) return null;
 
@@ -46,41 +32,66 @@ export default function BottomNav() {
   const base = `/topsecret/${locale}`;
   const hostMode = appPath === `/${locale}/vard` || appPath.startsWith(`/${locale}/vard/`);
 
+  useEffect(() => {
+    let active = true;
+    const load = () => {
+      fetch('/api/booking-requests', { cache: 'no-store' })
+        .then(async response => response.ok ? response.json() : { bookings: [] })
+        .then((data: { bookings?: BookingSummary[] }) => {
+          if (!active) return;
+          const expectedRole = hostMode ? 'owner' : 'renter';
+          const needsAction = (data.bookings ?? []).some(
+            booking => booking.role === expectedRole && (booking.status === 'requested' || booking.status === 'reserved')
+          );
+          setHasBookingAction(needsAction);
+        })
+        .catch(() => { if (active) setHasBookingAction(false); });
+    };
+    load();
+    const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', load);
+    window.addEventListener('hyrbart:bookings-changed', load);
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', load);
+      window.removeEventListener('hyrbart:bookings-changed', load);
+    };
+  }, [hostMode, pathname]);
+
   const renterLabels = isEnglish
-    ? { explore: 'Explore', calendar: 'Bookings', wishlist: 'Favorites', messages: 'Messages', profile: 'Profile', aria: 'Renter menu' }
-    : { explore: 'Utforska', calendar: 'Bokningar', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
+    ? { explore: 'Explore', calendar: 'Bookings', wishlist: 'Favorites', profile: 'Profile', aria: 'Renter menu' }
+    : { explore: 'Utforska', calendar: 'Bokningar', wishlist: 'Favoriter', profile: 'Profil', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
-    ? { calendar: 'Bookings', listings: 'Listings', add: 'Add', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
-    : { calendar: 'Bokningar', listings: 'Annonser', add: 'Lägg till', messages: 'Meddelanden', profile: 'Profil', aria: 'Uthyrarmeny' };
+    ? { calendar: 'Bookings', listings: 'Listings', add: 'Add', profile: 'Profile', aria: 'Host menu' }
+    : { calendar: 'Bokningar', listings: 'Annonser', add: 'Lägg till', profile: 'Profil', aria: 'Uthyrarmeny' };
 
   const items = hostMode
     ? [
-        { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, match: (p: string) => p === `/${locale}/vard/annonser` },
-        { href: `${base}/vard`, label: hostLabels.calendar, Icon: CalendarIcon, match: (p: string) => p === `/${locale}/vard` },
-        { href: `${base}/vard/annonser/ny`, label: hostLabels.add, Icon: AddCircleIcon, match: (p: string) => p.startsWith(`/${locale}/vard/annonser/ny`) },
-        { href: `${base}/vard/meddelanden`, label: hostLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/vard/meddelanden`) },
-        { href: `${base}/vard/profil`, label: hostLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/vard/profil`) || p.startsWith(`/${locale}/vard/meny`) },
+        { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, booking: false, match: (p: string) => p === `/${locale}/vard/annonser` },
+        { href: `${base}/vard`, label: hostLabels.calendar, Icon: CalendarIcon, booking: true, match: (p: string) => p === `/${locale}/vard` || p.startsWith(`/${locale}/vard/bokningar`) },
+        { href: `${base}/vard/annonser/ny`, label: hostLabels.add, Icon: AddCircleIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/vard/annonser/ny`) },
+        { href: `${base}/vard/profil`, label: hostLabels.profile, Icon: PersonIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/vard/profil`) || p.startsWith(`/${locale}/vard/meny`) },
       ]
     : [
-        { href: base, label: renterLabels.explore, Icon: SearchIcon, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
-        { href: `${base}/kalender`, label: renterLabels.calendar, Icon: CalendarIcon, match: (p: string) => p.startsWith(`/${locale}/kalender`) },
-        { href: `${base}/onskelista`, label: renterLabels.wishlist, Icon: HeartIcon, match: (p: string) => p.startsWith(`/${locale}/onskelista`) },
-        { href: `${base}/meddelanden`, label: renterLabels.messages, Icon: MessageIcon, match: (p: string) => p.startsWith(`/${locale}/meddelanden`) },
-        { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
+        { href: base, label: renterLabels.explore, Icon: SearchIcon, booking: false, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
+        { href: `${base}/kalender`, label: renterLabels.calendar, Icon: CalendarIcon, booking: true, match: (p: string) => p.startsWith(`/${locale}/kalender`) || p.startsWith(`/${locale}/bokningar`) },
+        { href: `${base}/onskelista`, label: renterLabels.wishlist, Icon: HeartIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/onskelista`) },
+        { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
       ];
 
   return (
     <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
-      {items.map(({ href, label, Icon, match }) => {
+      {items.map(({ href, label, Icon, booking, match }) => {
         const active = match(appPath);
-        const isMessages = href.endsWith('/meddelanden');
         return (
           <Link key={href} href={href} className={`navItem ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
             <span className="activeLens" aria-hidden="true" />
             <span className="navIconWrap">
               <Icon className="navIcon" />
-              {isMessages && hasUnresolvedMessage ? <i className="messageNotificationDot" aria-label={isEnglish ? 'Unread or unresolved message' : 'Oläst eller olöst meddelande'} /> : null}
+              {booking && hasBookingAction ? <i className="bookingNotificationDot" aria-label={isEnglish ? 'Booking needs action' : 'Bokning behöver åtgärd'} /> : null}
             </span>
             <span>{label}</span>
           </Link>
