@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { ListIcon, ListingsIcon } from './Icons';
+import { ForwardIcon, ListIcon, ListingsIcon } from './Icons';
 import CalendarTodayJump from './CalendarTodayJump';
 
 type Booking = {
@@ -15,6 +15,8 @@ type Booking = {
   total?: number;
   product?: { slug?: string; brand?: string; name?: string; image?: string };
 };
+
+type ListFilter = 'all'|'action'|'upcoming'|'active'|'completed';
 
 function startOfMonth(date: Date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
 function addMonths(date: Date, amount: number) { return new Date(date.getFullYear(), date.getMonth() + amount, 1); }
@@ -38,6 +40,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listFilter, setListFilter] = useState<ListFilter>('all');
 
   useEffect(() => {
     let active = true;
@@ -52,12 +55,40 @@ export default function RenterCalendar({ locale }: { locale: string }) {
   const months = useMemo(() => Array.from({ length: 49 }, (_, index) => addMonths(todayMonth, index - 24)), [todayMonth]);
   const activeStatuses = ['requested','reserved','accepted','paid','active','returned'];
   const bookingsOnDate = (date:string) => bookings.filter(booking => booking.from <= date && booking.to >= date && activeStatuses.includes(booking.status || ''));
-  const upcomingBookings = useMemo(() => bookings
-    .filter(booking => booking.to >= todayIso && !['declined','cancelled','refunded'].includes(booking.status || ''))
-    .sort((a,b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to)), [bookings, todayIso]);
+
+  const groupedBookings = useMemo(() => {
+    const sorted = [...bookings]
+      .filter(booking => !['declined','cancelled','refunded'].includes(booking.status || ''))
+      .sort((a,b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to));
+    return {
+      action: sorted.filter(booking => ['requested','reserved'].includes(booking.status || '')),
+      upcoming: sorted.filter(booking => ['accepted','paid'].includes(booking.status || '') && booking.to >= todayIso),
+      active: sorted.filter(booking => booking.status === 'active'),
+      completed: sorted.filter(booking => ['returned','completed'].includes(booking.status || '')).reverse(),
+    };
+  }, [bookings, todayIso]);
+
+  const actionCount = groupedBookings.action.length;
+  const visibleGroups = useMemo(() => {
+    const groups = [
+      { key:'action' as const, title:en?'Needs action':'Behöver åtgärd', items:groupedBookings.action },
+      { key:'upcoming' as const, title:en?'Upcoming':'Kommande', items:groupedBookings.upcoming },
+      { key:'active' as const, title:en?'Active':'Pågående', items:groupedBookings.active },
+      { key:'completed' as const, title:en?'Completed':'Avslutade', items:groupedBookings.completed },
+    ];
+    return listFilter === 'all' ? groups : groups.filter(group => group.key === listFilter);
+  }, [en, groupedBookings, listFilter]);
+
   const statusLabel = (booking:Booking) => {
-    if (['accepted','paid','active','returned','completed'].includes(booking.status || '')) return en ? 'Booked' : 'Bokad';
-    return en ? 'Reserved' : 'Reserverad';
+    const status = booking.status || '';
+    if (status === 'requested') return en ? 'Request' : 'Förfrågan';
+    if (status === 'reserved') return en ? 'Reserved' : 'Reserverad';
+    if (status === 'accepted') return en ? 'Approved' : 'Godkänd';
+    if (status === 'paid') return en ? 'Paid' : 'Betald';
+    if (status === 'active') return en ? 'Active' : 'Pågående';
+    if (status === 'returned') return en ? 'Returned' : 'Återlämnad';
+    if (status === 'completed') return en ? 'Completed' : 'Slutförd';
+    return en ? 'Booking' : 'Bokning';
   };
 
   const legend = <div className="hostCalendarLegend renterCalendarInlineLegend"><span><i className="calendarDotBooked"/>{en?'Booked':'Bokad'}</span><span><i className="calendarDotReserved"/>{en?'Reserved':'Reserverad'}</span></div>;
@@ -74,7 +105,45 @@ export default function RenterCalendar({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {view==='month' ? <>
+      {view==='list' ? <>
+        <div className="hostBookingFilterRail" role="tablist" aria-label={en?'Filter bookings':'Filtrera bokningar'}>
+          {([
+            ['all', en?'All':'Alla'],
+            ['action', en?'Needs action':'Behöver åtgärd'],
+            ['upcoming', en?'Upcoming':'Kommande'],
+            ['active', en?'Active':'Pågående'],
+            ['completed', en?'Completed':'Avslutade'],
+          ] as Array<[ListFilter,string]>).map(([key,label])=><button key={key} type="button" className={listFilter===key?'active':''} onClick={()=>setListFilter(key)}>{label}{key==='action'&&actionCount>0?<span>{actionCount}</span>:null}</button>)}
+        </div>
+
+        <div className="hostCalendarList">
+          {loading&&bookings.length===0?<div className="hostCalendarListEmpty"><strong>{en?'Loading…':'Laddar…'}</strong></div>:
+            visibleGroups.some(group=>group.items.length>0)?visibleGroups.map(group=>group.items.length?(
+              <section className={`hostBookingSection hostBookingSection-${group.key}`} key={group.key}>
+                <div className="hostBookingSectionTitle"><strong>{group.title}</strong><span>{group.items.length}</span></div>
+                <div className="hostBookingCards">
+                  {group.items.map(booking=>{
+                    const name=[booking.product?.brand,booking.product?.name].filter(Boolean).join(' ') || (en?'Product':'Produkt');
+                    const needsAction=['requested','reserved'].includes(booking.status||'');
+                    return <Link href={`/${locale}/bokningar/${booking.id}`} key={booking.id} className={`hostBookingCard ${needsAction?'needsAction':''}`} style={{display:'block',color:'inherit',textDecoration:'none'}}>
+                      <div className="hostBookingCardTop">
+                        <div>
+                          <span className="hostBookingStatus">{statusLabel(booking)}</span>
+                          <h3>{name}</h3>
+                        </div>
+                        <ForwardIcon/>
+                      </div>
+                      <div className="hostBookingMeta">
+                        <strong>{booking.from}{booking.to!==booking.from?` – ${booking.to}`:''}</strong>
+                        {typeof booking.total === 'number' ? <span>{booking.total.toLocaleString(en?'en-GB':'sv-SE')} kr</span> : null}
+                      </div>
+                    </Link>;
+                  })}
+                </div>
+              </section>
+            ):null):<div className="hostCalendarListEmpty"><ListIcon/><strong>{en?'No bookings':'Inga bokningar'}</strong></div>}
+        </div>
+      </> : <>
         <div className="hostCalendarMonthsScroll">
           <div className="renterCalendarLegendDock">{legend}</div>
           {months.map((month) => {
@@ -111,12 +180,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
           })}
         </div>
         <CalendarTodayJump active={view==='month'} />
-      </> : <div className="hostCalendarList">
-        {loading&&bookings.length===0?<div className="hostCalendarListEmpty"><strong>{en?'Loading…':'Laddar…'}</strong></div>:upcomingBookings.length?upcomingBookings.map(booking=>{
-          const name=[booking.product?.brand,booking.product?.name].filter(Boolean).join(' ') || (en?'Product':'Produkt');
-          return <Link href={`/${locale}/bokningar/${booking.id}`} key={booking.id} style={{display:'block',padding:'14px 4px',borderBottom:'1px solid var(--line)',color:'inherit'}}><strong>{name}</strong><div style={{color:'var(--muted)',marginTop:4}}>{booking.from}{booking.to!==booking.from?` – ${booking.to}`:''} · {statusLabel(booking)}</div></Link>;
-        }):<div className="hostCalendarListEmpty"><ListIcon/><strong>{en?'No upcoming bookings':'Inga kommande bokningar'}</strong></div>}
-      </div>}
+      </>}
     </section>
   );
 }
