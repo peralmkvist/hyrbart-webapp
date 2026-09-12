@@ -1,0 +1,52 @@
+.profileDashboard {
+  --profile-section-gap: 24px;
+}
+
+.profileDashboard .profileInsightGrid {
+  margin-top: var(--profile-section-gap);
+}
+
+.profileDashboard .profileModeSwitch {
+  margin-top: var(--profile-section-gap);
+}
+
+.profileDashboard .profileMenuRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profileDashboard .profileMenuIcon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  color: var(--ink);
+}
+
+.profileDashboard .profileMenuIcon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.profileDashboard .profileMenuLabel {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-weight: 800;
+}
+
+.profileDashboard .profileMenuRow.logout,
+.profileDashboard .profileMenuRow.logout .profileMenuLabel {
+  font-weight: 800;
+}
+
+.profileDashboard .profileMenuRow select {
+  font-weight: 800 !important;
+}
+
+.profileDashboard .profileChevron {
+  margin-left: auto;
+}
