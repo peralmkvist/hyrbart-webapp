@@ -74,9 +74,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!ALLOWED_TYPES.has(file.type)) return NextResponse.json({ error: 'Bilden måste vara JPEG, PNG, WebP, HEIC eller HEIF.' }, { status: 415 });
     if (file.size > MAX_BYTES) return NextResponse.json({ error: 'Bilden får vara högst 10 MB.' }, { status: 413 });
 
-    const allowedStatus = stage === 'pickup' ? ['accepted','paid'].includes(booking.status) : booking.status === 'active';
+    const allowedStatus = stage === 'pickup' ? booking.status === 'paid' : booking.status === 'active';
     if (!allowedStatus) {
-      return NextResponse.json({ error: stage === 'pickup' ? 'Bokningen är inte redo för utlämning.' : 'Bokningen är inte redo för återlämning.' }, { status: 409 });
+      return NextResponse.json({ error: stage === 'pickup' ? 'Bokningen måste vara betald innan utlämning.' : 'Bokningen är inte redo för återlämning.' }, { status: 409 });
     }
 
     const admin = createAdminClient();
