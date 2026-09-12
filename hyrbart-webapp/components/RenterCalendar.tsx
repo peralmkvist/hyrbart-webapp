@@ -13,6 +13,7 @@ type Booking = {
   status?: string;
   requestType?: string;
   total?: number;
+  role?: 'owner'|'renter';
   product?: { slug?: string; brand?: string; name?: string; image?: string };
 };
 
@@ -46,7 +47,11 @@ export default function RenterCalendar({ locale }: { locale: string }) {
     let active = true;
     fetch('/api/booking-requests', { cache: 'no-store' })
       .then(async response => response.ok ? response.json() : { bookings: [] })
-      .then(data => { if (active) setBookings(Array.isArray(data.bookings) ? data.bookings : []); })
+      .then(data => {
+        if (!active) return;
+        const rows = Array.isArray(data.bookings) ? data.bookings as Booking[] : [];
+        setBookings(rows.filter(booking => booking.role !== 'owner'));
+      })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
@@ -71,7 +76,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
   const actionCount = groupedBookings.action.length;
   const visibleGroups = useMemo(() => {
     const groups = [
-      { key:'action' as const, title:en?'Needs action':'Behöver åtgärd', items:groupedBookings.action },
+      { key:'action' as const, title:en?'Awaiting response':'Inväntar svar', items:groupedBookings.action },
       { key:'upcoming' as const, title:en?'Upcoming':'Kommande', items:groupedBookings.upcoming },
       { key:'active' as const, title:en?'Active':'Pågående', items:groupedBookings.active },
       { key:'completed' as const, title:en?'Completed':'Avslutade', items:groupedBookings.completed },
@@ -81,7 +86,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
 
   const statusLabel = (booking:Booking) => {
     const status = booking.status || '';
-    if (status === 'requested') return en ? 'Request' : 'Förfrågan';
+    if (status === 'requested') return en ? 'Booking request sent' : 'Bokningsförfrågan skickad';
     if (status === 'reserved') return en ? 'Reserved' : 'Reserverad';
     if (status === 'accepted') return en ? 'Approved' : 'Godkänd';
     if (status === 'paid') return en ? 'Paid' : 'Betald';
@@ -109,7 +114,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
         <div className="hostBookingFilterRail" role="tablist" aria-label={en?'Filter bookings':'Filtrera bokningar'}>
           {([
             ['all', en?'All':'Alla'],
-            ['action', en?'Needs action':'Behöver åtgärd'],
+            ['action', en?'Awaiting response':'Inväntar svar'],
             ['upcoming', en?'Upcoming':'Kommande'],
             ['active', en?'Active':'Pågående'],
             ['completed', en?'Completed':'Avslutade'],
@@ -124,8 +129,8 @@ export default function RenterCalendar({ locale }: { locale: string }) {
                 <div className="hostBookingCards">
                   {group.items.map(booking=>{
                     const name=[booking.product?.brand,booking.product?.name].filter(Boolean).join(' ') || (en?'Product':'Produkt');
-                    const needsAction=['requested','reserved'].includes(booking.status||'');
-                    return <Link href={`/${locale}/bokningar/${booking.id}`} key={booking.id} className={`hostBookingCard ${needsAction?'needsAction':''}`} style={{display:'block',color:'inherit',textDecoration:'none'}}>
+                    const awaitingResponse=['requested','reserved'].includes(booking.status||'');
+                    return <Link href={`/${locale}/bokningar/${booking.id}`} key={booking.id} className={`hostBookingCard ${awaitingResponse?'needsAction':''}`} style={{display:'block',color:'inherit',textDecoration:'none'}}>
                       <div className="hostBookingCardTop">
                         <div>
                           <span className="hostBookingStatus">{statusLabel(booking)}</span>
