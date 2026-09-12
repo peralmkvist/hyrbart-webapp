@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import ProfileLanguageSetting from '@/components/ProfileLanguageSetting';
 import { createClient } from '@/lib/supabase/server';
 
@@ -24,6 +25,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
       .eq('id', user.id)
       .maybeSingle();
     profile = data;
+  }
+
+  async function signOut() {
+    'use server';
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect(`/topsecret/${locale}/logga-in`);
   }
 
   const displayName = profile?.display_name || 'Per';
@@ -55,10 +63,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
       <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}/vard/profil`}>{en ? 'Switch to host mode' : 'Växla till uthyrarläge'}</Link>
       <div className="profileMenuList"><ProfileLanguageSetting locale={locale}/>{menu.map((label) => {
         const isViewProfile = label === 'Visa profil' || label === 'View profile';
+        const isLogout = label === 'Logga ut' || label === 'Log out';
         const row = <><span>{label}</span><MenuChevron /></>;
-        return isViewProfile
-          ? <Link className="profileMenuRow" href={publicProfileHref} key={label} style={{ color: 'inherit', textDecoration: 'none' }}>{row}</Link>
-          : <div className={`profileMenuRow ${label === 'Logga ut' || label === 'Log out' ? 'logout' : ''}`} key={label}>{row}</div>;
+        if (isViewProfile) {
+          return <Link className="profileMenuRow" href={publicProfileHref} key={label} style={{ color: 'inherit', textDecoration: 'none' }}>{row}</Link>;
+        }
+        if (isLogout) {
+          return <form action={signOut} key={label} style={{ margin: 0 }}>
+            <button type="submit" className="profileMenuRow logout" style={{ width: '100%', border: 0, background: 'transparent', textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer' }}>{row}</button>
+          </form>;
+        }
+        return <div className="profileMenuRow" key={label}>{row}</div>;
       })}</div>
     </section>
   );
