@@ -6,26 +6,15 @@ export const contentType = 'image/png';
 export default function AppleIcon() {
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: '180px',
-          height: '180px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#01453A',
-          borderRadius: '40px',
-          overflow: 'hidden',
-        }}
-      >
-        <svg width="180" height="180" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="1024" height="1024" rx="190" fill="#01453A" />
-          <path d="M210 505 512 230 814 505v278c0 36-29 65-65 65H275c-36 0-65-29-65-65V505Z" fill="none" stroke="#FCF9F3" strokeWidth="76" strokeLinejoin="round" strokeLinecap="round" />
-          <path d="M722 420V330h88v172" fill="none" stroke="#FCF9F3" strokeWidth="76" strokeLinejoin="round" strokeLinecap="round" />
-          <g transform="rotate(-45 520 610)">
-            <path d="M405 435h230c28 0 50 22 50 50v282c0 28-22 50-50 50H405c-28 0-50-22-50-50V485c0-28 22-50 50-50Z" fill="#C0FF00" />
-            <circle cx="620" cy="505" r="31" fill="#01453A" />
+      <div style={{width:'180px',height:'180px',display:'flex',alignItems:'center',justifyContent:'center',background:'#ffffff'}}>
+        <svg width="180" height="180" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <rect width="512" height="512" rx="112" fill="#ffffff" />
+          <g fill="#111111">
+            <rect x="132" y="98" width="62" height="246" rx="18" />
+            <rect x="318" y="98" width="62" height="246" rx="18" />
+            <rect x="174" y="192" width="164" height="58" rx="18" />
           </g>
+          <rect x="132" y="360" width="248" height="22" rx="11" fill="#ffcc00" />
         </svg>
       </div>
     ),
