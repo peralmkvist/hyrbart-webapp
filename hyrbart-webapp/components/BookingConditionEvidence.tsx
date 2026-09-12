@@ -22,7 +22,7 @@ export default function BookingConditionEvidence({ bookingId, status, locale, is
 
   const pickupPhotos = useMemo(() => photos.filter(photo => photo.stage === 'pickup'), [photos]);
   const returnPhotos = useMemo(() => photos.filter(photo => photo.stage === 'return'), [photos]);
-  const requiredStage: 'pickup'|'return'|null = isRenter && ['accepted','paid'].includes(status)
+  const requiredStage: 'pickup'|'return'|null = isRenter && status === 'paid'
     ? 'pickup'
     : isRenter && status === 'active'
       ? 'return'
@@ -64,9 +64,12 @@ export default function BookingConditionEvidence({ bookingId, status, locale, is
     if (['requested','reserved'].includes(status)) return isRenter
       ? (en ? 'Waiting for the owner to respond to your request.' : 'Väntar på att uthyraren ska svara på din förfrågan.')
       : (en ? 'Respond to the booking request.' : 'Svara på bokningsförfrågan.');
-    if (['accepted','paid'].includes(status)) return isRenter
+    if (status === 'accepted') return isRenter
+      ? (en ? 'The booking is approved. Pay before pickup can begin.' : 'Bokningen är godkänd. Betala innan utlämningen kan påbörjas.')
+      : (en ? 'The booking is approved and waiting for payment from the renter.' : 'Bokningen är godkänd och väntar på betalning från hyrestagaren.');
+    if (status === 'paid') return isRenter
       ? (en ? 'At pickup you must document the condition with at least one photo before the rental can start.' : 'Vid utlämning måste du dokumentera skicket med minst en bild innan hyran kan starta.')
-      : (en ? 'The renter must photograph the item at pickup before the rental starts.' : 'Hyrestagaren måste fotografera produkten vid utlämning innan hyran startar.');
+      : (en ? 'Payment is complete. The renter must photograph the item at pickup before the rental starts.' : 'Betalningen är klar. Hyrestagaren måste fotografera produkten vid utlämning innan hyran startar.');
     if (status === 'active') return isRenter
       ? (en ? 'At return you must take at least one new condition photo before the rental can be marked returned.' : 'Vid återlämning måste du ta minst en ny skickbild innan hyran kan markeras som återlämnad.')
       : (en ? 'Rental in progress. The renter must add a return photo when handing it back.' : 'Uthyrningen pågår. Hyrestagaren måste lägga till en återlämningsbild när produkten lämnas tillbaka.');
@@ -75,6 +78,7 @@ export default function BookingConditionEvidence({ bookingId, status, locale, is
       : (en ? 'The renter has documented the return. Confirm completion when everything looks correct.' : 'Hyrestagaren har dokumenterat återlämningen. Bekräfta avslut när allt ser korrekt ut.');
     if (status === 'completed') return en ? 'Rental completed.' : 'Uthyrningen är avslutad.';
     if (status === 'cancelled') return en ? 'Booking cancelled.' : 'Bokningen är avbokad.';
+    if (status === 'refunded') return en ? 'Booking cancelled and payment marked as refunded.' : 'Bokningen är avbokad och betalningen markerad som återbetald.';
     if (status === 'declined') return en ? 'Booking request declined.' : 'Bokningsförfrågan är nekad.';
     return null;
   })();
