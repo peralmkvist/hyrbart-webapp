@@ -6,7 +6,7 @@ export default async function DemoHostBookingPage({params}:{params:Promise<{loca
   const en=locale==='en';
   return <main className={styles.page}>
     <header className={styles.topbar}>
-      <Link href={`/${locale}/vard/kalender`} className={styles.back} aria-label={en?'Back':'Tillbaka'}>‹</Link>
+      <Link href={`/${locale}/kalender`} className={styles.back} aria-label={en?'Back':'Tillbaka'}>‹</Link>
       <h1>{en?'Booking':'Bokning'}</h1>
     </header>
 
