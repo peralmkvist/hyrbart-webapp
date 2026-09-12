@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import HostBookingManage from '@/components/HostBookingManage';
+import BookingConditionEvidence from '@/components/BookingConditionEvidence';
 import { createClient } from '@/lib/supabase/server';
 import { getProducts } from '@/lib/sanity-products';
 import styles from '../demo/page.module.css';
@@ -56,6 +57,7 @@ export default async function HostBookingPage({params}:{params:Promise<{locale:s
       <div className={styles.total}><span>{en?'Total':'Totalsumma'}</span><strong>{total} kr</strong></div>
     </section>
 
+    <BookingConditionEvidence bookingId={booking.id} status={booking.status} locale={locale} isRenter={false}/>
     <HostBookingManage bookingId={booking.id} status={booking.status} locale={locale} className={styles.manage}/>
 
     <section className={styles.card}>
