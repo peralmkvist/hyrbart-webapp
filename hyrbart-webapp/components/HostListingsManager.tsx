@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import AvailabilityBlocker from './AvailabilityBlocker';
 
 type Listing={id:string;slug:string;brand?:string;name?:string;typeSv?:string;category?:string;dailyPrice?:number;listingStatus?:'active'|'paused'|'draft';image?:string};
 type Filter='all'|'active'|'paused'|'draft';
@@ -65,7 +66,10 @@ export default function HostListingsManager({locale}:{locale:string}){
         <h1>{en?'Your listings':'Dina annonser'}</h1>
         <p>{en?`${counts.active} active · ${counts.draft} drafts`:`${counts.active} aktiva · ${counts.draft} utkast`}</p>
       </div>
-      <Link href={`/${locale}/vard/annonser/ny`} className="hostListingsAdd" aria-label={en?'Create listing':'Skapa annons'}>＋</Link>
+      <div className="hostListingsHeaderActions">
+        <AvailabilityBlocker listings={listings} locale={locale}/>
+        <Link href={`/${locale}/vard/annonser/ny`} className="hostListingsAdd" aria-label={en?'Create listing':'Skapa annons'}>＋</Link>
+      </div>
     </header>
 
     {!loading&&!hostProfileReady?
