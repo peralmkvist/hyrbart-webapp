@@ -24,15 +24,7 @@ body {
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
 
-main {
-  /*
-    Låt sidans verkliga innehåll bestämma dokumenthöjden.
-    Bottom-nav är fixed och behöver bara fri yta längst ned —
-    main ska inte samtidigt tvingas vara ett helt viewport-högt block.
-  */
-  min-height: 0;
-  padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));
-}
+main { min-height: 0; }
 
 .pageShell {
   max-width: 760px;
@@ -69,17 +61,8 @@ main {
 }
 
 .primaryButton svg { width: 19px; }
-
-.primaryButton.compact {
-  width: 100%;
-  padding: 11px 12px;
-  margin-top: 10px;
-}
-
-.primaryButton.wide {
-  width: 100%;
-  margin-top: 14px;
-}
+.primaryButton.compact { width: 100%; padding: 11px 12px; margin-top: 10px; }
+.primaryButton.wide { width: 100%; margin-top: 14px; }
 
 /* Home */
 .homePage {
@@ -103,34 +86,13 @@ main {
   background: linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.18) 58%,rgba(0,0,0,.28));
 }
 
-.heroContent {
-  position: relative;
-  z-index: 1;
-  padding: 72px 28px 30px;
-  max-width: 570px;
-}
-
-.hero h1 {
-  margin: 0 0 18px;
-  font-size: clamp(3rem,13vw,5.7rem);
-  line-height: .88;
-  letter-spacing: -.055em;
-}
-
+.heroContent { position: relative; z-index: 1; padding: 72px 28px 30px; max-width: 570px; }
+.hero h1 { margin: 0 0 18px; font-size: clamp(3rem,13vw,5.7rem); line-height: .88; letter-spacing: -.055em; }
 .hero h1 .heroLine { display: block; }
 .hero h1 .heroLinePrimary { color: #fff; }
 .hero h1 .heroLineAccent { color: var(--accent); }
-
-.hero p {
-  font-size: 1.08rem;
-  line-height: 1.45;
-  max-width: 420px;
-}
-
-.hero .primaryButton {
-  margin-top: 12px;
-  color: #111;
-}
+.hero p { font-size: 1.08rem; line-height: 1.45; max-width: 420px; }
+.hero .primaryButton { margin-top: 12px; color: #111; }
 
 .aboutCard {
   position: relative;
@@ -144,1706 +106,264 @@ main {
   gap: 18px;
   box-shadow: 0 10px 26px rgba(0,0,0,.16);
 }
-
 .aboutCard h2 { margin: 0 0 8px; }
-
-.aboutCard p {
-  margin: 0 0 10px;
-  color: #394043;
-  line-height: 1.45;
-}
-
-.avatar {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg,#d8c49c,#4e6b59);
-  color: #fff;
-  font-weight: 900;
-  font-size: 28px;
-}
+.aboutCard p { margin: 0 0 10px; color: #394043; line-height: 1.45; }
+.avatar { width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg,#d8c49c,#4e6b59); color: #fff; font-weight: 900; font-size: 28px; }
 
 /* Category chips */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 20px 0;
-}
-
-.chip {
-  border: 1px solid var(--line);
-  background: #fff;
-  border-radius: 999px;
-  padding: 8px 13px;
-  color: #34393c;
-}
-
-.chip.active {
-  background: var(--accent);
-  border-color: transparent;
-  color: #111;
-  font-weight: 800;
-}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+.chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 13px; color: #34393c; }
+.chip.active { background: var(--accent); border-color: transparent; color: #111; font-weight: 800; }
 
 /* Product catalogue */
-.productsPage {
-  padding-top: 18px;
-  padding-bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
-}
-
-.productsChips {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  gap: 8px;
-  margin: 0 -20px 22px;
-  padding: 10px 20px;
-  background: rgba(244,244,241,.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
+.productsPage { padding-top: 18px; padding-bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom)); }
+.productsChips { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; gap: 8px; margin: 0 -20px 22px; padding: 10px 20px; background: rgba(244,244,241,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .productsChips::-webkit-scrollbar { display: none; }
-
-.productsChips .chip {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-.productGrid.productList {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-}
-
-.productCard {
-  background: #fff;
-  border: 1px solid #eceeec;
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.035);
-}
-
-.productListCard {
-  display: grid;
-  grid-template-columns: 42% minmax(0,1fr);
-  gap: 14px;
-  align-items: stretch;
-}
-
-.productListCard .productVisual {
-  height: auto;
-  min-height: 190px;
-}
-
-.productCardContent {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.productListCard h2 {
-  margin: 5px 0 7px;
-  font-size: 1.22rem;
-  line-height: 1.08;
-}
-
-.productListCard p {
-  margin: 0;
-  color: #404649;
-  font-size: .98rem;
-  line-height: 1.38;
-}
-
+.productsChips .chip { flex: 0 0 auto; white-space: nowrap; }
+.productGrid.productList { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.productCard { background: #fff; border: 1px solid #eceeec; border-radius: 16px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.035); }
+.productListCard { display: grid; grid-template-columns: 42% minmax(0,1fr); gap: 14px; align-items: stretch; }
+.productListCard .productVisual { height: auto; min-height: 190px; }
+.productCardContent { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; }
+.productListCard h2 { margin: 5px 0 7px; font-size: 1.22rem; line-height: 1.08; }
+.productListCard p { margin: 0; color: #404649; font-size: .98rem; line-height: 1.38; }
 .productListCard .primaryButton.compact { margin-top: 14px; }
-
-.productCardLink {
-  color: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
+.productCardLink { color: inherit; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .productCardLink:active { transform: scale(.992); }
-
-.productCardLink:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
-}
-
+.productCardLink:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .productCardCta { pointer-events: none; }
 
 /* Product visuals / temporary placeholders */
-.productVisual {
-  height: 145px;
-  border-radius: 12px;
-  background: linear-gradient(180deg,#f7f7f6,#e9eceb);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  position: relative;
-}
-
-.productVisual.large {
-  height: 300px;
-  background: transparent;
-}
-
-.machineBody {
-  position: relative;
-  width: 62%;
-  height: 55%;
-  border-radius: 24px 22px 18px 18px;
-  background: #15191b;
-  box-shadow: 0 14px 25px rgba(0,0,0,.15);
-}
-
-.machineTop {
-  position: absolute;
-  left: 28%;
-  top: -18%;
-  width: 43%;
-  height: 24%;
-  border: 12px solid #171a1c;
-  border-bottom: 0;
-  border-radius: 16px 16px 0 0;
-}
-
-.machineAccent {
-  position: absolute;
-  left: 14%;
-  right: 10%;
-  bottom: 13%;
-  height: 38%;
-  background: var(--machine-accent);
-  border-radius: 8px;
-}
-
-.machineWheel {
-  position: absolute;
-  bottom: -8%;
-  width: 20%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #222;
-  border: 6px solid #111;
-}
-
+.productVisual { height: 145px; border-radius: 12px; background: linear-gradient(180deg,#f7f7f6,#e9eceb); display: grid; place-items: center; overflow: hidden; position: relative; }
+.productVisual.large { height: 300px; background: transparent; }
+.machineBody { position: relative; width: 62%; height: 55%; border-radius: 24px 22px 18px 18px; background: #15191b; box-shadow: 0 14px 25px rgba(0,0,0,.15); }
+.machineTop { position: absolute; left: 28%; top: -18%; width: 43%; height: 24%; border: 12px solid #171a1c; border-bottom: 0; border-radius: 16px 16px 0 0; }
+.machineAccent { position: absolute; left: 14%; right: 10%; bottom: 13%; height: 38%; background: var(--machine-accent); border-radius: 8px; }
+.machineWheel { position: absolute; bottom: -8%; width: 20%; aspect-ratio: 1; border-radius: 50%; background: #222; border: 6px solid #111; }
 .w1 { left: 13%; }
 .w2 { right: 10%; }
-
-.sawBlade {
-  position: absolute;
-  right: 4%;
-  top: -20%;
-  width: 44%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 8px solid #a8b0b3;
-  background: conic-gradient(from 10deg,#f4f4f4,#b8bec0,#f4f4f4);
-}
+.sawBlade { position: absolute; right: 4%; top: -20%; width: 44%; aspect-ratio: 1; border-radius: 50%; border: 8px solid #a8b0b3; background: conic-gradient(from 10deg,#f4f4f4,#b8bec0,#f4f4f4); }
 
 /* Generic product detail */
-.genericProductPage {
-  padding-bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom));
-}
-
-.backLink {
-  display: inline-grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  margin-bottom: 18px;
-  font-weight: 750;
-}
-
-.genericProductHero {
-  display: grid;
-  gap: 18px;
-}
-
+.genericProductPage { padding-bottom: calc(var(--nav-h) + 72px + env(safe-area-inset-bottom)); }
+.backLink { display: inline-grid; place-items: center; width: 40px; height: 40px; margin-bottom: 18px; font-weight: 750; }
+.genericProductHero { display: grid; gap: 18px; }
 .genericProductHero .productVisual { min-height: 280px; }
+.genericProductNotice { margin-top: 24px; padding: 20px; border-radius: 20px; background: #fff; border: 1px solid var(--line); }
+.genericProductNotice p { margin: 8px 0 0; color: var(--muted); }
 
-.genericProductNotice {
-  margin-top: 24px;
-  padding: 20px;
-  border-radius: 20px;
-  background: #fff;
-  border: 1px solid var(--line);
-}
-
-.genericProductNotice p {
-  margin: 8px 0 0;
-  color: var(--muted);
-}
-
-/* Kärcher product detail */
-.productDetailPage {
-  padding-bottom: 140px;
-}
-
+/* Product detail */
+.productDetailPage { padding-bottom: 140px; }
 .productDetailPage .compactProductTitle h1 { margin: 0; }
-
-.productDetailPage .detailProductVisual .productVisual.large {
-  height: 230px;
-  margin: 14px 0 22px;
-}
-
+.productDetailPage .detailProductVisual .productVisual.large { height: 230px; margin: 14px 0 22px; }
 .productDetailPage .included { margin-top: 0; }
-
-.included h2 {
-  margin-top: 0;
-  font-size: 1.35rem;
-}
-
-.includedGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.includedGrid > div {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .93rem;
-}
-
-.checkCircle {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--accent);
-  flex: 0 0 auto;
-}
-
+.included h2 { margin-top: 0; font-size: 1.35rem; }
+.includedGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.includedGrid > div { display: flex; align-items: center; gap: 8px; font-size: .93rem; }
+.checkCircle { width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); flex: 0 0 auto; }
 .checkCircle svg { width: 16px; }
-
-.specDropdown {
-  margin: 22px 0 10px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.specDropdown summary {
-  display: grid;
-  grid-template-columns: 24px 1fr auto;
-  gap: 9px;
-  align-items: center;
-  padding: 14px 15px;
-  font-weight: 800;
-  cursor: pointer;
-  list-style: none;
-}
-
-.specBody {
-  border-top: 1px solid var(--line);
-  padding: 10px 15px;
-}
-
-.specBody > div {
-  display: flex;
-  justify-content: space-between;
-  padding: 7px 0;
-}
-
-.productDetailPage .specDropdown summary .specChevron {
-  transition: transform .18s ease;
-}
-
-.productDetailPage .specDropdown[open] summary .specChevron {
-  transform: rotate(180deg);
-}
-
-.stackedActions {
-  display: grid;
-  gap: 7px;
-}
-
-.darkAction {
-  min-height: 58px;
-  border-radius: 10px;
-  background: var(--ink);
-  color: #fff;
-  display: grid;
-  grid-template-columns: 28px 1fr auto;
-  align-items: center;
-  gap: 9px;
-  padding: 10px 14px;
-  font-weight: 750;
-}
-
+.specDropdown { margin: 22px 0 10px; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.specDropdown summary { display: grid; grid-template-columns: 24px 1fr auto; gap: 9px; align-items: center; padding: 14px 15px; font-weight: 800; cursor: pointer; list-style: none; }
+.specBody { border-top: 1px solid var(--line); padding: 10px 15px; }
+.specBody > div { display: flex; justify-content: space-between; padding: 7px 0; }
+.productDetailPage .specDropdown summary .specChevron { transition: transform .18s ease; }
+.productDetailPage .specDropdown[open] summary .specChevron { transform: rotate(180deg); }
+.stackedActions { display: grid; gap: 7px; }
+.darkAction { min-height: 58px; border-radius: 10px; background: var(--ink); color: #fff; display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 9px; padding: 10px 14px; font-weight: 750; }
 .darkAction svg { width: 21px; }
 .darkAction b { font-size: 24px; font-weight: 400; }
-
 .productDetailPage .primaryButton.wide { min-height: 58px; }
 .productDetailPage > :last-child { margin-bottom: 0; }
 
 /* Guide */
-.guidePage {
-  padding-top: 0;
-  padding-bottom: 48px;
-  overflow: visible;
-}
-
-.guideHeaderSticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 120;
-  margin: 0 -20px 22px;
-  background: rgba(244,244,241,.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 1px 0 var(--line);
-}
-
-.guideTabs {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  margin: 0;
-  padding: 0 20px;
-}
-
-.guideTabs a {
-  padding: 13px 4px;
-  text-align: center;
-  font-size: .82rem;
-  white-space: nowrap;
-}
-
-.guideTabs a.active {
-  font-weight: 800;
-  box-shadow: inset 0 -3px var(--accent);
-}
-
-.guideSection {
-  min-height: calc(100svh - 118px);
-  padding: 8px 0 34px;
-  scroll-margin-top: 118px;
-}
-
-.stepHeading {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-}
-
-.stepHeading span {
-  background: var(--ink);
-  color: var(--accent);
-  border-radius: 9px;
-  width: 43px;
-  height: 43px;
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-  font-size: 1.4rem;
-}
-
-.stepHeading h1,
-.stepHeading h2 {
-  font-size: 2rem;
-  margin: 0;
-  letter-spacing: -.03em;
-}
-
-.guideSection > p {
-  font-size: 1.05rem;
-  line-height: 1.5;
-}
-
-.guideImage {
-  height: 340px;
-  border-radius: 14px;
-  background: linear-gradient(180deg,#e7e5e2,#b5b8b7);
-  position: relative;
-  overflow: hidden;
-  margin: 18px 0;
-}
-
-.tank {
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: 9%;
-  height: 60%;
-  border-radius: 16px 16px 28px 28px;
-  border: 8px solid #707779;
-  background: rgba(255,255,255,.1);
-  overflow: hidden;
-}
-
-.fill {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 45%;
-  background: rgba(110,145,151,.35);
-}
-
-.pour {
-  position: absolute;
-  right: 18%;
-  top: 8%;
-  font-size: 90px;
-  transform: rotate(18deg);
-  color: #fff;
-}
-
-.bottle {
-  position: absolute;
-  right: 19%;
-  bottom: 13%;
-  width: 90px;
-  height: 170px;
-  border-radius: 12px;
-  background: #e4bd00;
-  border-top: 34px solid #202426;
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-}
-
-.infoBox {
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 12px;
-  background: #e4f2ff;
-}
-
+.guidePage { padding-top: 0; padding-bottom: 48px; overflow: visible; }
+.guideHeaderSticky { position: -webkit-sticky; position: sticky; top: 0; z-index: 120; margin: 0 -20px 22px; background: rgba(244,244,241,.98); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 1px 0 var(--line); }
+.guideTabs { display: grid; grid-template-columns: repeat(4,1fr); margin: 0; padding: 0 20px; }
+.guideTabs a { padding: 13px 4px; text-align: center; font-size: .82rem; white-space: nowrap; }
+.guideTabs a.active { font-weight: 800; box-shadow: inset 0 -3px var(--accent); }
+.guideSection { min-height: calc(100svh - 118px); padding: 8px 0 34px; scroll-margin-top: 118px; }
+.stepHeading { display: flex; align-items: center; gap: 13px; }
+.stepHeading span { background: var(--ink); color: var(--accent); border-radius: 9px; width: 43px; height: 43px; display: grid; place-items: center; font-weight: 900; font-size: 1.4rem; }
+.stepHeading h1,.stepHeading h2 { font-size: 2rem; margin: 0; letter-spacing: -.03em; }
+.guideSection > p { font-size: 1.05rem; line-height: 1.5; }
+.guideImage { height: 340px; border-radius: 14px; background: linear-gradient(180deg,#e7e5e2,#b5b8b7); position: relative; overflow: hidden; margin: 18px 0; }
+.tank { position: absolute; left: 12%; right: 12%; bottom: 9%; height: 60%; border-radius: 16px 16px 28px 28px; border: 8px solid #707779; background: rgba(255,255,255,.1); overflow: hidden; }
+.fill { position: absolute; left: 0; right: 0; bottom: 0; height: 45%; background: rgba(110,145,151,.35); }
+.pour { position: absolute; right: 18%; top: 8%; font-size: 90px; transform: rotate(18deg); color: #fff; }
+.bottle { position: absolute; right: 19%; bottom: 13%; width: 90px; height: 170px; border-radius: 12px; background: #e4bd00; border-top: 34px solid #202426; display: grid; place-items: center; font-weight: 900; }
+.infoBox { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 14px; border-radius: 12px; background: #e4f2ff; }
 .infoBox svg { color: var(--info); }
 .infoBox p { margin: 3px 0 0; }
 
 /* Rental terms */
 .termsPage { max-width: 680px; }
-
-.termsCard {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--line);
-}
-
+.termsCard { padding: 20px 0; border-bottom: 1px solid var(--line); }
 .termsCard h2 { margin: 0 0 8px; }
-
-.termsCard p {
-  line-height: 1.6;
-  color: #363c3f;
-}
-
-.termsNote {
-  margin-top: 30px;
-  padding: 16px;
-  border-radius: 12px;
-  background: #fff4d7;
-  line-height: 1.5;
-}
-
-/* Bottom navigation — structural base */
-.liquidNav {
-  position: fixed;
-  z-index: 200;
-  left: 50%;
-  bottom: max(8px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  width: min(calc(100% - 32px), 620px);
-  height: var(--nav-h);
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.navItem {
-  position: relative;
-  min-width: 0;
-  height: 100%;
-  padding: 5px 4px 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  font-size: .69rem;
-  line-height: 1.05;
-  isolation: isolate;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.navIcon {
-  position: relative;
-  z-index: 2;
-  width: 21px;
-  height: 21px;
-  flex: 0 0 auto;
-}
-
-.navItem > span:last-child {
-  position: relative;
-  z-index: 2;
-  max-width: 100%;
-  white-space: nowrap;
-}
-
-.activeLens {
-  position: absolute;
-  z-index: 1;
-  inset: 3px;
-  border-radius: 999px;
-  opacity: 0;
-}
-
-.navItem.active .activeLens { opacity: 1; }
+.termsCard p { line-height: 1.6; color: #363c3f; }
+.termsNote { margin-top: 30px; padding: 16px; border-radius: 12px; background: #fff4d7; line-height: 1.5; }
 
 /* Responsive */
 @media (max-width: 380px) {
-  .productListCard {
-    grid-template-columns: 40% minmax(0,1fr);
-    gap: 11px;
-  }
-
+  .productListCard { grid-template-columns: 40% minmax(0,1fr); gap: 11px; }
   .productListCard .productVisual { min-height: 176px; }
   .productListCard h2 { font-size: 1.1rem; }
 }
-
 @media (min-width: 800px) {
-  .heroContent {
-    padding-left: max(28px,calc((100vw - 760px)/2));
-  }
-
-  .aboutCard {
-    max-width: 720px;
-    margin: -26px auto 22px;
-  }
-
+  .heroContent { padding-left: max(28px,calc((100vw - 760px)/2)); }
+  .aboutCard { max-width: 720px; margin: -26px auto 22px; }
   .homePage { padding-bottom: 20px; }
   .pageShell { padding-top: 46px; }
-
-  /* Sticky mobile headers should still start at the viewport top. */
   .guidePage { padding-top: 0; }
 }
 
-/* ============================================================
-   CURRENT APP OVERRIDES — CONSOLIDATED
-   ============================================================ */
-
-/* Product-card metadata */
-.productListCard .productCardType {
-  margin: 0 0 7px;
-  color: var(--muted);
-  font-size: .92rem;
-  line-height: 1.2;
-  font-weight: 600;
-}
-
-.productListCard .productCardPrice {
-  margin: 8px 0 0;
-  color: #404649;
-  font-size: .98rem;
-  line-height: 1.3;
-}
-
-/* Product description */
-.productDetailPage .productDescriptionDropdown {
-  margin-bottom: 10px;
-}
-
-.productDetailPage .productDescriptionDropdown + .specDropdown {
-  margin-top: 0;
-}
-
-.productDetailPage .productDescriptionBody p {
-  margin: 0;
-  color: #363c3f;
-  line-height: 1.55;
-}
+/* Current app overrides */
+.productListCard .productCardType { margin: 0 0 7px; color: var(--muted); font-size: .92rem; line-height: 1.2; font-weight: 600; }
+.productListCard .productCardPrice { margin: 8px 0 0; color: #404649; font-size: .98rem; line-height: 1.3; }
+.productDetailPage .productDescriptionDropdown { margin-bottom: 10px; }
+.productDetailPage .productDescriptionDropdown + .specDropdown { margin-top: 0; }
+.productDetailPage .productDescriptionBody p { margin: 0; color: #363c3f; line-height: 1.55; }
 
 /* Language switch */
-.languageSwitch {
-  position: fixed;
-  top: max(16px, env(safe-area-inset-top));
-  right: max(18px, env(safe-area-inset-right));
-  z-index: 180;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 2px solid rgba(255,255,255,.9);
-  border-radius: 50%;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,.16);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.languageSwitch svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.languageSwitch:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
-}
+.languageSwitch { position: fixed; top: max(16px, env(safe-area-inset-top)); right: max(18px, env(safe-area-inset-right)); z-index: 180; width: 34px; height: 34px; padding: 0; border: 2px solid rgba(255,255,255,.9); border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.16); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.languageSwitch svg { display: block; width: 100%; height: 100%; object-fit: cover; }
+.languageSwitch:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
 /* Product catalogue top area */
-.productsPage {
-  position: relative;
-  padding-top: 72px;
-  padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));
-}
+.productsPage { position: relative; padding-top: 72px; padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom)); }
+.productsPage::before { content: ""; position: fixed; z-index: 150; top: 0; left: 0; right: 0; height: 58px; background: rgba(244,244,241,.98); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); pointer-events: none; }
+.productsPage .productsChips { top: 58px; padding-right: 20px; }
+.productsPage .productGrid.productList,.productsPage .productCard:last-child { margin-bottom: 0; }
 
-.productsPage::before {
-  content: "";
-  position: fixed;
-  z-index: 150;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 58px;
-  background: rgba(244,244,241,.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  pointer-events: none;
-}
-
-.productsPage .productsChips {
-  top: 58px;
-  padding-right: 20px;
-}
-
-.productsPage .productGrid.productList,
-.productsPage .productCard:last-child {
-  margin-bottom: 0;
-}
-
-/* Kärcher product page: one sticky navigation/identity header */
-.productDetailPage .productHeaderSticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 120;
-  margin: 0 -20px 18px;
-  background: rgba(244,244,241,.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.productDetailPage .productBackRow {
-  min-height: 54px;
-  padding: 8px 64px 2px 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink);
-  font-size: .9rem;
-  line-height: 1.2;
-  font-weight: 650;
-  text-align: left;
-}
-
-.productDetailPage .productBackRow svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-}
-
-.productDetailPage .productCategoryRow {
-  padding: 1px 20px 7px;
-  color: var(--muted);
-  font-size: 17px;
-  line-height: 1.25;
-  font-weight: 500;
-  text-align: left;
-}
-
-.productDetailPage .productHeaderSticky .compactProductTitle {
-  position: static;
-  top: auto;
-  z-index: auto;
-  margin: 0;
-  padding: 6px 20px 12px;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 0;
-  box-shadow: none;
-}
+/* Product page sticky identity */
+.productDetailPage .productHeaderSticky { position: -webkit-sticky; position: sticky; top: 0; z-index: 120; margin: 0 -20px 18px; background: rgba(244,244,241,.98); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.productDetailPage .productBackRow { min-height: 54px; padding: 8px 64px 2px 20px; display: flex; align-items: center; gap: 6px; color: var(--ink); font-size: .9rem; line-height: 1.2; font-weight: 650; text-align: left; }
+.productDetailPage .productBackRow svg { width: 24px; height: 24px; flex: 0 0 auto; }
+.productDetailPage .productCategoryRow { padding: 1px 20px 7px; color: var(--muted); font-size: 17px; line-height: 1.25; font-weight: 500; text-align: left; }
+.productDetailPage .productHeaderSticky .compactProductTitle { position: static; top: auto; z-index: auto; margin: 0; padding: 6px 20px 12px; background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; box-shadow: none; }
 
 /* Guide-first navigation */
-.guidePage {
-  padding-bottom: calc(var(--nav-h) + 46px + env(safe-area-inset-bottom));
-}
-
-.guideHeaderSticky {
-  box-shadow: none;
-}
-
-.guideBackRow {
-  min-height: 54px;
-  padding: 8px 64px 2px 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink);
-  font-size: .9rem;
-  line-height: 1.2;
-  font-weight: 650;
-  text-align: left;
-}
-
-.guideBackRow svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-}
-
-.guideProductRow {
-  min-height: 36px;
-  padding: 0 20px 7px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left;
-}
-
-.guideProductRow strong {
-  font-size: 1.02rem;
-  line-height: 1.2;
-  letter-spacing: -.01em;
-}
-
-.guideTabs {
-  padding: 0 20px;
-}
-
-.guideSection {
-  min-height: calc(100svh - 144px);
-  scroll-margin-top: 144px;
-}
+.guidePage { padding-bottom: calc(var(--nav-h) + 46px + env(safe-area-inset-bottom)); }
+.guideHeaderSticky { box-shadow: none; }
+.guideBackRow { min-height: 54px; padding: 8px 64px 2px 20px; display: flex; align-items: center; gap: 6px; color: var(--ink); font-size: .9rem; line-height: 1.2; font-weight: 650; text-align: left; }
+.guideBackRow svg { width: 24px; height: 24px; flex: 0 0 auto; }
+.guideProductRow { min-height: 36px; padding: 0 20px 7px; display: flex; align-items: center; justify-content: flex-start; text-align: left; }
+.guideProductRow strong { font-size: 1.02rem; line-height: 1.2; letter-spacing: -.01em; }
+.guideTabs { padding: 0 20px; }
+.guideSection { min-height: calc(100svh - 144px); scroll-margin-top: 144px; }
 
 /* Real product photography */
-.productPhotoVisual {
-  position: relative;
-  overflow: hidden;
-}
+.productPhotoVisual { position: relative; overflow: hidden; }
+.productPhotoVisual .productPhoto { object-fit: contain; object-position: center; }
+.productListCard .productPhotoVisual .productPhoto { padding: 10px; }
+.detailProductVisual .productPhotoVisual .productPhoto { padding: 4px; }
+.productCardVisualWrap,.productDetailPhotoWrap { position: relative; }
+.productPopularityBadge { position: absolute; z-index: 4; top: 10px; left: 10px; display: inline-flex; align-items: center; min-height: 30px; padding: 6px 10px; border-radius: 8px; background: var(--accent); color: #111; font-size: .72rem; line-height: 1; font-weight: 900; letter-spacing: .015em; white-space: nowrap; box-shadow: 0 3px 10px rgba(0,0,0,.08); }
+.productDetailPhotoWrap .productPopularityBadge { top: 20px; left: 8px; min-height: 34px; padding: 7px 12px; font-size: .78rem; }
+.rentalPriceGrid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; margin: 18px 0 0; }
+.rentalPriceBox { min-width: 0; padding: 15px 6px 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.025); }
+.rentalPriceBox strong { display: block; color: var(--ink); font-size: 1.16rem; line-height: 1.1; font-weight: 850; white-space: nowrap; }
+.rentalPriceBox span { display: block; margin-top: 5px; color: var(--muted); font-size: .79rem; line-height: 1.15; white-space: nowrap; }
+.rentalPriceGrid.compact { gap: 5px; margin-top: 10px; }
+.rentalPriceGrid.compact .rentalPriceBox { padding: 9px 2px 8px; border-radius: 10px; }
+.rentalPriceGrid.compact .rentalPriceBox strong { font-size: .78rem; }
+.rentalPriceGrid.compact .rentalPriceBox span { margin-top: 3px; font-size: .64rem; }
+.productDetailPage > .rentalPriceGrid + .primaryButton.wide { margin-top: 12px; }
+@media (max-width: 380px) { .rentalPriceGrid.compact { gap: 4px; } .rentalPriceGrid.compact .rentalPriceBox strong { font-size: .72rem; } .rentalPriceGrid.compact .rentalPriceBox span { font-size: .6rem; } }
 
-.productPhotoVisual .productPhoto {
-  object-fit: contain;
-  object-position: center;
-}
+/* Reviews + guide cards */
+.productCardRating { position: absolute; z-index: 5; left: 10px; bottom: 10px; min-height: 0; padding: 0; display: flex; align-items: center; gap: 5px; background: transparent; color: var(--ink); font-size: .78rem; line-height: 1; }
+.productCardRating .ratingStar { color: var(--accent); font-size: 1rem; line-height: 1; }
+.productCardRating strong { font-size: .82rem; font-weight: 850; }
+.productCardRating > span:last-child { color: var(--muted); }
+.productDetailRating { margin-top: 9px; display: flex; align-items: center; flex-wrap: wrap; gap: 7px; color: var(--ink); font-size: .88rem; line-height: 1.2; }
+.productDetailRating .ratingStars { color: var(--accent); font-size: 1.08rem; letter-spacing: .04em; }
+.productDetailRating strong { font-weight: 850; }
+.productDetailRating > span:last-child { color: var(--muted); }
+.guideTextCard { margin: 18px 0; padding: 17px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.guideTextCard strong { display: block; margin-bottom: 6px; font-size: 1rem; }
+.guideTextCard p { margin: 0; color: #363c3f; font-size: 1rem; line-height: 1.5; }
 
-.productListCard .productPhotoVisual .productPhoto {
-  padding: 10px;
-}
-
-.detailProductVisual .productPhotoVisual .productPhoto {
-  padding: 4px;
-}
-/* Product popularity badge + Hygglo-style rental prices */
-.productCardVisualWrap,
-.productDetailPhotoWrap {
-  position: relative;
-}
-
-.productPopularityBadge {
-  position: absolute;
-  z-index: 4;
-  top: 10px;
-  left: 10px;
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #111;
-  font-size: .72rem;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: .015em;
-  white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(0,0,0,.08);
-}
-
-.productDetailPhotoWrap .productPopularityBadge {
-  top: 20px;
-  left: 8px;
-  min-height: 34px;
-  padding: 7px 12px;
-  font-size: .78rem;
-}
-
-.rentalPriceGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 9px;
-  margin: 18px 0 0;
-}
-
-.rentalPriceBox {
-  min-width: 0;
-  padding: 15px 6px 13px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.025);
-}
-
-.rentalPriceBox strong {
-  display: block;
-  color: var(--ink);
-  font-size: 1.16rem;
-  line-height: 1.1;
-  font-weight: 850;
-  white-space: nowrap;
-}
-
-.rentalPriceBox span {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: .79rem;
-  line-height: 1.15;
-  white-space: nowrap;
-}
-
-.rentalPriceGrid.compact {
-  gap: 5px;
-  margin-top: 10px;
-}
-
-.rentalPriceGrid.compact .rentalPriceBox {
-  padding: 9px 2px 8px;
-  border-radius: 10px;
-}
-
-.rentalPriceGrid.compact .rentalPriceBox strong {
-  font-size: .78rem;
-}
-
-.rentalPriceGrid.compact .rentalPriceBox span {
-  margin-top: 3px;
-  font-size: .64rem;
-}
-
-.productDetailPage > .rentalPriceGrid + .primaryButton.wide {
-  margin-top: 12px;
-}
-
-@media (max-width: 380px) {
-  .rentalPriceGrid.compact { gap: 4px; }
-  .rentalPriceGrid.compact .rentalPriceBox strong { font-size: .72rem; }
-  .rentalPriceGrid.compact .rentalPriceBox span { font-size: .6rem; }
-}
-/* ============================================================
-   REVIEWS + GUIDE CARDS
-   ============================================================ */
-
-.productCardRating {
-  position: absolute;
-  z-index: 5;
-  left: 10px;
-  right: auto;
-  bottom: 10px;
-  min-height: 0;
-  padding: 0;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
-  color: var(--ink);
-  font-size: .78rem;
-  line-height: 1;
-}
-
-.productCardRating .ratingStar {
-  color: var(--accent);
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.productCardRating strong {
-  font-size: .82rem;
-  font-weight: 850;
-}
-
-.productCardRating > span:last-child {
-  color: var(--muted);
-}
-
-.productDetailRating {
-  margin-top: 9px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 7px;
-  color: var(--ink);
-  font-size: .88rem;
-  line-height: 1.2;
-}
-
-.productDetailRating .ratingStars {
-  color: var(--accent);
-  font-size: 1.08rem;
-  letter-spacing: .04em;
-}
-
-.productDetailRating strong {
-  font-weight: 850;
-}
-
-.productDetailRating > span:last-child {
-  color: var(--muted);
-}
-
-.guideTextCard {
-  margin: 18px 0;
-  padding: 17px 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-}
-
-.guideTextCard strong {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 1rem;
-}
-
-.guideTextCard p {
-  margin: 0;
-  color: #363c3f;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-/* ============================================================
-   TYPOGRAFI — ARCHIVO ÖVER HELA HYRBART
-   Lägg detta allra sist i globals.css.
-   ============================================================ */
-
+/* Typography */
 :root {
-  --font-heading-stack: var(--font-archivo), Archivo, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-body-stack: var(--font-archivo), Archivo, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading-stack: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body-stack: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
-
-html,
-body,
-button,
-input,
-textarea,
-select {
-  font-family: var(--font-body-stack);
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.pageHeader h1,
-.productTitle h1,
-.compactProductTitle h1,
-.productListCard h2,
-.stepHeading h1,
-.stepHeading h2,
-.primaryButton,
-.darkAction,
-.productPopularityBadge,
-.specDropdown summary,
-.guideProductRow strong,
-.guideTextCard strong,
-.included h2 {
-  font-family: var(--font-heading-stack);
-}
-
-h1,
-.pageHeader h1,
-.productTitle h1,
-.compactProductTitle h1 {
-  font-weight: 900;
-  letter-spacing: -.045em;
-}
-
-[class*="page_"] h1 {
-  font-family: var(--font-heading-stack);
-  font-weight: 900;
-  letter-spacing: -.05em;
-  line-height: .96;
-}
-
-.productListCard h2 {
-  font-family: var(--font-heading-stack);
-  font-weight: 850;
-  font-size: 1.34rem;
-  line-height: .98;
-  letter-spacing: -.035em;
-}
-
-.compactProductTitle h1 {
-  font-weight: 900;
-  line-height: .94;
-  letter-spacing: -.045em;
-}
-
-.productPopularityBadge {
-  font-family: var(--font-heading-stack);
-  font-weight: 850;
-  font-size: .76rem;
-  line-height: 1;
-  letter-spacing: -.01em;
-}
-
-.productDetailPhotoWrap .productPopularityBadge {
-  font-size: .82rem;
-}
-
-.primaryButton {
-  font-family: var(--font-heading-stack);
-  font-weight: 800;
-  letter-spacing: -.025em;
-}
-
-.productDetailPage .darkAction {
-  font-family: var(--font-heading-stack);
-  font-size: 1.08rem;
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -.025em;
-}
-
-.specDropdown summary {
-  font-family: var(--font-heading-stack);
-  font-weight: 800;
-  letter-spacing: -.025em;
-}
-
-.stepHeading h1,
-.stepHeading h2,
-.guideProductRow strong {
-  font-family: var(--font-heading-stack);
-  font-weight: 850;
-  letter-spacing: -.035em;
-}
-
-.productCardType,
-.productCardPrice,
-.productDetailRating,
-.productCardRating,
-.chip,
-.guideTabs,
-.guideSection p,
-.includedGrid,
-.productBackRow,
-.guideBackRow,
-.navItem,
-.termsCard p,
-.guideTextCard p {
-  font-family: var(--font-body-stack);
-}
-
-.specBody > div span,
-.specBody > div b,
-.rentalPriceBox strong {
-  font-family: var(--font-mono-stack);
-  letter-spacing: -.02em;
-}
-
-/* ============================================================
-   FLAGGOR + PRODUKTRUBRIKER
-   Lägg detta allra sist i globals.css.
-   ============================================================ */
-
-/* Runda språkflaggor */
-.languageSwitch {
-  border-radius: 50%;
-  overflow: hidden;
-  padding: 0;
-  background: transparent;
-}
-
-.languageSwitch svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-}
-
-/* Produktkategori på detaljsidan ska vara svart */
-.productDetailPage .productCategoryRow {
-  color: var(--ink);
-}
-
-/*
-   Regel för produktnamn:
-   rad 1 = varumärke
-   rad 2 = modell
-   <br> i befintlig markup styr radbrytningen,
-   nowrap hindrar modellen från att delas på två rader.
-*/
-.productListCard h2,
-.productDetailPage .compactProductTitle h1 {
-  white-space: nowrap;
-}
-
-/* HYRBART — GUIDEHEADER SOM PRODUKTSIDAN
-   Lägg HELA detta block allra sist i app/globals.css. */
-
-.guideHeaderSticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 120;
-  margin: 0 -20px 22px;
-  background: rgba(244, 244, 241, .98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: none;
-}
-
-.guideBackRow {
-  min-height: 54px;
-  padding: 8px 64px 2px 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink);
-  font-size: .9rem;
-  line-height: 1.2;
-  font-weight: 650;
-  text-align: left;
-}
-
-.guideBackRow svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-}
-
-.guideCategoryRow {
-  padding: 1px 20px 7px;
-  color: var(--ink);
-  font-size: 17px;
-  line-height: 1.25;
-  font-weight: 500;
-  text-align: left;
-}
-
-.guideIdentityRow {
-  margin: 0;
-  padding: 6px 20px 12px;
-}
-
-.guideIdentityRow h1 {
-  margin: 0;
-  font-family: var(--font-heading-stack);
-  font-size: clamp(2rem, 8vw, 3.8rem);
-  font-weight: 900;
-  line-height: .94;
-  letter-spacing: -.045em;
-}
-
-.guideIdentityRow h1 span {
-  display: block;
-  white-space: nowrap;
-}
-
-.guideTabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0;
-  padding: 0 20px;
-}
-
-.guideTabs a {
-  min-width: 0;
-  padding: 13px 2px;
-  text-align: center;
-  font-size: .82rem;
-  white-space: nowrap;
-}
-
-.guideTabs a.active {
-  font-weight: 800;
-  box-shadow: inset 0 -3px var(--accent);
-}
-
-.guideSection {
-  min-height: calc(100svh - 205px);
-  /*
-    Fallback för direkta hash-länkar innan GuideTabs har hunnit mäta
-    den verkliga sticky-headern. Klick i tabbmenyn använder dynamisk
-    höjdmätning i components/GuideTabs.tsx.
-  */
-  scroll-margin-top: calc(env(safe-area-inset-top) + 240px);
-}
-/* PRODUKTSIDA — LÅS HEADERN FRÅN FÖRSTA PIXELN
-   Lägg detta allra sist i hyrbart-webapp/app/globals.css */
-
-.productDetailPage {
-  padding-top: 0;
-}
-/* ============================================================
-   PRODUKTLISTA — FAST TOPPLÄGE + MINDRE BOTTENLUFT
-   Lägg detta ALLRA SIST i app/globals.css.
-   ============================================================ */
-
-/*
-  Kategoriraden låg normalt vid 72px men fick sticky top:58px.
-  Därför hoppade den uppåt när scrollen började.
-
-  Vi lägger nu både normalposition och sticky-position på 112px.
-  Det placerar raden under statusfältet/språkflaggan och gör att
-  den inte flyttar sig när den blir sticky.
-*/
-.productsPage {
-  padding-top: 112px;
-  padding-bottom: 0;
-}
-
-.productsPage::before {
-  content: "";
-  position: fixed;
-  z-index: 77;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 112px;
-  background: rgba(244, 244, 241, .98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  pointer-events: none;
-}
-
-.productsPage .productsChips {
-  top: 112px;
-  z-index: 78;
-}
-
-/*
-  main har redan global bottenpadding för den fasta bottom-nav:en.
-  Produktsidan behöver därför ingen extra nav-höjd ovanpå den.
-*/
-.productsPage .productGrid.productList {
-  margin-bottom: 0;
-}
-
-.productsPage .productCard:last-child {
-  margin-bottom: 0;
-}
-/* PRODUKTSIDA — TA BORT DUBBEL BOTTENLUFT */
-.productDetailPage {
-  padding-bottom: 0;
-}
-
-.productDetailPage .primaryButton.wide {
-  margin-bottom: 0;
-}
-/* ============================================================
-   PRODUKT + GUIDE — ÅTERSTÄLL TOPPMARGINAL / SAFE AREA
-   ============================================================ */
-
-.productDetailPage,
-.guidePage {
-  padding-top: env(safe-area-inset-top);
-}
-
-/* Sticky-headern ska låsa sig UNDER statusfältet */
-.productDetailPage .productHeaderSticky,
-.guidePage .guideHeaderSticky {
-  top: env(safe-area-inset-top);
-}
-/* ============================================================
-   PRODUKTBILDER — SWIPE-GALLERI
-   Lägg hela blocket ALLRA SIST i app/globals.css.
-   ============================================================ */
-
-.productGallery {
-  position: relative;
-  width: 100%;
-}
-
-.productGalleryTrack {
-  display: flex;
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-}
-
-.productGalleryTrack::-webkit-scrollbar {
-  display: none;
-}
-
-.productGallerySlide {
-  position: relative;
-  flex: 0 0 100%;
-  width: 100%;
-  height: 230px;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
-
-.productGalleryImage {
-  object-fit: contain;
-  object-position: center;
-  padding: 4px;
-}
-
-/* Med flera bilder får bildytan carousel-utseendet från skissen. */
-.productGallery.hasMultiple {
-  overflow: hidden;
-  border: 1px solid rgba(217, 220, 218, .75);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, .025);
-}
-
-.productGallery.hasMultiple .productGallerySlide {
-  height: 300px;
-}
-
-.productGallery.hasMultiple .productGalleryImage {
-  padding: 10px 18px 34px;
-}
-
-/* Popularitetsbadge ligger ovanpå galleriet precis som tidigare. */
-.productGallery > .productPopularityBadge {
-  top: 20px;
-  left: 8px;
-}
-
-/* Pilar visas endast när det finns fler än en bild. */
-.productGalleryArrow {
-  position: absolute;
-  z-index: 6;
-  top: 50%;
-  width: 42px;
-  height: 42px;
-  margin-top: -21px;
-  border: 0;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, .94);
-  color: var(--ink);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .10);
-  font-family: var(--font-body-stack);
-  font-size: 2rem;
-  line-height: 1;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.productGalleryArrowPrev {
-  left: 12px;
-}
-
-.productGalleryArrowNext {
-  right: 12px;
-}
-
-.productGalleryArrow:active {
-  transform: scale(.96);
-}
-
-/* Prickar visas endast när det finns fler än en bild. */
-.productGalleryDots {
-  position: absolute;
-  z-index: 6;
-  left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.productGalleryDots button {
-  width: 8px;
-  height: 8px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: #c7c9c8;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.productGalleryDots button.active {
-  background: var(--ink);
-}
-
-/* En enda bild ska se ut som tidigare:
-   inga pilar, inga prickar och inget extra carousel-kort. */
-.productGallery.singleImage .productGalleryArrow,
-.productGallery.singleImage .productGalleryDots {
-  display: none;
-}
-
-@media (max-width: 430px) {
-  .productGallery.hasMultiple .productGallerySlide {
-    height: 280px;
-  }
-
-  .productGalleryArrow {
-    width: 38px;
-    height: 38px;
-    margin-top: -19px;
-    font-size: 1.8rem;
-  }
-}
-/* ============================================================
-   HYRESVILLKOR — SAFE AREA + STICKY TOPPDEL
-   Lägg hela blocket ALLRA SIST i app/globals.css.
-   ============================================================ */
-
-.termsPage {
-  padding-top: env(safe-area-inset-top);
-}
-
-/* Hela rubrikblocket, inklusive underraden, ligger kvar när sidan scrollas. */
-.termsHeaderSticky {
-  position: sticky;
-  top: env(safe-area-inset-top);
-  z-index: 80;
-  margin: 0 -20px 18px;
-  padding: 18px 20px 16px;
-  background: rgba(244, 244, 241, .98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-/* Behåll samma typografi som sidan redan använder. */
-.termsHeaderSticky h1 {
-  margin: 0;
-}
-
-.termsHeaderSticky p {
-  margin: 8px 0 0;
-}
-
-/* Första innehållssektionen ska inte få extra luft ovanpå sticky-headerns marginal. */
-.termsHeaderSticky + .termsCard {
-  padding-top: 20px;
-}
-/* ============================================================
-   STICKY TOP — TÄCK INNEHÅLL SOM SCROLLAR BAKOM HEADERN
-   Gäller Kärcher-produktsidan och användarguiden.
-   Lägg HELA detta block allra sist i app/globals.css.
-   ============================================================ */
-
-/*
-  Problemet:
-  Sticky-headern ligger korrekt, men själva sidan fortsätter scrolla bakom den.
-  Eftersom området ovanför sticky-blocket inte har ett eget fast bakgrundslager
-  kan tidigare innehåll synas i statusfält/safe-area.
-
-  Lösningen:
-  - skapa ett fast bakgrundslager från skärmens topp ned till sticky-headerns botten
-  - låt headern ligga ovanpå lagret
-  - påverka inte sidans innehåll, mått eller sticky-position
-*/
-
-/* Produktdetaljsidan */
-.productDetailPage::before {
-  content: "";
-  position: fixed;
-  z-index: 119;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top);
-  background: var(--bg);
-  pointer-events: none;
-}
-
-.productDetailPage .productHeaderSticky {
-  position: sticky;
-  z-index: 120;
-}
-
-/* Användarguiden */
-.guidePage::before {
-  content: "";
-  position: fixed;
-  z-index: 119;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top);
-  background: var(--bg);
-  pointer-events: none;
-}
-
-.guidePage .guideHeaderSticky {
-  position: sticky;
-  z-index: 120;
-}
-/* ============================================================
-   HYRBART — DARK LIQUID GLASS BOTTOM NAV
-   VERIFIED selectors from components/BottomNav.tsx:
-   .liquidNav / .navItem / .activeLens / .navIcon
-
-   APPEND this entire block at the VERY END of app/globals.css
-   ============================================================ */
-
-.liquidNav {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(42, 46, 46, .72) 0%,
-      rgba(12, 15, 15, .78) 100%
-    ) !important;
-
-  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-  backdrop-filter: blur(30px) saturate(180%) !important;
-
-  border: 1px solid rgba(255, 255, 255, .52) !important;
-
-  box-shadow:
-    0 10px 32px rgba(0, 0, 0, .25),
-    inset 0 1px 0 rgba(255, 255, 255, .46),
-    inset 0 -1px 0 rgba(255, 255, 255, .08) !important;
-
-  isolation: isolate;
-}
-
-/* Inactive items */
-.liquidNav .navItem {
-  color: rgba(255, 255, 255, .96) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
-}
-
-.liquidNav .navItem .navIcon {
-  color: rgba(255, 255, 255, .96) !important;
-  stroke: currentColor !important;
-}
-
-/* Active item: Hyrbart lime */
-.liquidNav .navItem.active,
-.liquidNav .navItem[aria-current="page"] {
-  color: #c6f000 !important;
-  text-shadow: none !important;
-}
-
-.liquidNav .navItem.active .navIcon,
-.liquidNav .navItem[aria-current="page"] .navIcon {
-  color: #c6f000 !important;
-  stroke: currentColor !important;
-}
-
-/*
-  The existing component already has an .activeLens element in every item.
-  Hide it for inactive items and turn the active one into a darker,
-  translucent glass lens instead of the current bright/white lens.
-*/
-.liquidNav .activeLens {
-  opacity: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.liquidNav .navItem.active .activeLens,
-.liquidNav .navItem[aria-current="page"] .activeLens {
-  opacity: 1 !important;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, .18) 0%,
-      rgba(255, 255, 255, .07) 100%
-    ) !important;
-
-  border: 1px solid rgba(255, 255, 255, .28) !important;
-
-  -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
-  backdrop-filter: blur(18px) saturate(160%) !important;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .32),
-    0 2px 12px rgba(0, 0, 0, .10) !important;
-}
-
-/* Keep icon + label above the glass lens */
-.liquidNav .navItem > :not(.activeLens) {
-  position: relative;
-  z-index: 2;
-}
-/* ============================================================
-   HYRESVILLKOR — FIX FÖR INNEHÅLL SOM SYNS OVANFÖR STICKY TOPP
-   Lägg HELA detta block allra sist i app/globals.css.
-   ============================================================ */
-
-/*
-  Skapar ett fast bakgrundslager över området ovanför den sticky
-  hyresvillkors-headern. Då kan sektionerna inte längre "läcka upp"
-  bakom statusfältet när sidan scrollas.
-*/
-
-.termsPage::before {
-  content: "";
-  position: fixed;
-  z-index: 118;
-  top: 0;
-  left: 0;
-  right: 0;
-
-  /*
-    Safe area + den fria ytan ovanför HYRESVILLKOR-rubriken.
-    118px är anpassat till nuvarande iPhone-layout.
-  */
-  height: calc(env(safe-area-inset-top) + 82px);
-
-  background: rgba(244, 244, 241, .99);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-
-  pointer-events: none;
-}
-
-/* Säkerställ att den sticky toppdelen ligger ovanför täcklagret */
-.termsPage .termsHeaderSticky {
-  position: sticky;
-  z-index: 120;
-}
-
-/*
-  Språkknappen ska alltid ligga över täcklagret.
-  Stöd både nuvarande och vanliga klassnamn utan att ändra komponenten.
-*/
-.termsPage .languageSwitch,
-.termsPage [class*="languageSwitch"],
-.termsPage [class*="LanguageSwitch"] {
-  position: relative;
-  z-index: 122;
-}
+html,body,button,input,textarea,select { font-family: var(--font-body-stack); }
+h1,h2,h3,h4,h5,h6,.pageHeader h1,.productTitle h1,.compactProductTitle h1,.productListCard h2,.stepHeading h1,.stepHeading h2,.primaryButton,.darkAction,.productPopularityBadge,.specDropdown summary,.guideProductRow strong,.guideTextCard strong,.included h2 { font-family: var(--font-heading-stack); }
+h1,.pageHeader h1,.productTitle h1,.compactProductTitle h1 { font-weight: 900; letter-spacing: -.045em; }
+[class*="page_"] h1 { font-family: var(--font-heading-stack); font-weight: 900; letter-spacing: -.05em; line-height: .96; }
+.productListCard h2 { font-family: var(--font-heading-stack); font-weight: 850; font-size: 1.34rem; line-height: .98; letter-spacing: -.035em; }
+.compactProductTitle h1 { font-weight: 900; line-height: .94; letter-spacing: -.045em; }
+.productPopularityBadge { font-family: var(--font-heading-stack); font-weight: 850; font-size: .76rem; line-height: 1; letter-spacing: -.01em; }
+.productDetailPhotoWrap .productPopularityBadge { font-size: .82rem; }
+.primaryButton { font-family: var(--font-heading-stack); font-weight: 800; letter-spacing: -.025em; }
+.productDetailPage .darkAction { font-family: var(--font-heading-stack); font-size: 1.08rem; font-weight: 800; line-height: 1.05; letter-spacing: -.025em; }
+.specDropdown summary { font-family: var(--font-heading-stack); font-weight: 800; letter-spacing: -.025em; }
+.stepHeading h1,.stepHeading h2,.guideProductRow strong { font-family: var(--font-heading-stack); font-weight: 850; letter-spacing: -.035em; }
+.productCardType,.productCardPrice,.productDetailRating,.productCardRating,.chip,.guideTabs,.guideSection p,.includedGrid,.productBackRow,.guideBackRow,.termsCard p,.guideTextCard p { font-family: var(--font-body-stack); }
+.specBody > div span,.specBody > div b,.rentalPriceBox strong { font-family: var(--font-mono-stack); letter-spacing: -.02em; }
+
+/* Flags + product titles */
+.languageSwitch { border-radius: 50%; overflow: hidden; padding: 0; background: transparent; }
+.languageSwitch svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
+.productDetailPage .productCategoryRow { color: var(--ink); }
+.productListCard h2,.productDetailPage .compactProductTitle h1 { white-space: nowrap; }
+
+/* Guide header matching product page */
+.guideHeaderSticky { position: -webkit-sticky; position: sticky; top: 0; z-index: 120; margin: 0 -20px 22px; background: rgba(244,244,241,.98); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: none; }
+.guideBackRow { min-height: 54px; padding: 8px 64px 2px 20px; display: flex; align-items: center; gap: 6px; color: var(--ink); font-size: .9rem; line-height: 1.2; font-weight: 650; text-align: left; }
+.guideBackRow svg { width: 24px; height: 24px; flex: 0 0 auto; }
+.guideCategoryRow { padding: 1px 20px 7px; color: var(--ink); font-size: 17px; line-height: 1.25; font-weight: 500; text-align: left; }
+.guideIdentityRow { margin: 0; padding: 6px 20px 12px; }
+.guideIdentityRow h1 { margin: 0; font-family: var(--font-heading-stack); font-size: clamp(2rem, 8vw, 3.8rem); font-weight: 900; line-height: .94; letter-spacing: -.045em; }
+.guideIdentityRow h1 span { display: block; white-space: nowrap; }
+.guideTabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0 20px; }
+.guideTabs a { min-width: 0; padding: 13px 2px; text-align: center; font-size: .82rem; white-space: nowrap; }
+.guideTabs a.active { font-weight: 800; box-shadow: inset 0 -3px var(--accent); }
+.guideSection { min-height: calc(100svh - 205px); scroll-margin-top: calc(env(safe-area-inset-top) + 240px); }
+
+.productDetailPage { padding-top: 0; }
+.productsPage { padding-top: 112px; padding-bottom: 0; }
+.productsPage::before { content: ""; position: fixed; z-index: 77; top: 0; left: 0; right: 0; height: 112px; background: rgba(244,244,241,.98); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); pointer-events: none; }
+.productsPage .productsChips { top: 112px; z-index: 78; }
+.productsPage .productGrid.productList,.productsPage .productCard:last-child { margin-bottom: 0; }
+.productDetailPage { padding-bottom: 0; }
+.productDetailPage .primaryButton.wide { margin-bottom: 0; }
+.productDetailPage,.guidePage { padding-top: env(safe-area-inset-top); }
+.productDetailPage .productHeaderSticky,.guidePage .guideHeaderSticky { top: env(safe-area-inset-top); }
+
+/* Product gallery */
+.productGallery { position: relative; width: 100%; }
+.productGalleryTrack { display: flex; width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.productGalleryTrack::-webkit-scrollbar { display: none; }
+.productGallerySlide { position: relative; flex: 0 0 100%; width: 100%; height: 230px; scroll-snap-align: start; scroll-snap-stop: always; }
+.productGalleryImage { object-fit: contain; object-position: center; padding: 4px; }
+.productGallery.hasMultiple { overflow: hidden; border: 1px solid rgba(217,220,218,.75); border-radius: 18px; background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,.025); }
+.productGallery.hasMultiple .productGallerySlide { height: 300px; }
+.productGallery.hasMultiple .productGalleryImage { padding: 10px 18px 34px; }
+.productGallery > .productPopularityBadge { top: 20px; left: 8px; }
+.productGalleryArrow { position: absolute; z-index: 6; top: 50%; width: 42px; height: 42px; margin-top: -21px; border: 0; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.94); color: var(--ink); box-shadow: 0 4px 16px rgba(0,0,0,.10); font-family: var(--font-body-stack); font-size: 2rem; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.productGalleryArrowPrev { left: 12px; }
+.productGalleryArrowNext { right: 12px; }
+.productGalleryArrow:active { transform: scale(.96); }
+.productGalleryDots { position: absolute; z-index: 6; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; }
+.productGalleryDots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: #c7c9c8; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.productGalleryDots button.active { background: var(--ink); }
+.productGallery.singleImage .productGalleryArrow,.productGallery.singleImage .productGalleryDots { display: none; }
+@media (max-width: 430px) { .productGallery.hasMultiple .productGallerySlide { height: 280px; } .productGalleryArrow { width: 38px; height: 38px; margin-top: -19px; font-size: 1.8rem; } }
+
+/* Terms sticky safe area */
+.termsPage { padding-top: env(safe-area-inset-top); }
+.termsHeaderSticky { position: sticky; top: env(safe-area-inset-top); z-index: 80; margin: 0 -20px 18px; padding: 18px 20px 16px; background: rgba(244,244,241,.98); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.termsHeaderSticky h1 { margin: 0; }
+.termsHeaderSticky p { margin: 8px 0 0; }
+.termsHeaderSticky + .termsCard { padding-top: 20px; }
+
+/* Sticky safe-area covers */
+.productDetailPage::before,.guidePage::before { content: ""; position: fixed; z-index: 119; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: var(--bg); pointer-events: none; }
+.productDetailPage .productHeaderSticky,.guidePage .guideHeaderSticky { position: sticky; z-index: 120; }
+
+.termsPage::before { content: ""; position: fixed; z-index: 118; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top) + 82px); background: rgba(244,244,241,.99); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); pointer-events: none; }
+.termsPage .termsHeaderSticky { position: sticky; z-index: 120; }
+.termsPage .languageSwitch,.termsPage [class*="languageSwitch"],.termsPage [class*="LanguageSwitch"] { position: relative; z-index: 122; }
