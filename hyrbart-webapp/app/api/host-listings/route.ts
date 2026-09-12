@@ -17,11 +17,10 @@ async function context(){
   if(error)throw error;
   return {user,profile,admin};
 }
-async function query<T>(q:string,token:string){const r=await fetch(`${queryUrl}?query=${encodeURIComponent(q)}`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});if(!r.ok)throw new Error(`Sanity query ${r.status}`);return ((await r.json()) as {result:T}).result}
+async function query<T>(q:string){const r=await fetch(`${queryUrl}?query=${encodeURIComponent(q)}`,{cache:'no-store'});if(!r.ok)throw new Error(`Sanity query ${r.status}`);return ((await r.json()) as {result:T}).result}
 async function mutate(mutations:unknown[],token:string){const r=await fetch(mutateUrl,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({mutations})});if(!r.ok)throw new Error(`Sanity mutation ${r.status}: ${(await r.text()).slice(0,180)}`);return r.json()}
 
 export async function GET(){
-  const token=process.env.SANITY_API_WRITE_TOKEN; if(!token)return NextResponse.json({error:'Sanity är inte konfigurerat.'},{status:503});
   try{
     const ctx=await context();if('error'in ctx)return ctx.error;
     const payoutReady=Boolean(ctx.profile?.payout_method_ready&&ctx.profile?.payout_provider_account_id);
@@ -30,7 +29,7 @@ export async function GET(){
       return NextResponse.json({listings:[],payoutReady,bankIdReady,hostProfileReady:false});
     }
     const owner=JSON.stringify(ctx.profile.sanity_profile_id);
-    const listings=await query<Listing[]>(`*[_type=="product" && owner._ref==${owner} && listingStatus != "deleted"]|order(_createdAt desc){"id":_id,"slug":slug.current,brand,name,typeSv,category,dailyPrice,"listingStatus":coalesce(listingStatus,"active"),"image":images[0].asset->url,description,"createdAt":_createdAt}`,token);
+    const listings=await query<Listing[]>(`*[_type=="product" && owner._ref==${owner} && listingStatus != "deleted"]|order(_createdAt desc){"id":_id,"slug":slug.current,brand,name,typeSv,category,dailyPrice,"listingStatus":coalesce(listingStatus,"active"),"image":images[0].asset->url,description,"createdAt":_createdAt}`);
     return NextResponse.json({listings,payoutReady,bankIdReady,hostProfileReady:true});
   }catch(e){console.error(e);return NextResponse.json({error:'Kunde inte läsa annonser.'},{status:500})}
 }
@@ -40,7 +39,7 @@ export async function POST(request:Request){
   try{const ctx=await context();if('error'in ctx)return ctx.error;if(!ctx.profile?.sanity_profile_id)return NextResponse.json({error:'Slutför uthyrarprofilen innan du hanterar annonser.'},{status:409});const body=await request.json() as {id?:string;action?:string;values?:Record<string,unknown>};
     if(!body.id||!body.action)return NextResponse.json({error:'Ogiltig förfrågan.'},{status:400});
     const owner=JSON.stringify(ctx.profile.sanity_profile_id); const id=JSON.stringify(body.id);
-    const existing=await query<any>(`*[_type=="product" && _id==${id} && owner._ref==${owner}][0]`,token); if(!existing)return NextResponse.json({error:'Annonsen hittades inte.'},{status:404});
+    const existing=await query<any>(`*[_type=="product" && _id==${id} && owner._ref==${owner}][0]`); if(!existing)return NextResponse.json({error:'Annonsen hittades inte.'},{status:404});
     if(body.action==='pause'){await mutate([{patch:{id:body.id,set:{listingStatus:'paused'}}}],token);return NextResponse.json({ok:true,status:'paused'});}
     if(body.action==='activate'){
       if(!(ctx.profile.payout_method_ready&&ctx.profile.payout_provider_account_id))return NextResponse.json({error:'Koppla utbetalningskonto innan annonsen aktiveras.'},{status:409});
