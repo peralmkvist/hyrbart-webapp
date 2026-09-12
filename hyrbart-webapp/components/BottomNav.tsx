@@ -14,8 +14,6 @@ function AddCircleIcon({ className }: { className?: string }) {
   );
 }
 
-type BookingRequest = { status?: string };
-
 export default function BottomNav() {
   const pathname = usePathname();
   const [hasUnresolvedMessage, setHasUnresolvedMessage] = useState(false);
@@ -25,19 +23,16 @@ export default function BottomNav() {
     if (!isPrivateApp) return;
     let active = true;
     const load = () => {
-      fetch('/api/booking-request', { cache: 'no-store' })
-        .then(async response => response.ok ? response.json() : { requests: [] })
-        .then((data: { requests?: BookingRequest[] }) => {
-          if (!active) return;
-          const unresolved = (data.requests ?? []).some(request => ['requested', 'reserved'].includes(request.status || ''));
-          setHasUnresolvedMessage(unresolved);
-        })
+      fetch('/api/messages/unread', { cache: 'no-store' })
+        .then(async response => response.ok ? response.json() : { unread: false })
+        .then((data: { unread?: boolean }) => { if (active) setHasUnresolvedMessage(Boolean(data.unread)); })
         .catch(() => { if (active) setHasUnresolvedMessage(false); });
     };
     load();
     const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
     document.addEventListener('visibilitychange', onVisibility);
-    return () => { active = false; document.removeEventListener('visibilitychange', onVisibility); };
+    window.addEventListener('focus', load);
+    return () => { active = false; document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('focus', load); };
   }, [isPrivateApp, pathname]);
 
   if (!isPrivateApp) return null;
@@ -85,7 +80,7 @@ export default function BottomNav() {
             <span className="activeLens" aria-hidden="true" />
             <span className="navIconWrap">
               <Icon className="navIcon" />
-              {isMessages && hasUnresolvedMessage ? <i className="messageNotificationDot" aria-label={isEnglish ? 'Unresolved message' : 'Olöst meddelande'} /> : null}
+              {isMessages && hasUnresolvedMessage ? <i className="messageNotificationDot" aria-label={isEnglish ? 'Unread or unresolved message' : 'Oläst eller olöst meddelande'} /> : null}
             </span>
             <span>{label}</span>
           </Link>
