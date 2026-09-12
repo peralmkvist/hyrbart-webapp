@@ -14,6 +14,7 @@ import './rental-search.css';
 import './rental-search-polish.css';
 import './product-title-lines.css';
 import './new-listing.css';
+import './host-onboarding.css';
 import './auth.css';
 import './booking-flow.css';
 import './navigation2.css';
