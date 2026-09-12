@@ -23,7 +23,7 @@ async function mutate(mutations:unknown[],token:string){const r=await fetch(muta
 export async function GET(){
   const token=process.env.SANITY_API_WRITE_TOKEN; if(!token)return NextResponse.json({error:'Sanity är inte konfigurerat.'},{status:503});
   try{const ctx=await context();if('error'in ctx)return ctx.error;const owner=JSON.stringify(ctx.profile.sanity_profile_id);
-    const listings=await query<Listing[]>(`*[_type=="product" && owner._ref==${owner}]|order(_createdAt desc){"id":_id,"slug":slug.current,brand,name,typeSv,category,dailyPrice,"listingStatus":coalesce(listingStatus,"active"),"image":images[0].asset->url,description,"createdAt":_createdAt}`,token);
+    const listings=await query<Listing[]>(`*[_type=="product" && owner._ref==${owner} && listingStatus != "deleted"]|order(_createdAt desc){"id":_id,"slug":slug.current,brand,name,typeSv,category,dailyPrice,"listingStatus":coalesce(listingStatus,"active"),"image":images[0].asset->url,description,"createdAt":_createdAt}`,token);
     return NextResponse.json({listings,payoutReady:Boolean(ctx.profile.payout_method_ready)});
   }catch(e){console.error(e);return NextResponse.json({error:'Kunde inte läsa annonser.'},{status:500})}
 }
@@ -39,7 +39,7 @@ export async function POST(request:Request){
     if(body.action==='delete'){
       const {data:busy}=await ctx.admin.from('bookings').select('id').eq('product_id',body.id).in('status',['requested','reserved','accepted','paid','active','returned']).limit(1);
       if(busy?.length)return NextResponse.json({error:'Annonsen har en aktiv eller kommande bokning och kan inte tas bort.'},{status:409});
-      await mutate([{delete:{id:body.id}}],token);return NextResponse.json({ok:true});
+      await mutate([{patch:{id:body.id,set:{listingStatus:'deleted'}}}],token);return NextResponse.json({ok:true});
     }
     if(body.action==='duplicate'){
       const stamp=Date.now().toString(36); const newId=`product-${stamp}-${crypto.randomUUID().slice(0,6)}`; const baseSlug=existing.slug?.current||'annons';
