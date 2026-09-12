@@ -15,6 +15,35 @@ async function querySanity<T>(query: string): Promise<T> {
   return payload.result;
 }
 
+export async function GET() {
+  try {
+    const bookings = await querySanity<Array<{
+      id: string;
+      from: string;
+      to: string;
+      status?: string;
+      requestType?: string;
+      product?: { slug?: string; brand?: string; name?: string; image?: string };
+    }>>(`*[_type == "bookingRequest"] | order(from asc){
+      "id": _id,
+      from,
+      to,
+      status,
+      requestType,
+      "product": product->{
+        "slug": slug.current,
+        brand,
+        name,
+        "image": coalesce(images[0].asset->url, image.asset->url)
+      }
+    }`);
+    return NextResponse.json({ bookings });
+  } catch (error) {
+    console.error('Booking request GET failed', error);
+    return NextResponse.json({ error: 'Kunde inte hämta bokningar.' }, { status: 502 });
+  }
+}
+
 export async function POST(request: Request) {
   const token = process.env.SANITY_API_WRITE_TOKEN;
   if (!token) return NextResponse.json({ error: 'Skrivåtkomst till Sanity är inte konfigurerad.' }, { status: 503 });
