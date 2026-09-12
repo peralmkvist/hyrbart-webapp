@@ -20,7 +20,7 @@ const mono = Roboto_Mono({ subsets: ['latin'], variable: '--font-mono', display:
 export const metadata: Metadata = {
   title: 'Hyrbart',
   description: 'Det du behöver. När du behöver det.',
-  manifest: '/manifest.webmanifest?v=4',
+  manifest: '/manifest.webmanifest?v=6',
   robots: {
     index: false,
     follow: false,
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [{ url: '/hyrbart-h-v2.svg', type: 'image/svg+xml' }],
-    shortcut: ['/hyrbart-h-v2.svg'],
-    apple: [{ url: '/apple-touch-icon.png?v=4', sizes: '180x180', type: 'image/png' }],
+    icon: [{ url: '/hyrbart-h-v2.svg?v=6', type: 'image/svg+xml' }],
+    shortcut: ['/hyrbart-h-v2.svg?v=6'],
+    apple: [{ url: '/apple-touch-icon.png?v=6', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Hyrbart' },
 };
