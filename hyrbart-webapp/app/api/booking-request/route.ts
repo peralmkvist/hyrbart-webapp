@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getProduct } from '@/lib/sanity-products';
+import { getProduct, getProducts } from '@/lib/sanity-products';
 import { calculateRentalPricing } from '@/lib/rental-pricing';
 
 export const runtime = 'nodejs';
@@ -9,17 +9,49 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     const supabase = await createClient();
+    const admin = createAdminClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401 });
 
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('id,product_id,start_date,end_date,request_type,message,status,rental_price,service_fee,total_price,created_at,renter_id,owner_id')
-      .or(`renter_id.eq.${user.id},owner_id.eq.${user.id}`)
-      .order('created_at', { ascending: false })
-      .limit(50);
+    const [{ data, error }, products] = await Promise.all([
+      supabase
+        .from('bookings')
+        .select('id,product_id,start_date,end_date,request_type,message,status,rental_price,service_fee,total_price,created_at,renter_id,owner_id')
+        .or(`renter_id.eq.${user.id},owner_id.eq.${user.id}`)
+        .order('created_at', { ascending: false })
+        .limit(50),
+      getProducts(),
+    ]);
     if (error) throw error;
-    return NextResponse.json({ requests: data ?? [] });
+
+    const counterpartIds = Array.from(new Set((data ?? []).map(row => row.owner_id === user.id ? row.renter_id : row.owner_id).filter(Boolean)));
+    const profilesById = new Map<string, { display_name?: string | null }>();
+    if (counterpartIds.length) {
+      const { data: profiles, error: profilesError } = await admin.from('profiles').select('id,display_name').in('id', counterpartIds);
+      if (profilesError) throw profilesError;
+      for (const profile of profiles ?? []) profilesById.set(profile.id, profile);
+    }
+
+    const requests = (data ?? []).map(row => {
+      const product = products.find(item => item.id === row.product_id);
+      const role = row.owner_id === user.id ? 'owner' : 'renter';
+      const counterpartId = role === 'owner' ? row.renter_id : row.owner_id;
+      const counterpart = counterpartId ? profilesById.get(counterpartId) : undefined;
+      return {
+        id: row.id,
+        from: row.start_date,
+        to: row.end_date,
+        requestType: row.request_type,
+        message: row.message,
+        status: row.status,
+        createdAt: row.created_at,
+        role,
+        product: product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt',
+        participantName: counterpart?.display_name || (role === 'owner' ? 'Hyrare' : 'Uthyrare'),
+      };
+    });
+
+    return NextResponse.json({ requests });
   } catch (error) {
     console.error('Booking request GET failed', error);
     return NextResponse.json({ error: 'Kunde inte läsa bokningsförfrågningar.' }, { status: 500 });
