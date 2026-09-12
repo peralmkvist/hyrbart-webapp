@@ -4,7 +4,6 @@ import './globals.css';
 import './responsive.css';
 import './designsystem2.css';
 import './product2.css';
-import './navigation2.css';
 import './pages2.css';
 import './guide-fixes.css';
 import './host-calendar.css';
@@ -14,6 +13,7 @@ import './rental-search.css';
 import './product-title-lines.css';
 import './new-listing.css';
 import './auth.css';
+import './navigation2.css';
 import BottomNav from '@/components/BottomNav';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--font-inter', display: 'swap' });
