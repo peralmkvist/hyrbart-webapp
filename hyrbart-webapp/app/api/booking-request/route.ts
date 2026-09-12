@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getProduct, getProducts } from '@/lib/sanity-products';
 import { calculateRentalPricing } from '@/lib/rental-pricing';
+import { sendPushToUser } from '@/lib/push';
 
 export const runtime = 'nodejs';
 
@@ -159,6 +160,14 @@ export async function POST(request: Request) {
     if (message.trim()) {
       await admin.from('booking_messages').insert({ booking_id: booking.id, sender_id: user.id, body: message.trim().slice(0, 2000) });
     }
+
+    const productName = [product.brand, product.name].filter(Boolean).join(' ') || 'en produkt';
+    await sendPushToUser(owner.id, {
+      title: requestType === 'reserve-question' ? 'Ny reservation på Hyrbart' : 'Ny bokningsförfrågan på Hyrbart',
+      body: `${productName} · ${from}–${to}`,
+      url: `/topsecret/sv/bokningar/${booking.id}`,
+      tag: `booking-request-${booking.id}`,
+    });
 
     return NextResponse.json({ ok: true, bookingId: booking.id, status: booking.status, total: booking.total_price, reserved: requestType === 'reserve-question' });
   } catch (error) {
