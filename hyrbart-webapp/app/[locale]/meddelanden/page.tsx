@@ -1,6 +1,6 @@
-import MessageInbox from '@/components/MessageInbox';
+import { redirect } from 'next/navigation';
 
 export default async function MessagesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return <MessageInbox locale={locale} />;
+  redirect(`/topsecret/${locale}/kalender`);
 }
