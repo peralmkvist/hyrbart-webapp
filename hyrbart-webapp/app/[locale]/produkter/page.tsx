@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getProducts, getUnavailableProductSlugs } from '@/lib/sanity-products';
+import { getUnavailableProductIds } from '@/lib/supabase-bookings';
 import { distanceKm, geocodeSwedishPlace } from '@/lib/geo';
 import { calculateRentalPricing } from '@/lib/rental-pricing';
 import ProductVisual from '@/components/ProductVisual';
@@ -15,7 +16,12 @@ export default async function ProductsPage({params,searchParams}:{params:Promise
  const {locale}=await params,sp=await searchParams;
  const {category,q,from,to,place,radius,edit}=sp,en=locale==='en',products=await getProducts();
  const selectedCategory=categoryDefinitions.some(i=>i.value===category)?category:undefined,query=normalize(q),requestedFrom=from||to,requestedTo=to||from;
- const unavailableSlugs=requestedFrom?await getUnavailableProductSlugs(requestedFrom,requestedTo):new Set<string>(),searched=Boolean(query||from||to||place),searchPlace=place?.trim()||'Danderyd',searchRadius=Math.max(1,Math.min(50,Number(radius||10)||10)),searchCenter=searched?await geocodeSwedishPlace(searchPlace):null;
+ const [legacyUnavailableSlugs, bookedProductIds] = requestedFrom
+   ? await Promise.all([getUnavailableProductSlugs(requestedFrom,requestedTo), getUnavailableProductIds(requestedFrom,requestedTo)])
+   : [new Set<string>(), new Set<string>()];
+ const unavailableSlugs = new Set<string>(legacyUnavailableSlugs);
+ for (const product of products) if (product.id && bookedProductIds.has(product.id)) unavailableSlugs.add(product.slug);
+ const searched=Boolean(query||from||to||place),searchPlace=place?.trim()||'Danderyd',searchRadius=Math.max(1,Math.min(50,Number(radius||10)||10)),searchCenter=searched?await geocodeSwedishPlace(searchPlace):null;
  const filtered=products.filter(p=>{if(selectedCategory&&p.category!==selectedCategory)return false;if(query){const c=categoryDefinitions.find(i=>i.value===p.category);if(![p.brand,p.name,p.type,p.typeEn,p.category,c?.sv,c?.en].map(normalize).join(' ').includes(query))return false}if(requestedFrom&&unavailableSlugs.has(p.slug))return false;if(searched&&searchCenter){const point=p.pickupLocation;if(!point)return false;return distanceKm(searchCenter,{lat:point.lat,lng:point.lng})<=searchRadius}return true}).sort((a,b)=>{if(searchCenter&&a.pickupLocation&&b.pickupLocation){const da=distanceKm(searchCenter,{lat:a.pickupLocation.lat,lng:a.pickupLocation.lng}),db=distanceKm(searchCenter,{lat:b.pickupLocation.lat,lng:b.pickupLocation.lng});if(Math.abs(da-db)>.01)return da-db}return(en?(a.typeEn??a.type):a.type).localeCompare(en?(b.typeEn??b.type):b.type,en?'en':'sv',{sensitivity:'base'})});
  const keep=(value?:string)=>{const p=new URLSearchParams();if(value)p.set('category',value);if(q)p.set('q',q);if(from)p.set('from',from);if(to)p.set('to',to);if(place)p.set('place',place);if(radius)p.set('radius',radius);return`/${locale}/produkter?${p}`};
  const resultItems=filtered.map(p=>{const pricing=from?calculateRentalPricing(p.price,from,to||from,p.rentalPrices,p.discounts):null,qp=new URLSearchParams();if(q)qp.set('q',q);if(selectedCategory)qp.set('category',selectedCategory);if(from)qp.set('from',from);if(to)qp.set('to',to);if(place)qp.set('place',place);if(radius)qp.set('radius',radius);const point=p.pickupLocation,distance=searchCenter&&point?distanceKm(searchCenter,{lat:point.lat,lng:point.lng}):undefined;return{slug:p.slug,href:`/${locale}/produkter/${p.slug}${searched?`?${qp.toString()}`:''}`,brand:p.brand,name:p.name,type:en?(p.typeEn??p.type):p.type,image:p.image,accent:p.accent,badge:p.badge,priceLabel:pricing?`${pricing.total} kr · ${pricing.days} ${en?(pricing.days===1?'day':'days'):(pricing.days===1?'dag':'dagar')}`:p.price,mapLabel:pricing?`${pricing.total} kr`:p.price,lat:point?.lat,lng:point?.lng,distanceKm:distance}}),metaLabel=`${filtered.length} ${en?'products':'produkter'}`,locationUnavailable=searched&&!searchCenter;
