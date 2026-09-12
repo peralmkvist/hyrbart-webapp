@@ -65,13 +65,22 @@ export default function RenterCalendar({ locale }: { locale: string }) {
     if (booking.status === 'accepted' || booking.status === 'booked') return en ? 'Booked' : 'Bokad';
     return en ? 'Pending' : 'Inväntar svar';
   };
+  const goToToday = () => {
+    setBaseMonth(startOfMonth(today));
+    setView('month');
+    setViewMenuOpen(false);
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('.renterCalendarPage .hostCalendarMonthsScroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  };
 
   return (
     <section className="hostCalendarPage renterCalendarPage">
       <div className="hostCalendarTop">
         <h1 style={{margin:0,marginRight:'auto',fontSize:'1.75rem',lineHeight:1.08,letterSpacing:'-.035em'}}>{en?'Your booking calendar':'Din bokningskalender'}</h1>
         <div className="hostCalendarTopActions">
-          <button type="button" className="hostCalendarToday" onClick={() => setBaseMonth(startOfMonth(today))}>{en?'Today':'Idag'}</button>
+          <button type="button" className="hostCalendarToday" onClick={goToToday}>{en?'Today':'Idag'}</button>
           <div className="hostCalendarViewPicker">
             <button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={() => setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>
             {viewMenuOpen&&<div className="hostCalendarViewMenu" role="menu"><button type="button" className={view==='list'?'active':''} onClick={()=>{setView('list');setViewMenuOpen(false)}}><span>{en?'List':'Lista'}</span><ListIcon/></button><button type="button" className={view==='month'?'active':''} onClick={()=>{setView('month');setViewMenuOpen(false)}}><span>{en?'Calendar':'Kalender'}</span><ListingsIcon/></button></div>}
