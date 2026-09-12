@@ -1,4 +1,5 @@
-/* Cross-device responsive normalization */
+/* Cross-device responsive normalization.
+   Keep this file responsive-only: page headers, navigation and feature layout live in their own stylesheets. */
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -34,7 +35,7 @@ canvas {
   }
 }
 
-/* Productkort: låt hela bildkolumnen bära den grå bildbakgrunden. */
+/* Product-card responsive normalization. */
 .productListCard .productCardVisualWrap {
   min-height: 100%;
   border-radius: 12px;
@@ -47,7 +48,6 @@ canvas {
   background: transparent;
 }
 
-/* Popularitetsstämplar: lägre profil och exakt centrerad text. */
 .productListCard .productPopularityBadge {
   display: inline-grid;
   place-items: center;
@@ -55,47 +55,6 @@ canvas {
   padding: 4px 10px;
   line-height: 1;
   text-align: center;
-}
-
-/* Shared sticky top headers across the app.
-   Page-specific headers such as the calendar own their sticky behavior in their page stylesheet. */
-.homeSticky2,
-.rentSticky2,
-.ds2Header,
-.messagesHeader,
-.hostListingsHeader,
-.productTopbar2,
-.guideHeaderSticky,
-.termsHeaderSticky {
-  position: -webkit-sticky !important;
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 120 !important;
-}
-
-.homeSticky2,
-.ds2Header,
-.messagesHeader,
-.hostListingsHeader,
-.productTopbar2,
-.guideHeaderSticky,
-.termsHeaderSticky {
-  background: rgba(250,250,250,.97);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.homeSticky2 {
-  margin: calc(-1 * max(22px, env(safe-area-inset-top))) -18px 0;
-  padding: max(22px, env(safe-area-inset-top)) 18px 10px;
-}
-
-/* Give standalone title headers a clean sticky safe-area surface. */
-.ds2Header,
-.messagesHeader,
-.hostListingsHeader {
-  padding-top: max(12px, env(safe-area-inset-top));
-  margin-top: calc(-1 * max(12px, env(safe-area-inset-top)));
 }
 
 @media (max-width: 480px) {
