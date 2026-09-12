@@ -1,0 +1,60 @@
+/* Focused rental-search interaction polish. Keep route-specific search behavior here until merged into rental-search.css. */
+
+/* Keep the Hyrbart brand at the same safe top position when the search header becomes sticky. */
+.rentSticky2 {
+  top: max(22px, env(safe-area-inset-top)) !important;
+  margin: 0 -18px !important;
+  padding: 0 18px 10px !important;
+}
+
+/* Make the recent-search dropdown read as a distinct layer instead of another white form row. */
+.whatSuggestMenu2 {
+  top: calc(100% + 12px) !important;
+  border-color: #cfd2d0 !important;
+  box-shadow: 0 20px 52px rgba(17, 17, 17, .18), 0 2px 8px rgba(17, 17, 17, .08) !important;
+}
+.whatSuggestMenu2 .searchSuggestHeading2 {
+  padding: 17px 18px 10px;
+  background: #f7f7f5;
+  border-bottom: 1px solid #eceeeb;
+}
+.whatSuggestMenu2 .searchSuggestItem2 {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* One continuous yellow pill for a selected date range. */
+.rentalCalendarGrid2 {
+  column-gap: 0 !important;
+  row-gap: 2px !important;
+}
+.rentalCalendarGrid2 button.inRange,
+.rentalCalendarGrid2 button.rangeStart,
+.rentalCalendarGrid2 button.rangeEnd {
+  background: var(--accent) !important;
+  color: var(--ink) !important;
+}
+.rentalCalendarGrid2 button.inRange {
+  border-radius: 0 !important;
+}
+.rentalCalendarGrid2 button.selected.rangeStart {
+  border-radius: 999px 0 0 999px !important;
+}
+.rentalCalendarGrid2 button.selected.rangeEnd {
+  border-radius: 0 999px 999px 0 !important;
+}
+.rentalCalendarGrid2 button.selected:not(.rangeStart):not(.rangeEnd) {
+  border-radius: 50% !important;
+}
+
+/* Keep location copy inside its column next to the radius slider. */
+.rentalWhereField2 > span:first-child {
+  min-width: 0 !important;
+  overflow: hidden;
+}
+.rentalWhereField2 > span:first-child input {
+  min-width: 0 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
