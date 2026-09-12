@@ -14,29 +14,35 @@ export default function CalendarTodayJump({ active = true }: { active?: boolean 
     const todayMonth = root?.querySelector<HTMLElement>('[data-current-month="true"]');
     if (!scroller || !todayMonth) return;
 
-    const monthTop = () => Math.max(0, todayMonth.offsetTop);
+    const monthTop = () => {
+      const scrollerRect = scroller.getBoundingClientRect();
+      const monthRect = todayMonth.getBoundingClientRect();
+      return Math.max(0, scroller.scrollTop + monthRect.top - scrollerRect.top);
+    };
+
     const updateDirection = () => {
       setDirection(scroller.scrollTop < monthTop() - 24 ? 'down' : 'up');
     };
+
     const resetToCurrentMonth = () => {
-      scroller.scrollTop = monthTop();
+      scroller.scrollTo({ top: monthTop(), behavior: 'auto' });
       updateDirection();
     };
 
-    /* iOS may restore an inner scroll position after first paint.
-       Re-apply the intended current-month start for the next two frames. */
+    /* Safari can restore nested scroll positions after hydration.
+       Apply our intended current-month start immediately, after paint,
+       and once more shortly afterwards so the month always starts at its header. */
     resetToCurrentMonth();
     const raf1 = requestAnimationFrame(() => {
       resetToCurrentMonth();
-      const raf2 = requestAnimationFrame(resetToCurrentMonth);
-      (scroller as HTMLElement & { __calendarRaf?: number }).__calendarRaf = raf2;
+      requestAnimationFrame(resetToCurrentMonth);
     });
+    const settleTimer = window.setTimeout(resetToCurrentMonth, 140);
 
     scroller.addEventListener('scroll', updateDirection, { passive: true });
     return () => {
       cancelAnimationFrame(raf1);
-      const raf2 = (scroller as HTMLElement & { __calendarRaf?: number }).__calendarRaf;
-      if (raf2) cancelAnimationFrame(raf2);
+      window.clearTimeout(settleTimer);
       scroller.removeEventListener('scroll', updateDirection);
     };
   }, [active]);
@@ -46,7 +52,11 @@ export default function CalendarTodayJump({ active = true }: { active?: boolean 
     const scroller = root?.querySelector<HTMLElement>('.hostCalendarMonthsScroll');
     const todayMonth = root?.querySelector<HTMLElement>('[data-current-month="true"]');
     if (!scroller || !todayMonth) return;
-    scroller.scrollTo({ top: Math.max(0, todayMonth.offsetTop), behavior: 'smooth' });
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const monthRect = todayMonth.getBoundingClientRect();
+    const target = Math.max(0, scroller.scrollTop + monthRect.top - scrollerRect.top);
+    scroller.scrollTo({ top: target, behavior: 'smooth' });
   };
 
   if (!active) return null;
