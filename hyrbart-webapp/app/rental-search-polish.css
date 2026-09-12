@@ -58,3 +58,39 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Renter calendar: put booking status legend on the current-month heading row. */
+.renterCalendarMonthHeading {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 2px 10px;
+  padding: 4px 0 8px;
+  background: var(--bg);
+}
+.renterCalendarMonthHeading .hostCalendarMonthTitle {
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  flex: 0 0 auto;
+}
+.renterCalendarPage .renterCalendarInlineLegend {
+  position: static !important;
+  inset: auto !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+  white-space: nowrap;
+  font-size: .68rem !important;
+}
+.renterCalendarPage .renterCalendarInlineLegend span {
+  gap: 5px !important;
+}
