@@ -25,7 +25,8 @@ export default function BottomNav() {
 
   const appPath = pathname.replace(/^\/topsecret/, '') || '/sv';
   const isStandaloneGuide = /^\/(sv|en)\/produkter\/[^/]+\/guide\/?$/.test(appPath);
-  if (isStandaloneGuide) return null;
+  const isAdmin = /^\/(sv|en)\/admin(?:\/|$)/.test(appPath);
+  if (isStandaloneGuide || isAdmin) return null;
 
   const isEnglish = appPath === '/en' || appPath.startsWith('/en/');
   const locale = isEnglish ? 'en' : 'sv';
@@ -80,21 +81,20 @@ export default function BottomNav() {
       ]
     : [
         { href: base, label: renterLabels.explore, Icon: SearchIcon, booking: false, match: (p: string) => p === `/${locale}` || p.startsWith(`/${locale}/produkter`) },
-        { href: `${base}/kalender`, label: renterLabels.calendar, Icon: CalendarIcon, booking: true, match: (p: string) => p.startsWith(`/${locale}/kalender`) || p.startsWith(`/${locale}/bokningar`) },
+        { href: `${base}/kalender`, label: renterLabels.calendar, Icon: CalendarIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/kalender`) || p.startsWith(`/${locale}/bokningar`) },
         { href: `${base}/onskelista`, label: renterLabels.wishlist, Icon: HeartIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/onskelista`) },
         { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
       ];
 
   return (
-    <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
+    <nav className={`bottomNav ${hostMode ? 'hostBottomNav' : ''}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
       {items.map(({ href, label, Icon, booking, match }) => {
         const active = match(appPath);
         return (
-          <Link key={href} href={href} className={`navItem ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
-            <span className="activeLens" aria-hidden="true" />
-            <span className="navIconWrap">
-              <Icon className="navIcon" />
-              {booking && hasBookingAction ? <i className="bookingNotificationDot" aria-label={isEnglish ? 'Booking needs action' : 'Bokning behöver åtgärd'} /> : null}
+          <Link key={href} href={href} className={`bottomNavItem ${active ? 'active' : ''}`}>
+            <span className="bottomNavIconWrap">
+              <Icon className="bottomNavIcon" />
+              {booking && hasBookingAction ? <span className="bottomNavNotification" aria-label="Ny bokningsförfrågan" /> : null}
             </span>
             <span>{label}</span>
           </Link>
