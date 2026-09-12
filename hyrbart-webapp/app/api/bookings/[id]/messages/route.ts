@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getProducts } from '@/lib/sanity-products';
 import { sendPushToUser } from '@/lib/push';
 
 const BUCKET = 'booking-attachments';
@@ -8,7 +9,7 @@ const MAX_FILE_SIZE = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg','image/png','image/webp','image/heic','application/pdf']);
 
 async function getParticipantBooking(supabase: Awaited<ReturnType<typeof createClient>>, id: string, userId: string) {
-  const { data: booking } = await supabase.from('bookings').select('id,renter_id,owner_id').eq('id', id).maybeSingle();
+  const { data: booking } = await supabase.from('bookings').select('id,renter_id,owner_id,product_id').eq('id', id).maybeSingle();
   if (!booking || (booking.renter_id !== userId && booking.owner_id !== userId)) return null;
   return booking;
 }
@@ -22,12 +23,16 @@ async function enrichMessages(rows: any[]) {
   }));
 }
 
-async function notifyCounterpart(booking: { renter_id: string; owner_id: string }, senderId: string, bookingId: string, body: string) {
+async function notifyCounterpart(booking: { renter_id: string; owner_id: string; product_id: string }, senderId: string, bookingId: string, body: string) {
   const recipientId = booking.renter_id === senderId ? booking.owner_id : booking.renter_id;
   if (!recipientId) return;
+  const products = await getProducts();
+  const product = products.find(item => item.id === booking.product_id);
+  const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt';
+  const message = body.length > 120 ? `${body.slice(0, 117)}…` : body;
   await sendPushToUser(recipientId, {
-    title: 'Nytt meddelande på Hyrbart',
-    body: body.length > 120 ? `${body.slice(0, 117)}…` : body,
+    title: 'Nytt meddelande',
+    body: `${productName}\n${message}`,
     url: `/topsecret/sv/bokningar/${bookingId}`,
     tag: `booking-message-${bookingId}`,
   });
