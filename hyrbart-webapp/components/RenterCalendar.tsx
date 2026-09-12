@@ -61,7 +61,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
   return (
     <section className="hostCalendarPage renterCalendarPage">
       <div className="hostCalendarTop">
-        <h1 style={{margin:0,marginRight:'auto',fontSize:'1.75rem',lineHeight:1.08,letterSpacing:'-.035em'}}>{en?'Your booking calendar':'Din bokningskalender'}</h1>
+        <h1>{en?'Calendar':'Kalender'}</h1>
         <div className="hostCalendarTopActions">
           <div className="hostCalendarViewPicker">
             <button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={() => setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>
