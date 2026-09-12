@@ -58,13 +58,12 @@ canvas {
 }
 
 /* Shared sticky top headers across the app.
-   Use overflow-x:clip above, not hidden: hidden creates a scroll container in iOS Safari and breaks position:sticky. */
+   Page-specific headers such as the calendar own their sticky behavior in their page stylesheet. */
 .homeSticky2,
 .rentSticky2,
 .ds2Header,
 .messagesHeader,
 .hostListingsHeader,
-.hostCalendarTop,
 .productTopbar2,
 .guideHeaderSticky,
 .termsHeaderSticky {
@@ -78,7 +77,6 @@ canvas {
 .ds2Header,
 .messagesHeader,
 .hostListingsHeader,
-.hostCalendarTop,
 .productTopbar2,
 .guideHeaderSticky,
 .termsHeaderSticky {
@@ -95,8 +93,7 @@ canvas {
 /* Give standalone title headers a clean sticky safe-area surface. */
 .ds2Header,
 .messagesHeader,
-.hostListingsHeader,
-.hostCalendarTop {
+.hostListingsHeader {
   padding-top: max(12px, env(safe-area-inset-top));
   margin-top: calc(-1 * max(12px, env(safe-area-inset-top)));
 }
@@ -107,15 +104,6 @@ canvas {
     max-width: none;
     padding-left: clamp(16px, 4.5vw, 20px);
     padding-right: clamp(16px, 4.5vw, 20px);
-  }
-
-  .liquidNav {
-    width: min(calc(100% - 28px), 620px);
-    height: clamp(58px, 15vw, 64px);
-  }
-
-  .navItem {
-    font-size: clamp(.66rem, 2.8vw, .72rem);
   }
 
   .productsPage {
@@ -224,15 +212,6 @@ canvas {
   }
 }
 
-/* Håll bottom-nav på exakt samma viewport-position även när en filtrerad lista är kort. */
 .productsPage {
   min-height: 100dvh;
-}
-
-.liquidNav {
-  position: fixed !important;
-  left: 50% !important;
-  right: auto !important;
-  bottom: max(8px, env(safe-area-inset-bottom)) !important;
-  transform: translateX(-50%) !important;
 }
