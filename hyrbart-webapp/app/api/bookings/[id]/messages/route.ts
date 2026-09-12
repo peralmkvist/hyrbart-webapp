@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendPushToUser } from '@/lib/push';
 
 const BUCKET = 'booking-attachments';
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
@@ -19,6 +20,17 @@ async function enrichMessages(rows: any[]) {
     const { data } = await admin.storage.from(BUCKET).createSignedUrl(message.attachment_path, 3600);
     return { ...message, attachment_url: data?.signedUrl ?? null };
   }));
+}
+
+async function notifyCounterpart(booking: { renter_id: string; owner_id: string }, senderId: string, bookingId: string, body: string) {
+  const recipientId = booking.renter_id === senderId ? booking.owner_id : booking.renter_id;
+  if (!recipientId) return;
+  await sendPushToUser(recipientId, {
+    title: 'Nytt meddelande på Hyrbart',
+    body: body.length > 120 ? `${body.slice(0, 117)}…` : body,
+    url: `/topsecret/sv/bokningar/${bookingId}`,
+    tag: `booking-message-${bookingId}`,
+  });
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -46,7 +58,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401 });
-  if (!await getParticipantBooking(supabase, id, user.id)) return NextResponse.json({ error: 'Bokningen hittades inte.' }, { status: 404 });
+  const booking = await getParticipantBooking(supabase, id, user.id);
+  if (!booking) return NextResponse.json({ error: 'Bokningen hittades inte.' }, { status: 404 });
 
   const contentType = request.headers.get('content-type') || '';
   if (contentType.includes('multipart/form-data')) {
@@ -73,6 +86,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await admin.storage.from(BUCKET).remove([path]);
       return NextResponse.json({ error: 'Kunde inte skicka bilagan.' }, { status: 500 });
     }
+    await notifyCounterpart(booking, user.id, id, text || `Bilaga: ${file.name}`);
     const [enriched] = await enrichMessages([message]);
     return NextResponse.json({ ok: true, message: enriched });
   }
@@ -86,5 +100,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .insert({ booking_id: id, sender_id: user.id, body: text })
     .select('id,sender_id,body,created_at,read_at,attachment_path,attachment_name,attachment_type,attachment_size').single();
   if (error) return NextResponse.json({ error: 'Kunde inte skicka meddelandet.' }, { status: 500 });
+  await notifyCounterpart(booking, user.id, id, text);
   return NextResponse.json({ ok: true, message: { ...message, attachment_url: null } });
 }
