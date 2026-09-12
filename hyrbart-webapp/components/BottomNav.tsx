@@ -51,8 +51,8 @@ export default function BottomNav() {
     : { explore: 'Utforska', calendar: 'Kalender', wishlist: 'Favoriter', messages: 'Meddelanden', profile: 'Profil', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
-    ? { calendar: 'Calendar', listings: 'Listings', add: 'Add', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
-    : { calendar: 'Kalender', listings: 'Annonser', add: 'Lägg till', messages: 'Meddelanden', profile: 'Profil', aria: 'Uthyrarmeny' };
+    ? { calendar: 'Bookings', listings: 'Listings', add: 'Add', messages: 'Messages', profile: 'Profile', aria: 'Host menu' }
+    : { calendar: 'Bokningar', listings: 'Annonser', add: 'Lägg till', messages: 'Meddelanden', profile: 'Profil', aria: 'Uthyrarmeny' };
 
   const items = hostMode
     ? [
