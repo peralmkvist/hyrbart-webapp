@@ -5,7 +5,7 @@ export default async function HostSettingsPage({ params }: { params: Promise<{ l
   const { locale } = await params;
   const en = locale === 'en';
   const items = en ? [
-    { title: 'Profile settings', copy: 'Manage the profile details shared between renting and hosting.', href: `/topsecret/${locale}/vard/profil/konto?back=vard` },
+    { title: 'Profile settings', copy: 'Manage the profile details shared between renting and hosting.', href: `/topsecret/${locale}/vard/profil/konto?back=vard&section=profile` },
     { title: 'Verification & safety', copy: 'See the identity verification shared across both roles.', href: `/topsecret/${locale}/vard/profil/verifiering?back=vard` },
     { title: 'Pickup locations', copy: 'Manage the locations renters can use to collect your items.', href: `/topsecret/${locale}/vard/onboarding/profil` },
     { title: 'Payouts', copy: 'Manage the information used for payouts.', href: `/topsecret/${locale}/vard/onboarding/utbetalning` },
@@ -13,7 +13,7 @@ export default async function HostSettingsPage({ params }: { params: Promise<{ l
     { title: 'Import listings', copy: 'Bring listings into Hyrbart from another source.', href: `/topsecret/${locale}/vard/importera` },
     { title: 'Bookings and availability', copy: 'Review bookings and manage when your items are available.', href: `/topsecret/${locale}/vard` },
   ] : [
-    { title: 'Profilinställningar', copy: 'Hantera profiluppgifter som delas mellan hyrar- och uthyrarläget.', href: `/topsecret/${locale}/vard/profil/konto?back=vard` },
+    { title: 'Profilinställningar', copy: 'Hantera profiluppgifter som delas mellan hyrar- och uthyrarläget.', href: `/topsecret/${locale}/vard/profil/konto?back=vard&section=profile` },
     { title: 'Verifiering & trygghet', copy: 'Se identitetsverifieringen som delas mellan båda rollerna.', href: `/topsecret/${locale}/vard/profil/verifiering?back=vard` },
     { title: 'Utlämningsplatser', copy: 'Hantera platser där hyrare kan hämta dina saker.', href: `/topsecret/${locale}/vard/onboarding/profil` },
     { title: 'Utbetalningar', copy: 'Hantera uppgifterna som används för utbetalningar.', href: `/topsecret/${locale}/vard/onboarding/utbetalning` },
