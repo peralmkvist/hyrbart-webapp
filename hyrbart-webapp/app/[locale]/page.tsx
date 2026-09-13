@@ -34,7 +34,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <section className="homeCategorySection3" aria-labelledby="popular-categories-heading">
         <div className="sectionHeading2 homeCategoryHeading3">
           <h2 id="popular-categories-heading">{en ? 'Popular categories' : 'Populära kategorier'}</h2>
-          <Link href={`/${locale}/produkter`}>{en ? 'See all' : 'Visa alla'}</Link>
         </div>
         <div className="homeCategoryGrid3">
           {popularCategories.map((item) => {
