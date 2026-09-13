@@ -1,3 +1,4 @@
+import ReportReviewButton from '@/components/ReportReviewButton';
 import { getCompletedRentalCount, getPublicReviewsForUser, getUserReviewSummary } from '@/lib/review-summaries';
 import { getVerifiedExternalReputation } from '@/lib/external-reputation';
 
@@ -22,7 +23,7 @@ export default async function RenterReputationCard({userId,name,verified,locale}
       </div>
       <div className="renterReputationMeta"><span>{rentals} {en?'completed Hyrbart rentals':'slutförda Hyrbart-hyror'}</span>{summary.recommendPersonPercent!=null?<span>{summary.recommendPersonPercent}% {en?'would recommend':'rekommenderar'}</span>:null}</div>
       {summary.topTags.length?<div className="renterReputationTags">{summary.topTags.map(tag=><span key={tag}>{tag}</span>)}</div>:null}
-      {reviews.some(r=>r.comment)?<div className="renterReputationReviews">{reviews.filter(r=>r.comment).slice(0,3).map((review,index)=><blockquote key={`${review.submittedAt}-${index}`}><div><strong>★ {review.overall}</strong><span>{review.reviewerName}</span></div><p>{review.comment}</p></blockquote>)}</div>:null}
+      {reviews.some(r=>r.comment)?<div className="renterReputationReviews">{reviews.filter(r=>r.comment).slice(0,3).map(review=><blockquote key={review.id}><div><strong>★ {review.overall}</strong><span>{review.reviewerName}</span></div><p>{review.comment}</p><ReportReviewButton reviewId={review.id} locale={locale}/></blockquote>)}</div>:null}
     </>:<div className="renterReputationEmpty"><strong>{en?'No Hyrbart reviews yet':'Inga Hyrbart-omdömen ännu'}</strong><p>{rentals>0?(en?'This renter has completed Hyrbart rentals but has no published reviews yet.':'Hyrestagaren har slutförda Hyrbart-hyror men ännu inga publicerade omdömen.'):(en?'This is a new renter on Hyrbart.':'Det här är en ny hyrestagare på Hyrbart.')}</p></div>}
 
     {external.length?<div style={{marginTop:18,paddingTop:18,borderTop:'1px solid var(--line)'}}>
