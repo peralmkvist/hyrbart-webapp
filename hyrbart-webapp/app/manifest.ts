@@ -8,6 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/topsecret/sv',
     scope: '/topsecret/',
     display: 'standalone',
+    orientation: 'portrait-primary',
     background_color: '#fafafa',
     theme_color: '#fafafa',
     icons: [
