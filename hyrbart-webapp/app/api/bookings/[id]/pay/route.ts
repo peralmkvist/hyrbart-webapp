@@ -48,6 +48,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     }
 
     const payment = await ensureSimulatedCapture(booking);
+    let idempotent = alreadyPaid;
 
     if (!alreadyPaid) {
       const { data: updated, error: updateError } = await admin
@@ -56,25 +57,32 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         .eq('id', id)
         .eq('status', booking.status)
         .select('id,status,total_price')
-        .single();
+        .maybeSingle();
       if (updateError) throw updateError;
 
-      await recordBookingEvent({
-        bookingId: id,
-        actorId: user.id,
-        eventType: 'payment_captured',
-        metadata: { previous_status: booking.status, new_status: updated.status, payment_id: payment.id, provider: payment.provider, amount: payment.amount, currency: payment.currency, simulated: payment.provider === 'simulation' },
-      });
+      if (!updated) {
+        const { data: current, error: currentError } = await admin.from('bookings').select('status').eq('id', id).maybeSingle();
+        if (currentError) throw currentError;
+        if (current?.status !== 'paid') return NextResponse.json({ error: 'Bokningen ändrades samtidigt. Ladda om och försök igen.' }, { status: 409 });
+        idempotent = true;
+      } else {
+        await recordBookingEvent({
+          bookingId: id,
+          actorId: user.id,
+          eventType: 'payment_captured',
+          metadata: { previous_status: booking.status, new_status: updated.status, payment_id: payment.id, provider: payment.provider, amount: payment.amount, currency: payment.currency, simulated: payment.provider === 'simulation' },
+        });
 
-      if (booking.owner_id) {
-        const products = await getProducts();
-        const product = products.find(item => item.id === booking.product_id);
-        const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt';
-        await notifyUser({userId:booking.owner_id,bookingId:id,type:'payment_captured',title:'Betalning genomförd',body:`${productName}\n${formatDateRange(booking.start_date, booking.end_date)}`,url:`/topsecret/sv/bokningar/${id}`,eventKey:`booking-payment:${id}`});
+        if (booking.owner_id) {
+          const products = await getProducts();
+          const product = products.find(item => item.id === booking.product_id);
+          const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt';
+          await notifyUser({userId:booking.owner_id,bookingId:id,type:'payment_captured',title:'Betalning genomförd',body:`${productName}\n${formatDateRange(booking.start_date, booking.end_date)}`,url:`/topsecret/sv/bokningar/${id}`,eventKey:`booking-payment:${id}`});
+        }
       }
     }
 
-    return NextResponse.json({ ok: true, status: 'paid', total: Number(booking.total_price || payment.amount || 0), paymentId: payment.id, provider: payment.provider, simulated: payment.provider === 'simulation', idempotent: alreadyPaid });
+    return NextResponse.json({ ok: true, status: 'paid', total: Number(booking.total_price || payment.amount || 0), paymentId: payment.id, provider: payment.provider, simulated: payment.provider === 'simulation', idempotent });
   } catch (error) {
     console.error('Payment failed', error);
     return NextResponse.json({ error: 'Kunde inte genomföra testbetalningen.' }, { status: 500 });
