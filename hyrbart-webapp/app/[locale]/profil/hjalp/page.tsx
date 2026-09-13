@@ -5,7 +5,11 @@ export default async function HelpPage({ params, searchParams }: { params: Promi
   const { locale } = await params;
   const { back } = await searchParams;
   const en = locale === 'en';
-  const backHref = back === 'vard' ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`;
+  const hostMode = back === 'vard';
+  const backHref = hostMode ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`;
+  const bookingsHref = hostMode ? `/topsecret/${locale}/vard` : `/topsecret/${locale}/kalender`;
+  const termsHref = hostMode ? `/topsecret/${locale}/vard/profil/villkor` : `/topsecret/${locale}/hyresvillkor`;
+  const privacyHref = hostMode ? `/topsecret/${locale}/vard/profil/sekretess?back=vard` : `/topsecret/${locale}/profil/sekretess`;
 
   return <section className="ds2Page profileSettingsPage">
     <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{en ? 'Get help' : 'Få hjälp'}</h1></header>
@@ -14,7 +18,7 @@ export default async function HelpPage({ params, searchParams }: { params: Promi
     <section className="profileSettingsCard">
       <div className="profileSettingsCardHeading"><span>{en ? 'BOOKINGS' : 'BOKNINGAR'}</span><h2>{en ? 'Something happened during a rental' : 'Något har hänt under en hyra'}</h2></div>
       <p>{en ? 'Open the relevant booking first. There you can use the booking message thread and, when available, open a case and attach documentation.' : 'Öppna först den aktuella bokningen. Där finns bokningens meddelandetråd och, när funktionen är tillgänglig, möjlighet att öppna ett ärende och bifoga underlag.'}</p>
-      <Link className="profileSettingsTextLink" href={`/topsecret/${locale}/kalender`}>{en ? 'Go to bookings' : 'Gå till bokningar'} <span>›</span></Link>
+      <Link className="profileSettingsTextLink" href={bookingsHref}>{en ? 'Go to bookings' : 'Gå till bokningar'} <span>›</span></Link>
     </section>
 
     <section className="profileSettingsCard">
@@ -27,8 +31,8 @@ export default async function HelpPage({ params, searchParams }: { params: Promi
     </section>
 
     <section className="profileSettingsCard profileSettingsLinkCard">
-      <Link className="profileSettingsLinkRow" href={`/topsecret/${locale}/hyresvillkor`}><span className="profileSettingsLinkCopy"><strong>{en ? 'Rental terms' : 'Allmänna villkor'}</strong><small>{en ? 'Read the terms that apply to bookings.' : 'Läs villkoren som gäller för bokningar.'}</small></span><span>›</span></Link>
-      <Link className="profileSettingsLinkRow" href={`/topsecret/${locale}/profil/sekretess${back === 'vard' ? '?back=vard' : ''}`}><span className="profileSettingsLinkCopy"><strong>{en ? 'Privacy' : 'Sekretess'}</strong><small>{en ? 'See what information Hyrbart uses in the product.' : 'Se vilka uppgifter Hyrbart använder i produkten.'}</small></span><span>›</span></Link>
+      <Link className="profileSettingsLinkRow" href={termsHref}><span className="profileSettingsLinkCopy"><strong>{en ? 'Rental terms' : 'Allmänna villkor'}</strong><small>{en ? 'Read the terms that apply to bookings.' : 'Läs villkoren som gäller för bokningar.'}</small></span><span>›</span></Link>
+      <Link className="profileSettingsLinkRow" href={privacyHref}><span className="profileSettingsLinkCopy"><strong>{en ? 'Privacy' : 'Sekretess'}</strong><small>{en ? 'See what information Hyrbart uses in the product.' : 'Se vilka uppgifter Hyrbart använder i produkten.'}</small></span><span>›</span></Link>
     </section>
   </section>;
 }
