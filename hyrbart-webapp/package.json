@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test:lifecycle": "node --experimental-strip-types --test --test-reporter=spec tests/lifecycle/*.test.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test tests/e2e/smoke.spec.ts tests/e2e/accessibility.spec.ts",
+    "test:e2e:auth": "playwright test tests/e2e/authenticated-session.spec.ts --project=chromium-desktop",
+    "test:e2e:lifecycle": "playwright test tests/e2e/authenticated-lifecycle.spec.ts --project=chromium-desktop",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "test:quality": "npm run test:lifecycle && npm run test:e2e"
   },
