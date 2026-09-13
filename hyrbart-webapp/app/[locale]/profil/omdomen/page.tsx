@@ -20,9 +20,9 @@ export default async function ProfileReviewsPage({ params, searchParams }: { par
   ]);
   const backHref = hostMode ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`;
 
-  return <section className="ds2Page profileSettingsPage">
-    <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{en ? 'Reviews' : 'Omdömen'}</h1></header>
-    <p className="profileSettingsIntro">{as === 'owner' ? (en ? 'Reviews you have received as a host.' : 'Omdömen du har fått som uthyrare.') : (en ? 'Reviews you have received as a renter.' : 'Omdömen du har fått som hyrare.')}</p>
+  return <section className="ds2Page profileSettingsPage profileInsightsPage">
+    <header className="profileSubHeader profileInsightsHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{en ? 'Insights' : 'Insikter'}</h1></header>
+    <p className="profileSettingsIntro">{as === 'owner' ? (en ? 'Insights from your activity as a host.' : 'Insikter från ditt uthyrande.') : (en ? 'Insights from your activity as a renter.' : 'Insikter från ditt hyrande.')}</p>
     {summary.count > 0 ? <ReviewSummaryPanel summary={summary} reviews={reviews} kind={as} locale={locale} /> : <section className="profileSettingsCard profileEmptySettingsState"><div className="profileSettingsCardHeading"><span>{en ? 'REVIEWS' : 'OMDÖMEN'}</span><h2>{en ? 'No published reviews yet' : 'Inga publicerade omdömen ännu'}</h2></div><p>{en ? 'Reviews appear here after the double-blind review period.' : 'Omdömen visas här efter den dubbelblinda recensionsperioden.'}</p></section>}
   </section>;
 }
