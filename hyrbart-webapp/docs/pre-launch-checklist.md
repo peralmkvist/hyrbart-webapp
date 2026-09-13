@@ -44,8 +44,10 @@ Status: working launch gate. Keep this file aligned with Jira and production beh
 - [x] Rate limiting on public geocoding and translation endpoints
 - [x] Service-role-only internal rate-limit RPC
 - [x] Global/locale loading, error and 404 fallbacks
+- [x] Deterministic booking state-machine + Stockholm timezone regression tests in CI
+- [x] Public desktop/mobile browser smoke tests in CI
 - [ ] Supabase leaked-password protection (paid plan)
-- [ ] Automated end-to-end lifecycle race tests in CI
+- [ ] Authenticated seeded end-to-end booking/cancellation/dispute race suite in CI
 
 ## 5. Accessibility and mobile
 - [x] Pinch zoom allowed
@@ -53,9 +55,10 @@ Status: working launch gate. Keep this file aligned with Jira and production beh
 - [x] Consistent keyboard focus-visible treatment
 - [x] Reduced-motion fallback for launch loading animation
 - [x] Mobile-sized launch/error actions
+- [x] Automated WCAG A/AA axe gate on key public routes (desktop + mobile)
+- [x] Automated contrast audit on key public routes
 - [ ] Formal WCAG keyboard pass over all dialogs/dropdowns
 - [ ] Screen-reader pass over booking and dispute flows
-- [ ] Contrast audit with automated tooling
 
 ## 6. Content and legal
 - [x] Rental agreement foundation

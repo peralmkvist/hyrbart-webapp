@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:lifecycle": "node --experimental-strip-types --test --test-reporter=spec tests/lifecycle/*.test.ts",
+    "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
+    "test:quality": "npm run test:lifecycle && npm run test:e2e"
   },
   "dependencies": {
     "@sanity/locale-sv-se": "1.2.38",
@@ -21,6 +25,8 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.2",
