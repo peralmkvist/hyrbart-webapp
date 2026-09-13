@@ -4,11 +4,14 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import '../profile-menu.css';
 
-export default async function AccountSettingsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ back?: string }> }) {
+export default async function AccountSettingsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ back?: string; section?: string }> }) {
   const { locale } = await params;
-  const { back } = await searchParams;
+  const { back, section } = await searchParams;
   const en = locale === 'en';
-  const backHref = back === 'vard' ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`;
+  const profileSection = section === 'profile';
+  const backHref = profileSection
+    ? (back === 'vard' ? `/topsecret/${locale}/vard/installningar` : `/topsecret/${locale}/profil/installningar`)
+    : (back === 'vard' ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/profil/konto`)}`);
@@ -26,9 +29,10 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
     revalidatePath(`/topsecret/${locale}/vard/profil`);
   }
 
+  const title = profileSection ? (en ? 'Profile settings' : 'Profilinställningar') : (en ? 'Account settings' : 'Kontoinställningar');
   return <section className="ds2Page profileSettingsPage">
-    <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{en ? 'Account settings' : 'Kontoinställningar'}</h1></header>
-    <p className="profileSettingsIntro">{en ? 'Manage the details connected to your Hyrbart account.' : 'Hantera uppgifterna som hör till ditt Hyrbart-konto.'}</p>
+    <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{title}</h1></header>
+    <p className="profileSettingsIntro">{profileSection ? (en ? 'These profile details are shared between renter and host mode.' : 'De här profiluppgifterna delas mellan hyrar- och uthyrarläget.') : (en ? 'Manage the details connected to your Hyrbart account.' : 'Hantera uppgifterna som hör till ditt Hyrbart-konto.')}</p>
 
     <section className="profileSettingsCard">
       <div className="profileSettingsCardHeading"><span>{en ? 'PROFILE' : 'PROFIL'}</span><h2>{en ? 'Personal details' : 'Personliga uppgifter'}</h2></div>
@@ -40,9 +44,9 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
       </form>
     </section>
 
-    <section className="profileSettingsCard">
+    {!profileSection ? <section className="profileSettingsCard">
       <div className="profileSettingsCardHeading"><span>{en ? 'SECURITY' : 'SÄKERHET'}</span><h2>{en ? 'Sign-in and account' : 'Inloggning och konto'}</h2></div>
       <p>{en ? 'Your email address is tied to your sign-in. More security controls can be added here as account management expands.' : 'Din e-postadress är kopplad till inloggningen. Här kan fler säkerhetsinställningar läggas till när kontohanteringen byggs ut.'}</p>
-    </section>
+    </section> : null}
   </section>;
 }
