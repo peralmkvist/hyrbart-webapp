@@ -1,10 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireGithubActionsOidc } from '@/lib/e2e/github-oidc';
 
 export const dynamic = 'force-dynamic';
 
+async function allowed(request: Request) {
+  if (process.env.E2E_TEST_SUPPORT === '1') return true;
+  try {
+    await requireGithubActionsOidc(request);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
-  if (process.env.E2E_TEST_SUPPORT !== '1') {
+  if (!(await allowed(request))) {
     return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
   }
 
