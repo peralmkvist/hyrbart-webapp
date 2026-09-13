@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 const WINDOW_MS=7*24*60*60*1000;
 const ratingKeys=['communication','overall_rating'] as const;
@@ -10,7 +11,12 @@ export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){
  if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401});
  const {data:b}=await supabase.from('bookings').select('id,renter_id,owner_id,status,completed_at,updated_at,created_at').eq('id',id).maybeSingle();
  if(!b||![b.renter_id,b.owner_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
- const {data:reviews}=await supabase.from('booking_reviews').select('*').eq('booking_id',id);
+ // Participant access has already been verified above. Read reviews with the
+ // server-side admin client so the double-blind response is decided here,
+ // rather than by the self-referencing booking_reviews SELECT RLS policy.
+ const admin=createAdminClient();
+ const {data:reviews,error:reviewsError}=await admin.from('booking_reviews').select('*').eq('booking_id',id);
+ if(reviewsError){console.error('Review read failed',reviewsError);return NextResponse.json({error:'REVIEW_READ_FAILED'},{status:500});}
  const all=reviews||[]; const mine=all.find(r=>r.reviewer_id===user.id)||null; const theirs=all.find(r=>r.reviewer_id!==user.id)||null;
  const deadline=new Date(completionTime(b)+WINDOW_MS); const expired=Date.now()>deadline.getTime();
  const reveal=Boolean(mine&&theirs)||expired;
