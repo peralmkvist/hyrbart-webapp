@@ -9,7 +9,9 @@ const routes = [
 
 for (const route of routes) {
   test(`${route.name} has no serious or critical automated accessibility violations`, async ({ page }) => {
-    await page.goto(route.path, { waitUntil: 'networkidle' });
+    await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).not.toHaveText('');
+
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze();
