@@ -101,7 +101,7 @@ async function makeTestUser(role: 'renter' | 'owner', runId: string): Promise<Te
   };
 }
 
-async function seedBookings(renterId: string, ownerId: string): Promise<BookingSeed[]> {
+async function seedBookings(renterId: string, ownerId: string, runId: string): Promise<BookingSeed[]> {
   const admin = createAdminClient();
   const rows = [
     { label: 'lifecycle' as const, offset: 14 },
@@ -126,7 +126,7 @@ async function seedBookings(renterId: string, ownerId: string): Promise<BookingS
       service_fee: 100,
       total_price: 1100,
       request_type: 'booking',
-      message: `Authenticated E2E ${label}`,
+      message: `Authenticated E2E ${runId} ${label}`,
       cancellation_policy: 'moderate',
       rental_start_at: rentalStartAt,
       pickup_due_at: rentalStartAt,
@@ -142,8 +142,9 @@ async function seedBookings(renterId: string, ownerId: string): Promise<BookingS
 
   const { data, error } = await admin.from('bookings').insert(rows).select('id,message');
   if (error) throw error;
+  const prefix = `Authenticated E2E ${runId} `;
   return (data || []).map(row => ({
-    label: String(row.message || '').replace('Authenticated E2E ', '') as BookingSeed['label'],
+    label: String(row.message || '').replace(prefix, '') as BookingSeed['label'],
     id: row.id,
   }));
 }
@@ -168,7 +169,7 @@ export async function POST(request: Request) {
     const runId = safeRunId(body.runId || claims.sha);
     const renter = await makeTestUser('renter', runId);
     const owner = await makeTestUser('owner', runId);
-    const bookings = await seedBookings(renter.id, owner.id);
+    const bookings = await seedBookings(renter.id, owner.id, runId);
 
     return NextResponse.json({
       ok: true,
@@ -190,14 +191,37 @@ export async function DELETE(request: Request) {
 
   try {
     const body = await request.json().catch(() => ({}));
+    const runId = safeRunId(body.runId);
     const bookingIds = Array.isArray(body.bookingIds) ? body.bookingIds.map(String) : [];
     const userIds = Array.isArray(body.userIds) ? body.userIds.map(String) : [];
     const admin = createAdminClient();
 
-    await removeConditionObjects(bookingIds);
+    if (!body.runId || bookingIds.length > 8 || userIds.length > 4) {
+      return NextResponse.json({ error: 'INVALID_CLEANUP_SCOPE' }, { status: 400 });
+    }
+
     if (bookingIds.length) {
+      const { data: rows, error: checkError } = await admin
+        .from('bookings')
+        .select('id,message')
+        .in('id', bookingIds);
+      if (checkError) throw checkError;
+      const expectedPrefix = `Authenticated E2E ${runId} `;
+      if ((rows || []).length !== bookingIds.length || (rows || []).some(row => !String(row.message || '').startsWith(expectedPrefix))) {
+        return NextResponse.json({ error: 'CLEANUP_SCOPE_REJECTED' }, { status: 403 });
+      }
+      await removeConditionObjects(bookingIds);
       const { error: bookingError } = await admin.from('bookings').delete().in('id', bookingIds);
       if (bookingError) throw bookingError;
+    }
+
+    for (const userId of userIds) {
+      const { data, error: getUserError } = await admin.auth.admin.getUserById(userId);
+      if (getUserError || !data.user) throw getUserError || new Error('E2E user not found.');
+      const metadata = data.user.app_metadata || {};
+      if (metadata.hyrbart_e2e !== true || metadata.run_id !== runId) {
+        return NextResponse.json({ error: 'CLEANUP_SCOPE_REJECTED' }, { status: 403 });
+      }
     }
     for (const userId of userIds) {
       const { error } = await admin.auth.admin.deleteUser(userId);
