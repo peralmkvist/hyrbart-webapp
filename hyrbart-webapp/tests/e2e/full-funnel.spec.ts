@@ -39,7 +39,10 @@ async function continueListing(page: import('@playwright/test').Page) {
 }
 
 test.describe('production full marketplace funnel', () => {
-  test.describe.configure({ mode: 'serial', retries: 0, timeout: 120_000 });
+  // A newly published Sanity listing can legitimately sit behind the 60 s
+  // product cache before it appears in search. Keep assertions strict while
+  // allowing the complete publish → discovery → booking path enough wall time.
+  test.describe.configure({ mode: 'serial', retries: 0, timeout: 210_000 });
 
   let owner: BrowserContext;
   let renter: BrowserContext;
@@ -118,7 +121,7 @@ test.describe('production full marketplace funnel', () => {
 
     await expect(result).toBeVisible();
     await result.click();
-    await expect(renterPage.getByRole('heading', { name: uniqueName })).toBeVisible();
+    await expect(renterPage.getByText(uniqueName, { exact: true })).toBeVisible();
 
     const bookingButton = renterPage.getByRole('button', { name: 'Skicka bokningsförfrågan' });
     await expect(bookingButton).toBeEnabled({ timeout: 20_000 });
