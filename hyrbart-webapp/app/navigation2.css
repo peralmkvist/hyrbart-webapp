@@ -30,6 +30,11 @@
   isolation: auto !important;
 }
 
+/* Host mode has three destinations; give them equal thirds so the group stays centered. */
+.liquidNav.hostNav {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
 .liquidNav::before,
 .liquidNav::after {
   display: none !important;
