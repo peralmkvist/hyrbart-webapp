@@ -3,23 +3,13 @@
 import { useState } from 'react';
 import HostCalendar from './HostCalendar';
 import AutomatedMessages from './AutomatedMessages';
-import { MailIcon } from './Icons';
 
 export default function HostBookingsWorkspace({ locale }: { locale: string }) {
   const en = locale === 'en';
   const [automationsOpen, setAutomationsOpen] = useState(false);
 
   return <>
-    <HostCalendar locale={locale} />
-
-    <button
-      type="button"
-      className="hostAutomationsIconButton"
-      onClick={() => setAutomationsOpen(true)}
-      aria-label={en?'Automated messages':'Automatiserade meddelanden'}
-      aria-haspopup="dialog"
-      aria-expanded={automationsOpen}
-    ><MailIcon/></button>
+    <HostCalendar locale={locale} onOpenAutomations={() => setAutomationsOpen(true)} />
 
     {automationsOpen ? <div
       role="dialog"
