@@ -11,10 +11,11 @@ export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){
  const {data:b}=await supabase.from('bookings').select('id,renter_id,owner_id,status,completed_at,updated_at,created_at').eq('id',id).maybeSingle();
  if(!b||![b.renter_id,b.owner_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
  const {data:reviews}=await supabase.from('booking_reviews').select('*').eq('booking_id',id);
- const mine=(reviews||[]).find(r=>r.reviewer_id===user.id)||null; const theirs=(reviews||[]).find(r=>r.reviewer_id!==user.id)||null;
+ const all=reviews||[]; const mine=all.find(r=>r.reviewer_id===user.id)||null; const theirs=all.find(r=>r.reviewer_id!==user.id)||null;
  const deadline=new Date(completionTime(b)+WINDOW_MS); const expired=Date.now()>deadline.getTime();
  const reveal=Boolean(mine&&theirs)||expired;
- return NextResponse.json({eligible:b.status==='completed'&&!expired&&!mine,submitted:Boolean(mine),counterpartSubmitted:Boolean(theirs),deadline:deadline.toISOString(),mine,revealed:reveal?reviews||[]:[]});
+ const revealed=reveal?all.filter(r=>r.moderation_status!=='hidden'||r.reviewer_id===user.id):[];
+ return NextResponse.json({eligible:b.status==='completed'&&!expired&&!mine,submitted:Boolean(mine),counterpartSubmitted:Boolean(theirs),deadline:deadline.toISOString(),mine,revealed});
 }
 export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
  const {id}=await params; const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser(); if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401});
