@@ -6,6 +6,37 @@ function esc(value:string){return value.replace(/[&<>"']/g,char=>({'&':'&amp;','
 
 type ReferralRow={id:string;invitee_email:string;referral_code:string};
 
+export async function GET(){
+  try{
+    const supabase=await createClient();
+    const {data:{user}}=await supabase.auth.getUser();
+    if(!user)return NextResponse.json({error:'Not authenticated'},{status:401});
+
+    const {data,error}=await supabase.from('host_referrals')
+      .select('id,invitee_email,referral_code,reward_sek,signed_up_at,qualified_at,created_at')
+      .eq('inviter_user_id',user.id)
+      .order('created_at',{ascending:false});
+    if(error)throw error;
+
+    const referrals=(data??[]).map(row=>({
+      id:row.id,
+      email:row.invitee_email,
+      code:row.referral_code,
+      rewardSek:row.reward_sek,
+      invitedAt:row.created_at,
+      signedUpAt:row.signed_up_at,
+      qualifiedAt:row.qualified_at,
+      status:row.qualified_at?'rewarded':row.signed_up_at?'registered':'invited',
+    }));
+    const earnedSek=referrals.reduce((sum,row)=>sum+(row.status==='rewarded'?Number(row.rewardSek||0):0),0);
+
+    return NextResponse.json({referrals,earnedSek});
+  }catch(error){
+    console.error('Referral progress load failed',error);
+    return NextResponse.json({error:error instanceof Error?error.message:'Kunde inte hämta värvningar.'},{status:500});
+  }
+}
+
 export async function POST(request:Request){
   try{
     const apiKey=process.env.RESEND_API_KEY;
