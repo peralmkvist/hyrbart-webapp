@@ -47,7 +47,7 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
         <div className="profileStats"><div><strong>35</strong><span>{en ? 'rentals' : 'uthyrningar'}</span></div><div><strong>24</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>4,96</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
       </div>
       <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? 'SEK 7,294 this month' : '7 294 kr den här månaden'}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><div className="profileInsightCard"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{en ? '24 reviews' : '24 omdömen'}</p><div className="profileRating"><span>★</span><strong>4,96</strong></div></div></div>
-      <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}/profil`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
+      <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
       <div className="profileMenuList"><ProfileLanguageSetting locale={locale}/>{menu.map((label) => {
         const isViewProfile = label === 'Visa profil' || label === 'View profile';
         const row = <><span>{label}</span><MenuChevron /></>;
