@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import ExternalHistoryForm from './ExternalHistoryForm';
 
 const HistoryIcon = () => (
@@ -16,6 +17,9 @@ const HistoryIcon = () => (
 export default function ExternalHistoryModalSetting({ locale }: { locale: string }) {
   const en = locale === 'en';
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -31,13 +35,8 @@ export default function ExternalHistoryModalSetting({ locale }: { locale: string
     };
   }, [open]);
 
-  return <>
-    <button type="button" className="profileMenuRow profileMenuButton" onClick={() => setOpen(true)}>
-      <HistoryIcon />
-      <span className="profileMenuLabel">{en ? 'Bring verified history from another platform' : 'Ta med verifierad historik från annan plattform'}</span>
-      <span className="profileChevron" aria-hidden="true">›</span>
-    </button>
-    {open ? <div className="profileModalBackdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
+  const modal = open && mounted ? createPortal(
+    <div className="profileModalBackdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
       <section className="profileModalPanel" role="dialog" aria-modal="true" aria-labelledby="external-history-title">
         <header className="profileModalHeader">
           <div>
@@ -48,6 +47,16 @@ export default function ExternalHistoryModalSetting({ locale }: { locale: string
         </header>
         <div className="profileModalBody"><ExternalHistoryForm locale={locale}/></div>
       </section>
-    </div> : null}
+    </div>,
+    document.body
+  ) : null;
+
+  return <>
+    <button type="button" className="profileMenuRow profileMenuButton" onClick={() => setOpen(true)}>
+      <HistoryIcon />
+      <span className="profileMenuLabel">{en ? 'Bring verified history from another platform' : 'Ta med verifierad historik från annan plattform'}</span>
+      <span className="profileChevron" aria-hidden="true">›</span>
+    </button>
+    {modal}
   </>;
 }
