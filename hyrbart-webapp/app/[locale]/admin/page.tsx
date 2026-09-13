@@ -54,16 +54,17 @@ export default async function AdminOverview({params}:{params:Promise<{locale:str
     <section style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12,margin:'20px 0'}}>
       <Link className="modeSwitchButton" href={`/${locale}/admin/sok`}>Global sök →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/arenden`}>Support, skador & tvister →</Link>
+      <Link className="modeSwitchButton" href={`/${locale}/admin/risk`}>Risk & Trust/Safety →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/historik`}>Verifiera extern historik →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/importer`}>Hantera annonsimporter →</Link>
-      <Link className="modeSwitchButton" href={`/${locale}/admin/ekonomi`}>Betalningar & payouts →</Link>
+      <Link className="modeSwitchButton" href={`/${locale}/admin/ekonomi`}>Ekonomi & reconciliation →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/audit`}>Audit log →</Link>
     </section>
 
     <section style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(320px,1fr))',gap:18,margin:'24px 0'}}>
       <div className="adminQueue"><div className="adminEmpty" style={{textAlign:'left',fontWeight:850}}>Ärenden att hantera · {activeCases}</div>{actionCases.map((item:any)=><Link key={item.id} href={`/${locale}/admin/arenden/${item.id}`} className="adminCaseRow"><div className="adminStatus open"/><div><span>{item.case_type} · {new Date(item.created_at).toLocaleString('sv-SE')}</span><strong>{item.reason}</strong><small>{item.booking_id.slice(0,8).toUpperCase()} · {item.status}</small></div><b>Öppna</b><i>›</i></Link>)}{!actionCases.length?<div className="adminEmpty">Inga aktiva ärenden.</div>:null}<Link href={`/${locale}/admin/arenden`} className="adminCaseRow"><div/><div><strong>Visa alla ärenden</strong></div><b>{activeCases}</b><i>›</i></Link></div>
 
-      <div className="adminQueue"><div className="adminEmpty" style={{textAlign:'left',fontWeight:850}}>Riskflaggor att hantera · {activeFlags}</div>{actionFlags.map((flag:any)=><Link key={flag.id} href={`/${locale}/admin/anvandare/${flag.user_id}`} className="adminCaseRow"><div className={`adminStatus ${flag.severity==='critical'||flag.severity==='high'?'rejected':'open'}`}/><div><span>{flag.severity.toUpperCase()} · {flag.status}</span><strong>{flag.reason}</strong><small>{new Date(flag.created_at).toLocaleString('sv-SE')}</small></div><b>Granska</b><i>›</i></Link>)}{!actionFlags.length?<div className="adminEmpty">Inga aktiva riskflaggor.</div>:null}</div>
+      <div className="adminQueue"><div className="adminEmpty" style={{textAlign:'left',fontWeight:850}}>Riskflaggor att hantera · {activeFlags}</div>{actionFlags.map((flag:any)=><Link key={flag.id} href={`/${locale}/admin/anvandare/${flag.user_id}`} className="adminCaseRow"><div className={`adminStatus ${flag.severity==='critical'||flag.severity==='high'?'rejected':'open'}`}/><div><span>{flag.severity.toUpperCase()} · {flag.status}</span><strong>{flag.reason}</strong><small>{new Date(flag.created_at).toLocaleString('sv-SE')}</small></div><b>Granska</b><i>›</i></Link>)}{!actionFlags.length?<div className="adminEmpty">Inga aktiva riskflaggor.</div>:null}<Link href={`/${locale}/admin/risk`} className="adminCaseRow"><div/><div><strong>Öppna riskkön</strong></div><b>{activeFlags}</b><i>›</i></Link></div>
     </section>
 
     <section className="adminQueue">
