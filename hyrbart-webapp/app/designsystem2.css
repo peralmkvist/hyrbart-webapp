@@ -103,7 +103,35 @@
 .profileMenuRow { min-height:58px; display:flex; align-items:center; justify-content:space-between; gap:18px; border-bottom:1px solid var(--line); font-size:.95rem; font-weight:600; }
 .profileChevron { color:#8b8f92; font-size:1.65rem; line-height:1; font-weight:300; }
 .profileMenuRow.logout { color:#b42318; }
-@media(max-width:390px){ .profileIdentityCard{padding:24px 18px;gap:14px}.profileAvatar{width:94px;height:94px}.profileInsightCard{min-height:205px;padding:19px 16px}.profileBars{left:16px;right:16px}.profileRating{left:16px}.profileRating strong{font-size:1.9rem} }
+
+/* External history */
+.profileDashboard:has(.externalHistoryStack){width:100%;max-width:760px;box-sizing:border-box;overflow-x:hidden;padding-left:18px;padding-right:18px;padding-top:max(24px,env(safe-area-inset-top))}
+.profileDashboard:has(.externalHistoryStack) .ds2Header{display:grid!important;grid-template-columns:44px minmax(0,1fr);align-items:center!important;gap:8px!important;margin-bottom:22px}
+.profileDashboard:has(.externalHistoryStack) .ds2Header>a{width:44px;height:44px;display:grid;place-items:center;font-size:2rem!important}
+.profileDashboard:has(.externalHistoryStack) .ds2Header h1{min-width:0;margin:0!important;font-size:clamp(2rem,8.8vw,3rem);line-height:.98;letter-spacing:-.055em;white-space:normal}
+.externalHistoryStack{display:grid;gap:14px;width:100%;min-width:0}
+.externalHistoryCard{width:100%;min-width:0;box-sizing:border-box;padding:20px 18px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:none;overflow:hidden}
+.externalHistoryIntro h2,.externalHistoryClaims h2{margin:0;font-size:1.35rem;line-height:1.08;letter-spacing:-.035em}
+.externalHistoryIntro p{margin:10px 0 0;color:var(--muted);font-size:.9rem;line-height:1.5}
+.externalHistoryForm{display:grid;gap:14px;margin-top:20px;min-width:0}
+.externalHistoryField{display:grid;gap:7px;min-width:0;font-size:.82rem;font-weight:800}
+.externalHistoryField>span{min-width:0}
+.externalHistoryField input,.externalHistoryField select{display:block;width:100%;min-width:0;min-height:52px;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;background:#fff;padding:0 14px;color:var(--ink);font:inherit;font-size:.95rem;outline:0}
+.externalHistoryField input:focus,.externalHistoryField select:focus{border-color:#8ebff0;box-shadow:0 0 0 2px rgba(77,157,230,.12)}
+.externalHistoryField input::placeholder{color:#a0a0a0}
+.externalHistoryPair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0}
+.externalHistoryHint{display:block;color:var(--muted);font-size:.72rem;line-height:1.45}
+.externalHistorySubmit{width:100%;min-height:54px;border:0;border-radius:17px;background:var(--ink);color:#fff;font:inherit;font-size:.9rem;font-weight:850;cursor:pointer}
+.externalHistorySubmit:disabled{opacity:.55}
+.externalHistoryMessage{margin:0;font-size:.8rem;font-weight:800}
+.externalHistoryClaims>div{display:grid;margin-top:10px}
+.externalHistoryClaims a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:13px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+.externalHistoryClaims a:last-child{border-bottom:0}
+.externalHistoryClaims a>div{min-width:0}
+.externalHistoryClaims a strong,.externalHistoryClaims a span{display:block}
+.externalHistoryClaims a span{margin-top:3px;color:var(--muted);font-size:.72rem}
+.externalHistoryClaims a>b{flex:0 0 auto;font-size:.72rem}
+@media(max-width:390px){ .profileIdentityCard{padding:24px 18px;gap:14px}.profileAvatar{width:94px;height:94px}.profileInsightCard{min-height:205px;padding:19px 16px}.profileBars{left:16px;right:16px}.profileRating{left:16px}.profileRating strong{font-size:1.9rem}.externalHistoryPair{grid-template-columns:1fr}.externalHistoryCard{padding:18px 16px} }
 
 @media(min-width:700px){
   .homeCategories2,.popularRail2,.categoryStrip2 { margin-left:0; margin-right:0; padding-left:0; padding-right:0; }
