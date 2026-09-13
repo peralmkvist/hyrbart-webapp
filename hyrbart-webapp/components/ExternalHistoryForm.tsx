@@ -49,23 +49,40 @@ export default function ExternalHistoryForm({locale}:{locale:string}){
 
   const statusLabel=(status:Claim['status'])=>status==='verified'?(en?'Verified':'Verifierad'):status==='rejected'?(en?'Could not verify':'Kunde inte verifieras'):(en?'Verification pending':'Väntar på verifiering');
 
-  return <div style={{display:'grid',gap:18}}>
-    <section className="profileIdentityCard" style={{display:'block'}}>
-      <h2 style={{marginTop:0}}>{en?'Bring your history':'Ta med din historik'}</h2>
-      <p>{en?'If you already rent through another marketplace, submit your public profile. Hyrbart keeps external history separate from Hyrbart reviews and only displays figures we have verified.':'Om du redan hyr ut eller hyr via en annan marknadsplats kan du skicka in din offentliga profil. Hyrbart håller extern historik separat från Hyrbart-omdömen och visar bara uppgifter som vi har verifierat.'}</p>
-      <form onSubmit={submit} style={{display:'grid',gap:12,marginTop:18}}>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Platform':'Plattform'}<select value={sourcePlatform} onChange={event=>setSourcePlatform(event.target.value as 'hygglo'|'other')} style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px',background:'#fff'}}><option value="hygglo">Hygglo</option><option value="other">{en?'Other':'Annan'}</option></select></label>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Public profile URL':'Länk till offentlig profil'}<input type="url" required value={sourceProfileUrl} onChange={event=>setSourceProfileUrl(event.target.value)} placeholder="https://www.hygglo.se/users/…" style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-          <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Rating (optional)':'Betyg (valfritt)'}<input inputMode="decimal" value={claimedRating} onChange={event=>setClaimedRating(event.target.value)} placeholder="4,9" style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
-          <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Reviews (optional)':'Omdömen (valfritt)'}<input inputMode="numeric" value={claimedReviewCount} onChange={event=>setClaimedReviewCount(event.target.value)} placeholder="24" style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
+  return <div className="externalHistoryStack">
+    <section className="externalHistoryCard">
+      <div className="externalHistoryIntro">
+        <h2>{en?'Bring your history':'Ta med din historik'}</h2>
+        <p>{en?'If you already rent through another marketplace, submit your public profile. Hyrbart keeps external history separate from Hyrbart reviews and only displays figures we have verified.':'Om du redan hyr ut eller hyr via en annan marknadsplats kan du skicka in din offentliga profil. Hyrbart håller extern historik separat från Hyrbart-omdömen och visar bara uppgifter som vi har verifierat.'}</p>
+      </div>
+
+      <form onSubmit={submit} className="externalHistoryForm">
+        <label className="externalHistoryField">
+          <span>{en?'Platform':'Plattform'}</span>
+          <select value={sourcePlatform} onChange={event=>setSourcePlatform(event.target.value as 'hygglo'|'other')}>
+            <option value="hygglo">Hygglo</option><option value="other">{en?'Other':'Annan'}</option>
+          </select>
+        </label>
+        <label className="externalHistoryField">
+          <span>{en?'Public profile URL':'Länk till offentlig profil'}</span>
+          <input type="url" required value={sourceProfileUrl} onChange={event=>setSourceProfileUrl(event.target.value)} placeholder="https://www.hygglo.se/users/…"/>
+        </label>
+        <div className="externalHistoryPair">
+          <label className="externalHistoryField">
+            <span>{en?'Rating (optional)':'Betyg (valfritt)'}</span>
+            <input inputMode="decimal" value={claimedRating} onChange={event=>setClaimedRating(event.target.value)} placeholder="4,9"/>
+          </label>
+          <label className="externalHistoryField">
+            <span>{en?'Reviews (optional)':'Omdömen (valfritt)'}</span>
+            <input inputMode="numeric" value={claimedReviewCount} onChange={event=>setClaimedReviewCount(event.target.value)} placeholder="24"/>
+          </label>
         </div>
-        <small>{en?'The numbers you enter are only a hint for verification; they are never published as verified until checked by Hyrbart.':'Uppgifterna du fyller i används bara som stöd vid verifieringen och publiceras aldrig som verifierade innan Hyrbart har kontrollerat dem.'}</small>
-        <button type="submit" disabled={busy} className="modeSwitchButton" style={{border:0,cursor:'pointer'}}>{busy?(en?'Submitting…':'Skickar…'):(en?'Submit for verification':'Skicka för verifiering')}</button>
-        {message?<p role="status" style={{margin:0,fontWeight:700}}>{message}</p>:null}
+        <small className="externalHistoryHint">{en?'The numbers you enter are only a hint for verification; they are never published as verified until checked by Hyrbart.':'Uppgifterna du fyller i används bara som stöd vid verifieringen och publiceras aldrig som verifierade innan Hyrbart har kontrollerat dem.'}</small>
+        <button type="submit" disabled={busy} className="externalHistorySubmit">{busy?(en?'Submitting…':'Skickar…'):(en?'Submit for verification':'Skicka för verifiering')}</button>
+        {message?<p role="status" className="externalHistoryMessage">{message}</p>:null}
       </form>
     </section>
 
-    {claims.length?<section className="profileIdentityCard" style={{display:'block'}}><h2 style={{marginTop:0}}>{en?'Submitted history':'Insänd historik'}</h2><div style={{display:'grid',gap:10}}>{claims.map(claim=><a key={claim.id} href={claim.source_profile_url} target="_blank" rel="noreferrer" style={{display:'flex',justifyContent:'space-between',gap:12,color:'inherit',textDecoration:'none',padding:'12px 0',borderBottom:'1px solid var(--line)'}}><div><strong>{claim.source_platform==='hygglo'?'Hygglo':(en?'Other platform':'Annan plattform')}</strong><div style={{fontSize:13,color:'var(--muted)',marginTop:3}}>{claim.status==='verified'&&claim.verified_rating!=null?`★ ${Number(claim.verified_rating).toFixed(1)} · ${claim.verified_review_count??0} ${en?'reviews':'omdömen'}`:claim.claimed_review_count!=null?`${claim.claimed_review_count} ${en?'claimed reviews':'angivna omdömen'}`:''}</div></div><span style={{fontWeight:800}}>{statusLabel(claim.status)}</span></a>)}</div></section>:null}
+    {claims.length?<section className="externalHistoryCard externalHistoryClaims"><h2>{en?'Submitted history':'Insänd historik'}</h2><div>{claims.map(claim=><a key={claim.id} href={claim.source_profile_url} target="_blank" rel="noreferrer"><div><strong>{claim.source_platform==='hygglo'?'Hygglo':(en?'Other platform':'Annan plattform')}</strong><span>{claim.status==='verified'&&claim.verified_rating!=null?`★ ${Number(claim.verified_rating).toFixed(1)} · ${claim.verified_review_count??0} ${en?'reviews':'omdömen'}`:claim.claimed_review_count!=null?`${claim.claimed_review_count} ${en?'claimed reviews':'angivna omdömen'}`:''}</span></div><b>{statusLabel(claim.status)}</b></a>)}</div></section>:null}
   </div>;
 }
