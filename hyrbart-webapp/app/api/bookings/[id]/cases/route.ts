@@ -6,6 +6,7 @@ import { notifyUser } from '@/lib/notifications';
 
 const TYPES=['problem','damage','dispute'] as const;
 type CaseType=(typeof TYPES)[number];
+type BookingCaseResult={id:string;reason:string;[key:string]:unknown};
 const ALLOWED_STATUSES:Record<CaseType,readonly string[]>={
   problem:['accepted','paid','active','returned','completed'],
   damage:['active','returned','completed'],
@@ -48,7 +49,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   if(claimedRaw!==null&&(!Number.isFinite(claimedRaw)||claimedRaw<0))return NextResponse.json({error:'INVALID_AMOUNT'},{status:400});
   const claimed=claimedRaw===null?null:Math.round(claimedRaw);
 
-  const {data:c,error}=await admin.rpc('open_booking_case_atomic',{
+  const {data,error}=await admin.rpc('open_booking_case_atomic',{
     p_booking_id:id,
     p_opened_by:user.id,
     p_case_type:caseType,
@@ -63,6 +64,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
     if(message.includes('NOT_PARTICIPANT'))return NextResponse.json({error:'NOT_FOUND'},{status:404});
     throw error;
   }
+  const c=data as unknown as BookingCaseResult;
 
   const {data:current,error:currentError}=await admin.from('bookings').select('status').eq('id',id).single();
   if(currentError)throw currentError;
