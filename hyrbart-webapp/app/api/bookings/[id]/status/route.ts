@@ -32,14 +32,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     const previousStatus = booking.status; const now = new Date().toISOString(); const updates: Record<string, unknown> = { status: requestedStatus, updated_at: now };
     if (requestedStatus === 'accepted') { updates.payment_due_at = paymentDeadline(booking.pickup_due_at || booking.rental_start_at); updates.request_expires_at = null; updates.reservation_expires_at = null; }
-    if (requestedStatus === 'completed') updates.auto_complete_at = null;
-    const { data: updated, error: updateError } = await admin.from('bookings').update(updates).eq('id', id).eq('status', previousStatus).select('id,status,payment_due_at').single();
+    if (requestedStatus === 'completed') { updates.auto_complete_at = null; updates.completed_at = now; }
+    const { data: updated, error: updateError } = await admin.from('bookings').update(updates).eq('id', id).eq('status', previousStatus).select('id,status,payment_due_at,completed_at').single();
     if (updateError) throw updateError;
-    await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'booking_status_changed', metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor, payment_due_at: updated.payment_due_at || null } });
+    await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'booking_status_changed', metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor, payment_due_at: updated.payment_due_at || null, completed_at: updated.completed_at || null } });
     if (updated.status === 'completed') { const payout = await ensureScheduledPayout(booking); await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'payout_scheduled', metadata: { payout_id: payout.id, amount: payout.amount, currency: payout.currency, provider: payout.provider, simulated: payout.provider === 'simulation' } }); }
 
     const recipientId = isOwner ? booking.renter_id : booking.owner_id;
     if (recipientId) { const products = await getProducts(); const product = products.find(item => item.id === booking.product_id); const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt'; await notifyUser({ userId:recipientId, bookingId:id, type:`booking_${updated.status}`, title:statusTitle[updated.status] || 'Bokning uppdaterad', body:`${productName}\n${formatDateRange(booking.start_date, booking.end_date)}`, url:`/topsecret/sv/bokningar/${id}`, eventKey:`booking-status:${id}:${updated.status}` }); }
-    return NextResponse.json({ ok: true, status: updated.status, paymentDueAt: updated.payment_due_at || null });
+    return NextResponse.json({ ok: true, status: updated.status, paymentDueAt: updated.payment_due_at || null, completedAt: updated.completed_at || null });
   } catch (error) { console.error('Booking status update failed', error); return NextResponse.json({ error: 'Kunde inte uppdatera bokningen.' }, { status: 500 }); }
 }
