@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ProfileLanguageSetting from '@/components/ProfileLanguageSetting';
 import { createClient } from '@/lib/supabase/server';
+import { formatProfileTenure } from '@/lib/profile-tenure';
 import '../../profil/profile-menu.css';
 
 const MenuChevron = () => <span className="profileChevron" aria-hidden="true">›</span>;
@@ -22,7 +23,26 @@ type Profile = {
   display_name: string | null;
   city: string | null;
   avatar_url: string | null;
+  sanity_profile_id: string | null;
 };
+
+async function getFirstPublishedListingDate(sanityProfileId?: string | null) {
+  if (!sanityProfileId) return null;
+  const projectId = 'djps09z6';
+  const dataset = 'production';
+  const apiVersion = '2026-09-08';
+  const owner = JSON.stringify(sanityProfileId);
+  const query = `*[_type=="product"&&owner._ref==${owner}&&(coalesce(listingStatus,"active") in ["active","paused","deleted"]) ]|order(_createdAt asc)[0]._createdAt`;
+  const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) return null;
+    const data = await response.json() as { result?: string | null };
+    return data.result || null;
+  } catch {
+    return null;
+  }
+}
 
 export default async function HostProfilePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -34,12 +54,14 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
   if (user) {
     const { data } = await supabase
       .from('profiles')
-      .select('display_name, city, avatar_url')
+      .select('display_name, city, avatar_url, sanity_profile_id')
       .eq('id', user.id)
       .maybeSingle();
     profile = data;
   }
 
+  const firstPublishedAt = await getFirstPublishedListingDate(profile?.sanity_profile_id);
+  const hostTenure = formatProfileTenure(firstPublishedAt, locale);
   const displayName = profile?.display_name || 'Per';
   const city = profile?.city || 'Danderyd';
   const initial = displayName.trim().charAt(0).toUpperCase() || 'P';
@@ -74,7 +96,7 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
             : <div className="profileAvatar">{initial}</div>}
           <div><h2>{displayName}</h2><p>{city}, Sverige</p></div>
         </Link>
-        <div className="profileStats"><div><strong>35</strong><span>{en ? 'rentals' : 'uthyrningar'}</span></div><div><strong>24</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>4,96</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
+        <div className="profileStats"><div><strong>{hostTenure}</strong><span>{en ? 'Time as host' : 'Tid som uthyrare'}</span></div><div><strong>24</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>4,96</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
       </div>
       <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? 'SEK 7,294 this month' : '7 294 kr den här månaden'}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><div className="profileInsightCard"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{en ? '24 reviews' : '24 omdömen'}</p><div className="profileRating"><span>★</span><strong>4,96</strong></div></div></div>
       <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
