@@ -84,7 +84,7 @@ export async function PATCH(req:Request,{params}:{params:Promise<{id:string}>}){
     updated=data?.case;
   }else{
     const now=new Date().toISOString();
-    const {data,error}=await admin.from('booking_cases').update({status,updated_at:now}).eq('id',id).eq('resolved_at',null).select('*').maybeSingle();
+    const {data,error}=await admin.from('booking_cases').update({status,updated_at:now}).eq('id',id).is('resolved_at',null).select('*').maybeSingle();
     if(error)return NextResponse.json({error:'SAVE_FAILED'},{status:500});
     if(!data)return NextResponse.json({error:'ALREADY_RESOLVED'},{status:409});
     updated=data;
