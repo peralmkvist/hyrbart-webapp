@@ -1,6 +1,8 @@
 import { getProducts } from '@/lib/sanity-products';
 import FavoritesGrid from '@/components/FavoritesGrid';
 
+export const dynamic = 'force-dynamic';
+
 export default async function WishlistPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const products = await getProducts();
