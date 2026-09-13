@@ -24,5 +24,5 @@ export default function ProfileLanguageSetting({locale}:{locale:string}){
    window.location.href=`${next}${window.location.search}${window.location.hash}`;
   }finally{setSaving(false)}
  }
- return <div className="profileMenuRow"><GlobeIcon/><span className="profileMenuLabel">{locale==='en'?'Language':'Språk'}</span><select aria-label={locale==='en'?'Language':'Språk'} value={locale} disabled={saving} onChange={e=>void change(e.target.value as 'sv'|'en')} style={{marginLeft:'auto',border:0,background:'transparent',font:'inherit',fontWeight:700,color:'inherit',outline:0}}><option value="sv">Svenska</option><option value="en">English</option></select></div>
+ return <div className="profileMenuRow profileInlineSetting"><GlobeIcon/><span className="profileMenuLabel">{locale==='en'?'Language':'Språk'}</span><select className="profileInlineSelect" aria-label={locale==='en'?'Language':'Språk'} value={locale} disabled={saving} onChange={e=>void change(e.target.value as 'sv'|'en')}><option value="sv">Svenska</option><option value="en">English</option></select></div>
 }
