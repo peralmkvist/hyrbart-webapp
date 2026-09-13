@@ -41,12 +41,18 @@ export async function settleBookingDispute({
   if (payout > rental) throw new Error('PAYOUT_EXCEEDS_RENTAL');
   if (refund + payout > total) throw new Error('SETTLEMENT_EXCEEDS_TOTAL');
 
+  const { data: existingPayout, error: payoutLoadError } = await admin.from('booking_payouts').select('*').eq('booking_id', booking.id).maybeSingle();
+  if (payoutLoadError) throw payoutLoadError;
+  if (existingPayout?.status === 'paid') {
+    const alreadyPaid = Number(existingPayout.amount || 0);
+    if (refund > 0 || payout !== alreadyPaid) throw new Error('PAYOUT_ALREADY_PAID');
+  }
+
   const payment = refund > 0 ? await recordSimulatedRefund(booking.id, refund) : null;
   const now = new Date().toISOString();
-
-  const { data: existingPayout } = await admin.from('booking_payouts').select('*').eq('booking_id', booking.id).maybeSingle();
   let payoutRow = existingPayout;
-  if (payout > 0) {
+
+  if (payout > 0 && existingPayout?.status !== 'paid') {
     const payload = {
       booking_id: booking.id,
       owner_id: booking.owner_id,
@@ -62,7 +68,7 @@ export async function settleBookingDispute({
       : await admin.from('booking_payouts').insert(payload).select('*').single();
     if (result.error) throw result.error;
     payoutRow = result.data;
-  } else if (existingPayout && ['pending','scheduled'].includes(existingPayout.status)) {
+  } else if (payout === 0 && existingPayout && ['pending','scheduled'].includes(existingPayout.status)) {
     const { data, error: payoutError } = await admin.from('booking_payouts').update({ status: 'cancelled', updated_at: now }).eq('id', existingPayout.id).select('*').single();
     if (payoutError) throw payoutError;
     payoutRow = data;
