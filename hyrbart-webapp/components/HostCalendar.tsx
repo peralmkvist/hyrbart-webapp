@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ForwardIcon, ListIcon, ListingsIcon } from './Icons';
+import { ForwardIcon, ListIcon, ListingsIcon, MailIcon } from './Icons';
 import CalendarTodayJump from './CalendarTodayJump';
 
 type ProductOption = { id: string; label: string };
@@ -32,7 +32,7 @@ function monthDays(month: Date) {
   });
 }
 
-export default function HostCalendar({ locale }: { locale: string }) {
+export default function HostCalendar({ locale, onOpenAutomations }: { locale: string; onOpenAutomations?: () => void }) {
   const en = locale === 'en';
   const router = useRouter();
   const today = useMemo(() => new Date(), []);
@@ -192,7 +192,9 @@ export default function HostCalendar({ locale }: { locale: string }) {
 
   return <section className="hostCalendarPage">
     <div className="hostCalendarTop">
+      <h1>{view==='list'?(en?'Your bookings':'Dina bokningar'):(en?'Booking calendar':'Bokningskalender')}</h1>
       <div className="hostCalendarTopActions">
+        {onOpenAutomations ? <button type="button" className="hostCalendarViewButton" onClick={onOpenAutomations} aria-label={en?'Automated messages':'Automatiserade meddelanden'}><MailIcon/></button> : null}
         <button type="button" className="hostCalendarToday" onClick={()=>setPricingOpen(true)}>{en?'Price & discounts':'Pris & rabatter'}</button>
         <div className="hostCalendarViewPicker">
           <button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={()=>setViewMenuOpen(value=>!value)}>
@@ -207,7 +209,6 @@ export default function HostCalendar({ locale }: { locale: string }) {
       </div>
     </div>
 
-    <div className="hostCalendarToolbar"><div><strong>{view==='list'?(en?'Bookings':'Bokningar'):(en?'Booking calendar':'Bokningskalender')}</strong></div></div>
     <label className="hostListingFilter" style={{cursor:'default'}}><select value={filterProduct} onChange={event=>setFilterProduct(event.target.value)} style={{border:0,background:'transparent',width:'100%',font:'inherit',fontWeight:700,color:'inherit',outline:0}}><option value="all">{en?'All listings':'Alla annonser'}</option>{products.map(product=><option key={product.id} value={product.id}>{product.label}</option>)}</select><ForwardIcon/></label>
 
     {view === 'list' && <div className="hostBookingFilterRail" role="tablist" aria-label={en?'Filter bookings':'Filtrera bokningar'}>
