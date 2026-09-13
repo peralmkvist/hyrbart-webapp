@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ExternalHistoryForm from './ExternalHistoryForm';
 
@@ -14,10 +14,21 @@ const HistoryIcon = () => (
   </span>
 );
 
+const focusableSelector = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
 export default function ExternalHistoryModalSetting({ locale }: { locale: string }) {
   const en = locale === 'en';
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -25,19 +36,49 @@ export default function ExternalHistoryModalSetting({ locale }: { locale: string
     if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
+
+    const focusPanel = () => {
+      const focusable = Array.from(panelRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+      (focusable[0] ?? panelRef.current)?.focus();
     };
+    const frame = window.requestAnimationFrame(focusPanel);
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !panelRef.current) return;
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>(focusableSelector));
+      if (!focusable.length) {
+        event.preventDefault();
+        panelRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
     window.addEventListener('keydown', onKey);
     return () => {
+      window.cancelAnimationFrame(frame);
       document.body.style.overflow = previous;
       window.removeEventListener('keydown', onKey);
+      triggerRef.current?.focus();
     };
   }, [open]);
 
   const modal = open && mounted ? createPortal(
     <div className="profileModalBackdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
-      <section className="profileModalPanel" role="dialog" aria-modal="true" aria-labelledby="external-history-title">
+      <section ref={panelRef} tabIndex={-1} className="profileModalPanel" role="dialog" aria-modal="true" aria-labelledby="external-history-title">
         <header className="profileModalHeader">
           <div>
             <span className="profileModalEyebrow">{en ? 'VERIFIED HISTORY' : 'VERIFIERAD HISTORIK'}</span>
@@ -52,7 +93,7 @@ export default function ExternalHistoryModalSetting({ locale }: { locale: string
   ) : null;
 
   return <>
-    <button type="button" className="profileMenuRow profileMenuButton" onClick={() => setOpen(true)}>
+    <button ref={triggerRef} type="button" className="profileMenuRow profileMenuButton" onClick={() => setOpen(true)}>
       <HistoryIcon />
       <span className="profileMenuLabel">{en ? 'Bring verified history from another platform' : 'Ta med verifierad historik från annan plattform'}</span>
       <span className="profileChevron" aria-hidden="true">›</span>
