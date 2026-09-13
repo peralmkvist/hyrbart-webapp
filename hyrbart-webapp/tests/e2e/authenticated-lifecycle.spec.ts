@@ -50,7 +50,6 @@ async function acceptAndPay(owner: BrowserContext, renter: BrowserContext, booki
 }
 
 test.describe('production authenticated booking lifecycle', () => {
-  test.skip(({ }, testInfo) => testInfo.project.name !== 'chromium-desktop', 'Destructive fixture suite runs once.');
   test.describe.configure({ mode: 'serial' });
 
   let renter: BrowserContext;
