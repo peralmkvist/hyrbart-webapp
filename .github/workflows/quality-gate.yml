@@ -70,7 +70,7 @@ jobs:
           OIDC_TOKEN=$(printf '%s' "$TOKEN_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["value"])')
           echo "::add-mask::$OIDC_TOKEN"
           RUN_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_JOB}"
-          FIXTURE=$(curl -fsSL -X POST https://hyrbart.se/api/internal/e2e-fixtures \
+          FIXTURE=$(curl -fsSL -X POST https://www.hyrbart.se/api/internal/e2e-fixtures \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data "{\"runId\":\"$RUN_ID\"}")
@@ -96,7 +96,7 @@ jobs:
           f=json.load(open('tests/.auth-fixture.json'))
           print(json.dumps({'runId':f['runId'],'bookingIds':list(f['bookings'].values()),'userIds':[f['users']['renter']['id'],f['users']['owner']['id']]}))
           PY
-          curl -fsSL -X DELETE https://hyrbart.se/api/internal/e2e-fixtures \
+          curl -fsSL -X DELETE https://www.hyrbart.se/api/internal/e2e-fixtures \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data-binary @tests/.cleanup.json >/dev/null
@@ -120,7 +120,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 72); do
-            DEPLOYED_SHA=$(curl -fsSL https://hyrbart.se/api/health 2>/dev/null | python3 -c 'import sys,json; print(json.load(sys.stdin).get("commit") or "")' 2>/dev/null || true)
+            DEPLOYED_SHA=$(curl -fsSL https://www.hyrbart.se/api/health 2>/dev/null | python3 -c 'import sys,json; print(json.load(sys.stdin).get("commit") or "")' 2>/dev/null || true)
             if [ "$DEPLOYED_SHA" = "$GITHUB_SHA" ]; then
               echo "Production is running $GITHUB_SHA"
               exit 0
@@ -136,14 +136,14 @@ jobs:
           OIDC_TOKEN=$(printf '%s' "$TOKEN_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["value"])')
           echo "::add-mask::$OIDC_TOKEN"
           RUN_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_JOB}"
-          FIXTURE=$(curl -fsSL -X POST https://hyrbart.se/api/internal/e2e-fixtures \
+          FIXTURE=$(curl -fsSL -X POST https://www.hyrbart.se/api/internal/e2e-fixtures \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data "{\"runId\":\"$RUN_ID\"}")
           printf '%s' "$FIXTURE" > tests/.auth-fixture.json
           echo "E2E_FIXTURE_PATH=$GITHUB_WORKSPACE/hyrbart-webapp/tests/.auth-fixture.json" >> "$GITHUB_ENV"
           echo "E2E_OIDC_TOKEN=$OIDC_TOKEN" >> "$GITHUB_ENV"
-          echo "E2E_BASE_URL=https://hyrbart.se" >> "$GITHUB_ENV"
+          echo "E2E_BASE_URL=https://www.hyrbart.se" >> "$GITHUB_ENV"
       - name: Full authenticated lifecycle E2E
         run: npm run test:e2e:lifecycle
       - name: Cleanup production fixture
@@ -159,7 +159,7 @@ jobs:
           f=json.load(open('tests/.auth-fixture.json'))
           print(json.dumps({'runId':f['runId'],'bookingIds':list(f['bookings'].values()),'userIds':[f['users']['renter']['id'],f['users']['owner']['id']]}))
           PY
-          curl -fsSL -X DELETE https://hyrbart.se/api/internal/e2e-fixtures \
+          curl -fsSL -X DELETE https://www.hyrbart.se/api/internal/e2e-fixtures \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data-binary @tests/.cleanup.json >/dev/null
