@@ -6,6 +6,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import ReviewSummaryPanel from '@/components/ReviewSummaryPanel';
 import { BackIcon, CheckIcon } from '@/components/Icons';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PublicProfilePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const en = locale === 'en';

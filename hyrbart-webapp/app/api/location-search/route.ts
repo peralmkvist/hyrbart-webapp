@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
+import { consumeRateLimit } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
+  const limit = await consumeRateLimit(request, 'location-search', 30, 60);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: 'RATE_LIMITED', results: [] }, {
+      status: 429,
+      headers: limit.resetAt ? { 'Retry-After': String(Math.max(1, Math.ceil((new Date(limit.resetAt).getTime() - Date.now()) / 1000))) } : undefined,
+    });
+  }
+
   const { searchParams } = new URL(request.url);
   const q = (searchParams.get('q') || '').trim();
   if (q.length < 2) return NextResponse.json({ results: [] });
+  if (q.length > 120) return NextResponse.json({ error: 'INVALID_QUERY', results: [] }, { status: 400 });
 
   const params = new URLSearchParams({
     q,
@@ -20,7 +30,7 @@ export async function GET(request: Request) {
         'User-Agent': 'Hyrbart/0.1 (https://hyrbart.se)',
         'Accept-Language': 'sv',
       },
-      cache: 'no-store',
+      next: { revalidate: 300 },
     });
     if (!response.ok) return NextResponse.json({ results: [] }, { status: 200 });
     const data = await response.json() as Array<{ display_name?: string; lat?: string; lon?: string; type?: string; address?: Record<string,string> }>;
