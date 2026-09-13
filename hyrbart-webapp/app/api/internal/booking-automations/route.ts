@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic';
 const EXPECTED_SECRET_HASH = '8753ab92a33344e7130496fab91e3eefefcbee2bde959e0471fa3998b7ea0f47';
 
 function authorized(request: Request) {
-  const header = request.headers.get('authorization') || '';
-  if (!header.startsWith('Bearer ')) return false;
-  const provided = header.slice(7).trim();
+  const dedicated = request.headers.get('x-hyrbart-cron-secret')?.trim() || '';
+  const authorization = request.headers.get('authorization') || '';
+  const provided = dedicated || (authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '');
   if (!provided) return false;
   const digest = createHash('sha256').update(provided).digest('hex');
   return timingSafeEqual(Buffer.from(digest), Buffer.from(EXPECTED_SECRET_HASH));
