@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import HostCalendar from './HostCalendar';
 import AutomatedMessages from './AutomatedMessages';
+import { MailIcon } from './Icons';
 
 export default function HostBookingsWorkspace({ locale }: { locale: string }) {
   const en = locale === 'en';
@@ -13,27 +14,12 @@ export default function HostBookingsWorkspace({ locale }: { locale: string }) {
 
     <button
       type="button"
+      className="hostAutomationsIconButton"
       onClick={() => setAutomationsOpen(true)}
+      aria-label={en?'Automated messages':'Automatiserade meddelanden'}
       aria-haspopup="dialog"
       aria-expanded={automationsOpen}
-      style={{
-        position:'fixed',
-        zIndex:45,
-        top:'max(24px, env(safe-area-inset-top))',
-        left:'max(18px, calc((100vw - 760px) / 2 + 18px))',
-        minHeight:44,
-        border:0,
-        borderRadius:14,
-        padding:'0 14px',
-        background:'#f0f0ee',
-        color:'var(--ink)',
-        font:'inherit',
-        fontSize:'.8rem',
-        fontWeight:800,
-        letterSpacing:'-.01em',
-        cursor:'pointer',
-      }}
-    >{en?'Automated messages':'Automatiserade'}</button>
+    ><MailIcon/></button>
 
     {automationsOpen ? <div
       role="dialog"
