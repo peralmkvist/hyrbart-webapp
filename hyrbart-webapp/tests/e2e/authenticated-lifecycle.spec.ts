@@ -13,7 +13,7 @@ async function json(response: APIResponse) {
 async function authenticatedContext(browser: Browser, session: FixtureSession) {
   const context = await browser.newContext();
   const response = await context.request.post('/api/internal/e2e-session', {
-    headers: { authorization: `Bearer ${oidc}` },
+    headers: { 'x-hyrbart-github-oidc': oidc },
     data: { accessToken: session.access_token, refreshToken: session.refresh_token },
   });
   expect(response.status()).toBe(200);
