@@ -1,6 +1,6 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
 import { BadgeInput, RentalPricesInput, TranslationToolInput } from './TranslationToolInput';
-import { leafCategories } from '../lib/category-taxonomy';
+import { leafCategories } from '../lib/category-taxonomy-complete';
 export const localizedString=defineType({name:'localizedString',title:'Lokaliserad korttext',type:'object',fields:[defineField({name:'sv',title:'Svenska',type:'string'}),defineField({name:'en',title:'Engelska',type:'string'})]});
 export const localizedText=defineType({name:'localizedText',title:'Lokaliserad text',type:'object',fields:[defineField({name:'sv',title:'Svenska',type:'text',rows:4}),defineField({name:'en',title:'Engelska',type:'text',rows:4})]});
 export const rentalPrice=defineType({name:'rentalPrice',title:'Hyrespris',type:'object',fields:[defineField({name:'days',title:'Antal dagar',type:'number'}),defineField({name:'price',title:'Pris',type:'number'})]});
