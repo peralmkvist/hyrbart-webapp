@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.E2E_BASE_URL || 'https://hyrbart.se';
+const externalBaseURL = process.env.E2E_BASE_URL;
+const baseURL = externalBaseURL || 'http://127.0.0.1:3000';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -8,6 +9,12 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'list',
+  webServer: externalBaseURL ? undefined : {
+    command: 'npm run dev -- --hostname 127.0.0.1',
+    url: 'http://127.0.0.1:3000/sv',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
   use: {
     baseURL,
     trace: 'retain-on-failure',
