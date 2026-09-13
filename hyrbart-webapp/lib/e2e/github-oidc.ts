@@ -4,6 +4,7 @@ const ISSUER = 'https://token.actions.githubusercontent.com';
 const JWKS_URL = `${ISSUER}/.well-known/jwks`;
 const AUDIENCE = 'hyrbart-e2e';
 const REPOSITORY = 'peralmkvist/hyrbart-webapp';
+const WORKFLOW_PREFIX = `${REPOSITORY}/.github/workflows/quality-gate.yml@`;
 
 type GithubOidcClaims = {
   iss?: string;
@@ -80,6 +81,7 @@ export async function verifyGithubActionsOidcToken(token: string) {
   if (!claims.exp || claims.exp < now - 30) throw new Error('Expired OIDC token.');
   if (claims.nbf && claims.nbf > now + 30) throw new Error('OIDC token is not active yet.');
   if (claims.repository !== REPOSITORY) throw new Error('Unexpected OIDC repository.');
+  if (!String(claims.workflow_ref || '').startsWith(WORKFLOW_PREFIX)) throw new Error('Unexpected OIDC workflow.');
   if (!['pull_request', 'push'].includes(String(claims.event_name || ''))) throw new Error('Unexpected OIDC event.');
   if (claims.event_name === 'pull_request' && !String(claims.ref || '').startsWith('refs/pull/')) throw new Error('Unexpected pull request ref.');
   if (claims.event_name === 'push' && claims.ref !== 'refs/heads/main') throw new Error('Unexpected push ref.');
