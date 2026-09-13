@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getProducts } from '@/lib/sanity-products';
+import { categorySearchTerms } from '@/lib/discovery-taxonomy';
 
 function normalize(value: string) {
   return value.trim().toLocaleLowerCase('sv-SE');
@@ -16,8 +17,10 @@ export async function GET(request: Request) {
   for (const product of products) {
     const values: Array<{ label?: string; kind: 'type' | 'product' | 'category' }> = [
       { label: product.type, kind: 'type' },
+      { label: product.typeEn, kind: 'type' },
       { label: `${product.brand} ${product.name}`.trim(), kind: 'product' },
       { label: product.category, kind: 'category' },
+      ...categorySearchTerms(product.category).map(label=>({label,kind:'category' as const})),
     ];
     for (const item of values) {
       if (!item.label || !normalize(item.label).includes(q)) continue;
@@ -35,7 +38,7 @@ export async function GET(request: Request) {
       if (kindOrder[a.kind] !== kindOrder[b.kind]) return kindOrder[a.kind] - kindOrder[b.kind];
       return a.label.localeCompare(b.label, 'sv');
     })
-    .slice(0, 6);
+    .slice(0, 8);
 
   return NextResponse.json({ results });
 }
