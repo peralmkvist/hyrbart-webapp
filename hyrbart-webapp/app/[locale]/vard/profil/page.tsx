@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import ExternalHistoryModalSetting from '@/components/ExternalHistoryModalSetting';
 import ProfileLanguageSetting from '@/components/ProfileLanguageSetting';
+import PushNotificationsSetting from '@/components/PushNotificationsSetting';
 import { createClient } from '@/lib/supabase/server';
 import { formatProfileTenure } from '@/lib/profile-tenure';
 import '../../profil/profile-menu.css';
@@ -49,15 +52,19 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
   const en = locale === 'en';
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  let profile: Profile | null = null;
+  if (!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/vard/profil`)}`);
 
-  if (user) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('display_name, city, avatar_url, sanity_profile_id')
-      .eq('id', user.id)
-      .maybeSingle();
-    profile = data;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name, city, avatar_url, sanity_profile_id')
+    .eq('id', user.id)
+    .maybeSingle() as { data: Profile | null };
+
+  async function signOut() {
+    'use server';
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect(`/topsecret/${locale}/logga-in`);
   }
 
   const firstPublishedAt = await getFirstPublishedListingDate(profile?.sanity_profile_id);
@@ -66,25 +73,7 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
   const city = profile?.city || 'Danderyd';
   const initial = displayName.trim().charAt(0).toUpperCase() || 'P';
   const publicProfileHref = `/${locale}/profil/per`;
-  const menu: { label: string; icon: MenuIconName }[] = en
-    ? [
-        { label: 'Account settings', icon: 'account' },
-        { label: 'Host settings', icon: 'host' },
-        { label: 'Get help', icon: 'help' },
-        { label: 'View profile', icon: 'profile' },
-        { label: 'Terms', icon: 'terms' },
-        { label: 'Privacy', icon: 'privacy' },
-        { label: 'Log out', icon: 'logout' },
-      ]
-    : [
-        { label: 'Kontoinställningar', icon: 'account' },
-        { label: 'Uthyrarinställningar', icon: 'host' },
-        { label: 'Få hjälp', icon: 'help' },
-        { label: 'Visa profil', icon: 'profile' },
-        { label: 'Allmänna villkor', icon: 'terms' },
-        { label: 'Sekretess', icon: 'privacy' },
-        { label: 'Logga ut', icon: 'logout' },
-      ];
+  const row = (label:string, icon:MenuIconName) => <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span><MenuChevron /></>;
 
   return (
     <section className="ds2Page profileDashboard">
@@ -100,13 +89,31 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
       </div>
       <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? 'SEK 7,294 this month' : '7 294 kr den här månaden'}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><div className="profileInsightCard"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{en ? '24 reviews' : '24 omdömen'}</p><div className="profileRating"><span>★</span><strong>4,96</strong></div></div></div>
       <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
-      <div className="profileMenuList"><ProfileLanguageSetting locale={locale}/>{menu.map(({ label, icon }) => {
-        const isViewProfile = label === 'Visa profil' || label === 'View profile';
-        const row = <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span><MenuChevron /></>;
-        return isViewProfile
-          ? <Link className="profileMenuRow" href={publicProfileHref} key={label} style={{ color:'inherit', textDecoration:'none' }}>{row}</Link>
-          : <div className={`profileMenuRow ${label === 'Logga ut' || label === 'Log out' ? 'logout' : ''}`} key={label}>{row}</div>;
-      })}</div>
+
+      <div className="profileMenuSection">
+        <span className="profileMenuSectionLabel">{en ? 'SETTINGS' : 'INSTÄLLNINGAR'}</span>
+        <div className="profileMenuList">
+          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/konto?back=vard`}>{row(en ? 'Account settings' : 'Kontoinställningar','account')}</Link>
+          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/installningar`}>{row(en ? 'Host settings' : 'Uthyrarinställningar','host')}</Link>
+          <ExternalHistoryModalSetting locale={locale}/>
+          <PushNotificationsSetting locale={locale}/>
+          <ProfileLanguageSetting locale={locale}/>
+        </div>
+      </div>
+
+      <div className="profileMenuSection">
+        <span className="profileMenuSectionLabel">{en ? 'HELP & LEGAL' : 'HJÄLP & JURIDIK'}</span>
+        <div className="profileMenuList">
+          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/hjalp?back=vard`}>{row(en ? 'Get help' : 'Få hjälp','help')}</Link>
+          <Link className="profileMenuRow" href={publicProfileHref}>{row(en ? 'View profile' : 'Visa profil','profile')}</Link>
+          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/villkor`}>{row(en ? 'Terms' : 'Allmänna villkor','terms')}</Link>
+          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/sekretess?back=vard`}>{row(en ? 'Privacy' : 'Sekretess','privacy')}</Link>
+        </div>
+      </div>
+
+      <div className="profileMenuSection profileLogoutSection">
+        <form action={signOut} style={{ margin: 0 }}><button type="submit" className="profileMenuRow profileMenuButton logout">{row(en ? 'Log out' : 'Logga ut','logout')}</button></form>
+      </div>
     </section>
   );
 }

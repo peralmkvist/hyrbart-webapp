@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import ExternalHistoryModalSetting from '@/components/ExternalHistoryModalSetting';
 import ProfileLanguageSetting from '@/components/ProfileLanguageSetting';
 import PushNotificationsSetting from '@/components/PushNotificationsSetting';
 import { createClient } from '@/lib/supabase/server';
@@ -68,25 +69,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
     : null;
   const monthlySpend=(monthlyBookings||[]).reduce((sum,row)=>sum+Number(row.total_price||0),0);
   const ratingLabel=weightedRating==null?'–':weightedRating.toFixed(2).replace('.',',');
-  const menu: { label: string; icon: MenuIconName }[] = en
-    ? [
-        { label: 'Account settings', icon: 'account' },
-        { label: 'Host settings', icon: 'host' },
-        { label: 'Get help', icon: 'help' },
-        { label: 'View profile', icon: 'profile' },
-        { label: 'Terms', icon: 'terms' },
-        { label: 'Privacy', icon: 'privacy' },
-        { label: 'Log out', icon: 'logout' },
-      ]
-    : [
-        { label: 'Kontoinställningar', icon: 'account' },
-        { label: 'Uthyrarinställningar', icon: 'host' },
-        { label: 'Få hjälp', icon: 'help' },
-        { label: 'Visa profil', icon: 'profile' },
-        { label: 'Allmänna villkor', icon: 'terms' },
-        { label: 'Sekretess', icon: 'privacy' },
-        { label: 'Logga ut', icon: 'logout' },
-      ];
+
+  const row = (label:string, icon:MenuIconName) => <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span><MenuChevron /></>;
 
   return <section className="ds2Page profileDashboard">
     <header className="ds2Header"><h1>{en ? 'Profile' : 'Profil'}</h1></header>
@@ -99,15 +83,30 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
     </div>
     <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Expenses' : 'Utgifter'}</h2><p>{en ? `SEK ${monthlySpend.toLocaleString('en-GB')} this month` : `${monthlySpend.toLocaleString('sv-SE')} kr den här månaden`}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><div className="profileInsightCard"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{reviews} {en ? 'published reviews' : 'publicerade omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></div></div>
     <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}/vard/annonser`}>{en ? 'Switch to host mode' : 'Växla till uthyrarläge'}</Link>
-    <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}/profil/historik`}>{en ? 'Bring verified history from another platform' : 'Ta med verifierad historik från annan plattform'}</Link>
-    <PushNotificationsSetting locale={locale}/>
-    <div className="profileMenuList"><ProfileLanguageSetting locale={locale}/>{menu.map(({ label, icon }) => {
-      const isViewProfile = label === 'Visa profil' || label === 'View profile';
-      const isLogout = label === 'Logga ut' || label === 'Log out';
-      const row = <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span><MenuChevron /></>;
-      if (isViewProfile) return <Link className="profileMenuRow" href={publicProfileHref} key={label} style={{ color: 'inherit', textDecoration: 'none' }}>{row}</Link>;
-      if (isLogout) return <form action={signOut} key={label} style={{ margin: 0 }}><button type="submit" className="profileMenuRow logout" style={{ width: '100%', border: 0, background: 'transparent', textAlign: 'left', color: 'inherit', cursor: 'pointer' }}>{row}</button></form>;
-      return <div className="profileMenuRow" key={label}>{row}</div>;
-    })}</div>
+
+    <div className="profileMenuSection">
+      <span className="profileMenuSectionLabel">{en ? 'SETTINGS' : 'INSTÄLLNINGAR'}</span>
+      <div className="profileMenuList">
+        <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/konto`}>{row(en ? 'Account settings' : 'Kontoinställningar','account')}</Link>
+        <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/installningar`}>{row(en ? 'Host settings' : 'Uthyrarinställningar','host')}</Link>
+        <ExternalHistoryModalSetting locale={locale}/>
+        <PushNotificationsSetting locale={locale}/>
+        <ProfileLanguageSetting locale={locale}/>
+      </div>
+    </div>
+
+    <div className="profileMenuSection">
+      <span className="profileMenuSectionLabel">{en ? 'HELP & LEGAL' : 'HJÄLP & JURIDIK'}</span>
+      <div className="profileMenuList">
+        <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/hjalp`}>{row(en ? 'Get help' : 'Få hjälp','help')}</Link>
+        <Link className="profileMenuRow" href={publicProfileHref}>{row(en ? 'View profile' : 'Visa profil','profile')}</Link>
+        <Link className="profileMenuRow" href={`/topsecret/${locale}/hyresvillkor`}>{row(en ? 'Terms' : 'Allmänna villkor','terms')}</Link>
+        <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/sekretess`}>{row(en ? 'Privacy' : 'Sekretess','privacy')}</Link>
+      </div>
+    </div>
+
+    <div className="profileMenuSection profileLogoutSection">
+      <form action={signOut} style={{ margin: 0 }}><button type="submit" className="profileMenuRow profileMenuButton logout">{row(en ? 'Log out' : 'Logga ut','logout')}</button></form>
+    </div>
   </section>;
 }
