@@ -1,17 +1,28 @@
-/* Keep the host bookings header fixed while only the booking content scrolls. */
+/* Keep the host bookings heading/actions visible on iOS/PWA as well as browsers
+   that unexpectedly scroll the document instead of the inner booking list. */
 .hostCalendarPage{
   height:100dvh!important;
   min-height:0!important;
   overflow:hidden!important;
+  padding-top:calc(max(24px, env(safe-area-inset-top)) + 60px)!important;
 }
 
+/* position:fixed is intentional here. iOS standalone mode has been unreliable with
+   sticky elements inside the flex/overflow booking workspace. */
 .hostCalendarPage .hostCalendarTop{
-  position:-webkit-sticky!important;
-  position:sticky!important;
-  top:0!important;
-  z-index:100!important;
+  position:fixed!important;
+  top:max(24px, env(safe-area-inset-top))!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(calc(100% - 36px),724px)!important;
+  min-height:48px!important;
+  z-index:300!important;
+  display:flex!important;
+  align-items:center!important;
   flex:0 0 auto!important;
-  padding:4px 0 12px!important;
+  padding:0!important;
+  margin:0!important;
   background:var(--bg)!important;
 }
 
@@ -21,9 +32,17 @@
   left:-18px;
   right:-18px;
   top:calc(-1 * max(24px, env(safe-area-inset-top)));
-  bottom:0;
+  bottom:-10px;
   z-index:-1;
   background:var(--bg);
+}
+
+.hostCalendarPage .hostCalendarTop h1{
+  margin-right:auto!important;
+}
+
+.hostCalendarPage .hostCalendarTopActions{
+  flex:0 0 auto!important;
 }
 
 .hostCalendarPage .hostListingFilter,
@@ -33,6 +52,7 @@
 
 .hostCalendarPage .hostCalendarList,
 .hostCalendarPage .hostCalendarMonthsScroll{
+  flex:1 1 auto!important;
   min-height:0!important;
   overflow-y:auto!important;
   -webkit-overflow-scrolling:touch;
