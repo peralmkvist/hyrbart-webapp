@@ -90,6 +90,9 @@ export async function verifyGithubActionsOidcToken(token: string) {
 }
 
 export async function requireGithubActionsOidc(request: Request) {
+  const dedicated = request.headers.get('x-hyrbart-github-oidc');
+  if (dedicated) return verifyGithubActionsOidcToken(dedicated);
+
   const authorization = request.headers.get('authorization') || '';
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) throw new Error('Missing GitHub Actions OIDC token.');
