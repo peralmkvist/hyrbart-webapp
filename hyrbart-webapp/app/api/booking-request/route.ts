@@ -6,6 +6,7 @@ import { calculateRentalPricing } from '@/lib/rental-pricing';
 import { notifyUser } from '@/lib/notifications';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { RENTAL_TERMS_VERSION, normalizeTermsLocale } from '@/lib/legal';
+import { stockholmLocalDateTimeToIso } from '@/lib/timezone';
 
 export const runtime = 'nodejs';
 
@@ -73,10 +74,10 @@ export async function GET(){
 export async function POST(request:Request){
   let body:any;
   try{body=await request.json();}catch{return NextResponse.json({error:'Ogiltig förfrågan.'},{status:400});}
-  const {slug,from,to,requestType='booking',message='',startTime='12:00',locale='sv'}=body;
+  const {slug,from,to,requestType='booking',message='',startTime='12:00',returnTime=startTime,locale='sv'}=body;
   const datePattern=/^\d{4}-\d{2}-\d{2}$/;
   const timePattern=/^([01]\d|2[0-3]):[0-5]\d$/;
-  if(!slug||!from||!to||!datePattern.test(from)||!datePattern.test(to)||from>to||!['booking','reserve-question'].includes(requestType)||!timePattern.test(startTime)){
+  if(!slug||!from||!to||!datePattern.test(from)||!datePattern.test(to)||from>to||!['booking','reserve-question'].includes(requestType)||!timePattern.test(startTime)||!timePattern.test(returnTime)){
     return NextResponse.json({error:'Ogiltiga bokningsuppgifter.'},{status:400});
   }
   if(requestType==='reserve-question'&&!message.trim())return NextResponse.json({error:'Skriv din fråga innan du reserverar.'},{status:400});
@@ -105,8 +106,9 @@ export async function POST(request:Request){
     if(overlap?.length)return NextResponse.json({error:'Datumen är inte längre tillgängliga.'},{status:409});
 
     const status=requestType==='reserve-question'?'reserved':'requested';
-    const startAt=`${from}T${startTime}:00+02:00`;
-    const returnAt=`${to}T${startTime}:00+02:00`;
+    const startAt=stockholmLocalDateTimeToIso(from,startTime);
+    const returnAt=stockholmLocalDateTimeToIso(to,returnTime);
+    if(new Date(returnAt).getTime()<=new Date(startAt).getTime())return NextResponse.json({error:'Återlämning måste vara efter utlämning.'},{status:400});
     const policy=product.cancellationPolicy||'moderate';
     const acceptedAt=new Date().toISOString();
     const createdAt=new Date(acceptedAt);
@@ -116,6 +118,8 @@ export async function POST(request:Request){
       product_id:product.id,
       start_date:from,
       end_date:to,
+      pickup_time:startTime,
+      return_time:returnTime,
       rental_start_at:startAt,
       pickup_due_at:startAt,
       return_due_at:returnAt,
@@ -134,7 +138,7 @@ export async function POST(request:Request){
     if(error)throw error;
 
     try{
-      await recordBookingEvent({bookingId:booking.id,actorId:user.id,eventType:'booking_created',metadata:{status,request_type:requestType,terms_version:RENTAL_TERMS_VERSION,cancellation_policy:policy}});
+      await recordBookingEvent({bookingId:booking.id,actorId:user.id,eventType:'booking_created',metadata:{status,request_type:requestType,terms_version:RENTAL_TERMS_VERSION,cancellation_policy:policy,pickup_time:startTime,return_time:returnTime}});
     }catch(eventError){console.error('Could not record booking creation event',eventError);}
 
     if(message.trim())await admin.from('booking_messages').insert({booking_id:booking.id,sender_id:user.id,body:message.trim().slice(0,2000)});
