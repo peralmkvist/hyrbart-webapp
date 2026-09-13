@@ -4,21 +4,22 @@ import { createClient } from '@/lib/supabase/server';
 const WINDOW_MS=7*24*60*60*1000;
 const ratingKeys=['communication','overall_rating'] as const;
 function validRating(v:unknown){return Number.isInteger(v)&&Number(v)>=1&&Number(v)<=5}
+function completionTime(booking:{completed_at?:string|null;updated_at?:string|null;created_at:string}){return new Date(booking.completed_at||booking.updated_at||booking.created_at).getTime()}
 export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){
  const {id}=await params; const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser();
  if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401});
- const {data:b}=await supabase.from('bookings').select('id,renter_id,owner_id,status,updated_at,created_at').eq('id',id).maybeSingle();
+ const {data:b}=await supabase.from('bookings').select('id,renter_id,owner_id,status,completed_at,updated_at,created_at').eq('id',id).maybeSingle();
  if(!b||![b.renter_id,b.owner_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
  const {data:reviews}=await supabase.from('booking_reviews').select('*').eq('booking_id',id);
  const mine=(reviews||[]).find(r=>r.reviewer_id===user.id)||null; const theirs=(reviews||[]).find(r=>r.reviewer_id!==user.id)||null;
- const completedAt=new Date(b.updated_at||b.created_at).getTime(); const deadline=new Date(completedAt+WINDOW_MS); const expired=Date.now()>deadline.getTime();
+ const deadline=new Date(completionTime(b)+WINDOW_MS); const expired=Date.now()>deadline.getTime();
  const reveal=Boolean(mine&&theirs)||expired;
  return NextResponse.json({eligible:b.status==='completed'&&!expired&&!mine,submitted:Boolean(mine),counterpartSubmitted:Boolean(theirs),deadline:deadline.toISOString(),mine,revealed:reveal?reviews||[]:[]});
 }
 export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
  const {id}=await params; const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser(); if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401});
- const {data:b}=await supabase.from('bookings').select('id,renter_id,owner_id,status,updated_at,created_at').eq('id',id).maybeSingle(); if(!b||![b.renter_id,b.owner_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
- if(b.status!=='completed'||Date.now()>new Date(b.updated_at||b.created_at).getTime()+WINDOW_MS)return NextResponse.json({error:'REVIEW_WINDOW_CLOSED'},{status:409});
+ const {data:b}=await supabase.from('bookings').select('id,renter_id,owner_id,status,completed_at,updated_at,created_at').eq('id',id).maybeSingle(); if(!b||![b.renter_id,b.owner_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
+ if(b.status!=='completed'||Date.now()>completionTime(b)+WINDOW_MS)return NextResponse.json({error:'REVIEW_WINDOW_CLOSED'},{status:409});
  const body=await req.json(); const role=b.renter_id===user.id?'renter':'owner';
  if(!ratingKeys.every(k=>validRating(body[k])))return NextResponse.json({error:'INVALID_RATING'},{status:400});
  const roleRatings=role==='renter'?[body.condition_rating,body.function_rating]:[body.handover_rating,body.return_condition_rating]; if(!roleRatings.every(validRating))return NextResponse.json({error:'INVALID_RATING'},{status:400});
