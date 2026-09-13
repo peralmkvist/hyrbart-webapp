@@ -4,6 +4,7 @@
   "description": "Det du behöver. När du behöver det.",
   "start_url": "/sv",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#fafafa",
   "theme_color": "#fafafa",
   "icons": [
