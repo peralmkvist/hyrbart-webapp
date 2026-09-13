@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { recordBookingEvent } from '@/lib/booking-events';
+import { canBookingTransition } from '@/lib/booking-state';
 
 const BUCKET = 'booking-condition-photos';
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -74,8 +76,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!ALLOWED_TYPES.has(file.type)) return NextResponse.json({ error: 'Bilden måste vara JPEG, PNG, WebP, HEIC eller HEIF.' }, { status: 415 });
     if (file.size > MAX_BYTES) return NextResponse.json({ error: 'Bilden får vara högst 10 MB.' }, { status: 413 });
 
-    const allowedStatus = stage === 'pickup' ? booking.status === 'paid' : booking.status === 'active';
-    if (!allowedStatus) {
+    const expectedStatus = stage === 'pickup' ? 'paid' : 'active';
+    const nextStatus = stage === 'pickup' ? 'active' : 'returned';
+    if (booking.status !== expectedStatus || !canBookingTransition(booking.status, nextStatus, 'renter')) {
       return NextResponse.json({ error: stage === 'pickup' ? 'Bokningen måste vara betald innan utlämning.' : 'Bokningen är inte redo för återlämning.' }, { status: 409 });
     }
 
@@ -99,9 +102,26 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       throw insertError;
     }
 
-    const nextStatus = stage === 'pickup' ? 'active' : 'returned';
-    const { error: updateError } = await admin.from('bookings').update({ status: nextStatus }).eq('id', id);
+    const { data: transitioned, error: updateError } = await admin
+      .from('bookings')
+      .update({ status: nextStatus, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('status', expectedStatus)
+      .select('id,status')
+      .maybeSingle();
     if (updateError) throw updateError;
+    if (!transitioned) {
+      await admin.from('booking_condition_photos').delete().eq('id', inserted.id);
+      await admin.storage.from(BUCKET).remove([path]);
+      return NextResponse.json({ error: 'Bokningen ändrades samtidigt. Ladda om och försök igen.' }, { status: 409 });
+    }
+
+    await recordBookingEvent({
+      bookingId: id,
+      actorId: user.id,
+      eventType: stage === 'pickup' ? 'pickup_documented' : 'return_documented',
+      metadata: { photo_id: inserted.id, previous_status: expectedStatus, new_status: nextStatus, stage },
+    });
 
     const { data: signed } = await admin.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
     return NextResponse.json({ ok: true, status: nextStatus, photo: { ...inserted, url: signed?.signedUrl ?? null } });

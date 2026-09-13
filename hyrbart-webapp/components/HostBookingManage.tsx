@@ -13,11 +13,10 @@ export default function HostBookingManage({ bookingId, status, locale, className
   const [error, setError] = useState('');
 
   const canRespond = status === 'requested' || status === 'reserved';
-  const canCancel = status === 'accepted' || status === 'paid';
   const canComplete = status === 'returned';
-  if (!canRespond && !canCancel && !canComplete) return null;
+  if (!canRespond && !canComplete) return null;
 
-  async function update(nextStatus: 'accepted'|'declined'|'cancelled'|'completed') {
+  async function update(nextStatus: 'accepted'|'declined'|'completed') {
     setSaving(true); setError('');
     try {
       const response = await fetch(`/api/bookings/${bookingId}/status`, {
@@ -36,11 +35,7 @@ export default function HostBookingManage({ bookingId, status, locale, className
 
   const description = canRespond
     ? (en ? 'Accept or decline the booking request.' : 'Godkänn eller neka bokningsförfrågan.')
-    : canComplete
-      ? (en ? 'The renter has documented the return. Complete the rental when the condition looks correct.' : 'Hyrestagaren har dokumenterat återlämningen. Avsluta uthyrningen när skicket ser korrekt ut.')
-      : status === 'paid'
-        ? (en ? 'Cancel this paid booking. In test mode the payment will be marked as refunded.' : 'Avboka den betalda bokningen. I testläget markeras betalningen som återbetald.')
-        : (en ? 'Cancel this accepted booking.' : 'Avboka den godkända bokningen.');
+    : (en ? 'The renter has documented the return. Complete the rental when the condition looks correct.' : 'Hyrestagaren har dokumenterat återlämningen. Avsluta uthyrningen när skicket ser korrekt ut.');
 
   return <>
     <button type="button" className={className} onClick={() => setOpen(true)}>{en?'Manage booking':'Hantera bokning'} <span>›</span></button>
@@ -51,7 +46,6 @@ export default function HostBookingManage({ bookingId, status, locale, className
         {error?<p style={{fontWeight:700,margin:'0 0 14px'}} role="alert">{error}</p>:null}
         <div style={{display:'grid',gap:10}}>
           {canRespond?<><button type="button" disabled={saving} onClick={()=>update('accepted')} style={{minHeight:52,border:0,borderRadius:16,background:'var(--accent)',fontWeight:850}}>{saving?(en?'Saving…':'Sparar…'):(en?'Accept booking':'Godkänn bokning')}</button><button type="button" disabled={saving} onClick={()=>update('declined')} style={{minHeight:52,border:'1px solid var(--line)',borderRadius:16,background:'#fff',fontWeight:750}}>{en?'Decline':'Neka'}</button></>:null}
-          {canCancel?<button type="button" disabled={saving} onClick={()=>update('cancelled')} style={{minHeight:52,border:'1px solid var(--line)',borderRadius:16,background:'#fff',fontWeight:750}}>{status==='paid'?(en?'Cancel and refund':'Avboka och återbetala'):(en?'Cancel booking':'Avboka bokning')}</button>:null}
           {canComplete?<button type="button" disabled={saving} onClick={()=>update('completed')} style={{minHeight:52,border:0,borderRadius:16,background:'var(--accent)',fontWeight:850}}>{saving?(en?'Saving…':'Sparar…'):(en?'Confirm and complete rental':'Bekräfta och avsluta uthyrning')}</button>:null}
           <button type="button" disabled={saving} onClick={()=>setOpen(false)} style={{minHeight:48,border:0,background:'transparent',fontWeight:700}}>{en?'Close':'Stäng'}</button>
         </div>
