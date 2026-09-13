@@ -6,6 +6,7 @@ import { sendPushToUser } from '@/lib/push';
 import { calculateCancellationRefund } from '@/lib/cancellation-policy';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { recordSimulatedRefund } from '@/lib/payment-ledger';
+import { canBookingTransition } from '@/lib/booking-state';
 import type { CancellationPolicy } from '@/lib/products';
 
 const RENTER_REASONS = new Set(['Planerna ändrades','Behöver inte produkten längre','Problem med tid eller plats','Hittade ett annat alternativ','Annat']);
@@ -46,11 +47,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   if(!booking||![booking.owner_id,booking.renter_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
 
   const isOwner=booking.owner_id===user.id;
-  const isRenter=booking.renter_id===user.id;
-  const allowed=isRenter
-    ? ['requested','reserved','accepted','paid'].includes(booking.status)
-    : ['accepted','paid'].includes(booking.status);
-  if(!allowed)return NextResponse.json({error:'CANCELLATION_NOT_ALLOWED'},{status:409});
+  const actor=isOwner?'owner':'renter' as const;
 
   const body=await req.json();
   const reason=String(body.reason||'').trim();
@@ -70,6 +67,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   });
   const paid=booking.status==='paid';
   const nextStatus=paid&&refund.totalRefund>0?'refunded':'cancelled';
+  if(!canBookingTransition(booking.status,nextStatus,actor))return NextResponse.json({error:'CANCELLATION_NOT_ALLOWED'},{status:409});
   const now=new Date().toISOString();
 
   // The route has already authenticated the party and validated the exact transition.
@@ -95,7 +93,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
     actorId:user.id,
     eventType:'booking_cancelled',
     metadata:{
-      cancelled_by:isOwner?'owner':'renter',
+      cancelled_by:actor,
       reason,
       details:details||null,
       previous_status:booking.status,
