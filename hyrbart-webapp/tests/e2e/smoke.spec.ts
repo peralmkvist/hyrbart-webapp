@@ -19,10 +19,15 @@ test('unknown route returns branded 404 instead of framework default', async ({ 
   await expect(page.getByRole('link', { name: 'Till startsidan' })).toBeVisible();
 });
 
-test('skip link is keyboard reachable and targets main content', async ({ page }) => {
-  await page.goto('/sv', { waitUntil: 'domcontentloaded' });
+test('skip link is keyboard reachable and moves focus to main content', async ({ page }) => {
+  await page.goto('/sv', { waitUntil: 'networkidle' });
+  const skipLink = page.getByRole('link', { name: /Hoppa till innehåll/i });
+  await expect(skipLink).toBeAttached();
+
   await page.keyboard.press('Tab');
-  const focused = page.locator(':focus');
-  await expect(focused).toHaveText(/Hoppa till innehåll/i);
-  await expect(focused).toHaveAttribute('href', '#main-content');
+  await expect(skipLink).toBeFocused();
+  await expect(skipLink).toHaveAttribute('href', '#main-content');
+
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main-content')).toBeFocused();
 });
