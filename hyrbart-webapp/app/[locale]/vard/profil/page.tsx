@@ -10,13 +10,13 @@ import '../../profil/profile-menu.css';
 
 const MenuChevron = () => <span className="profileChevron" aria-hidden="true">›</span>;
 
-type MenuIconName = 'account' | 'host' | 'review' | 'referral' | 'help' | 'profile' | 'terms' | 'privacy' | 'logout';
+type MenuIconName = 'account' | 'host' | 'notifications' | 'referral' | 'help' | 'profile' | 'terms' | 'privacy' | 'logout';
 
 const MenuIcon = ({ name }: { name: MenuIconName }) => {
   const common = { width:24,height:24,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round' as const,strokeLinejoin:'round' as const,'aria-hidden':true };
   if (name === 'account') return <svg {...common}><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>;
   if (name === 'host') return <svg {...common}><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h2"/><path d="M10 12h10"/><circle cx="8" cy="12" r="2"/><path d="M4 18h8"/><path d="M16 18h4"/><circle cx="14" cy="18" r="2"/></svg>;
-  if (name === 'review') return <svg {...common}><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>;
+  if (name === 'notifications') return <svg {...common}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>;
   if (name === 'referral') return <svg {...common}><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 20c.6-4 2.4-6 5.5-6s4.9 2 5.5 6"/><path d="M14.5 15.5c2.9-.4 4.8 1 5.5 4.5"/><path d="M18 3v4M16 5h4"/></svg>;
   if (name === 'help') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.5 2.5 0 1 1 4.4 1.6c-.9.9-2.2 1.3-2.2 2.9"/><path d="M12 17h.01"/></svg>;
   if (name === 'profile') return <svg {...common}><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.2-6 7-6s6.2 2 7 6"/></svg>;
@@ -31,6 +31,15 @@ type Profile = {
   avatar_url: string | null;
   sanity_profile_id: string | null;
 };
+
+function monthBounds(now = new Date()) {
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth();
+  const first = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  const lastDate = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const last = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDate).padStart(2, '0')}`;
+  return { first, last };
+}
 
 async function getFirstPublishedListingDate(sanityProfileId?: string | null) {
   if (!sanityProfileId) return null;
@@ -57,10 +66,18 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/vard/profil`)}`);
 
-  const [{ data: profile }, ownerSummary] = await Promise.all([
+  const { first, last } = monthBounds();
+  const [{ data: profile }, ownerSummary, { data: monthlyBookings }, notificationCount] = await Promise.all([
     supabase.from('profiles').select('display_name, city, avatar_url, sanity_profile_id').eq('id', user.id).maybeSingle() as unknown as Promise<{ data: Profile | null }>,
     getUserReviewSummary(user.id, 'owner'),
-  ]);
+    supabase.from('bookings').select('rental_price,start_date,status').eq('owner_id', user.id).gte('start_date', first).lte('start_date', last).in('status', ['paid','active','returned','completed']),
+    supabase.from('user_notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).is('read_at', null),
+  ]) as [
+    { data: Profile | null },
+    Awaited<ReturnType<typeof getUserReviewSummary>>,
+    { data: { rental_price:number|null; start_date:string; status:string }[] | null },
+    { count:number|null }
+  ];
 
   async function signOut() {
     'use server';
@@ -71,14 +88,16 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
 
   const firstPublishedAt = await getFirstPublishedListingDate(profile?.sanity_profile_id);
   const hostTenure = formatProfileTenure(firstPublishedAt, locale);
-  const displayName = profile?.display_name || 'Per';
-  const city = profile?.city || 'Danderyd';
-  const initial = displayName.trim().charAt(0).toUpperCase() || 'P';
+  const displayName = profile?.display_name || (en ? 'Hyrbart user' : 'Hyrbart-användare');
+  const city = profile?.city;
+  const initial = displayName.trim().charAt(0).toUpperCase() || 'H';
   const publicProfileHref = `/${locale}/profil/per`;
   const insightsHref = `/topsecret/${locale}/vard/profil/omdomen?role=owner&back=vard`;
   const reviewCount = ownerSummary.count;
   const ratingLabel = ownerSummary.overall == null ? '–' : ownerSummary.overall.toFixed(2).replace('.', ',');
-  const row = (label:string, icon:MenuIconName) => <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span><MenuChevron /></>;
+  const monthlyRevenue = (monthlyBookings || []).reduce((sum, row) => sum + Number(row.rental_price || 0), 0);
+  const unread = notificationCount.count || 0;
+  const row = (label:string, icon:MenuIconName, suffix?:string) => <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span>{suffix?<strong style={{marginLeft:'auto',fontSize:13}}>{suffix}</strong>:null}<MenuChevron /></>;
 
   return (
     <section className="ds2Page profileDashboard">
@@ -88,11 +107,11 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
           {profile?.avatar_url
             ? <img className="profileAvatar" src={profile.avatar_url} alt={displayName} style={{ objectFit:'cover' }}/>
             : <div className="profileAvatar">{initial}</div>}
-          <div><h2>{displayName}</h2><p>{city}, Sverige</p></div>
+          <div><h2>{displayName}</h2>{city ? <p>{city}, Sverige</p> : null}</div>
         </Link>
         <div className="profileStats"><div><strong>{hostTenure}</strong><span>{en ? 'Time as host' : 'Tid som uthyrare'}</span></div><div><strong>{reviewCount}</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>{ratingLabel}</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
       </div>
-      <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? 'SEK 7,294 this month' : '7 294 kr den här månaden'}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><Link href={insightsHref} className="profileInsightCard profileInsightLink"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{reviewCount} {en ? 'reviews' : 'omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></Link></div>
+      <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? `SEK ${monthlyRevenue.toLocaleString('en-GB')} this month` : `${monthlyRevenue.toLocaleString('sv-SE')} kr den här månaden`}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><Link href={insightsHref} className="profileInsightCard profileInsightLink"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{reviewCount} {en ? 'reviews' : 'omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></Link></div>
       <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
 
       <div className="profileMenuSection">
@@ -100,6 +119,7 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
         <div className="profileMenuList">
           <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/konto?back=vard`}>{row(en ? 'Account settings' : 'Kontoinställningar','account')}</Link>
           <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/installningar`}>{row(en ? 'Host settings' : 'Uthyrarinställningar','host')}</Link>
+          <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/notiser?back=vard`}>{row(en ? 'Notifications' : 'Notiser','notifications',unread?String(unread):undefined)}</Link>
           <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/varva`}>{row(en ? 'Refer a host' : 'Värva en uthyrare','referral')}</Link>
           <ExternalHistoryModalSetting locale={locale}/>
           <PushNotificationsSetting locale={locale}/>
