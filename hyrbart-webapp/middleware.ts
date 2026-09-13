@@ -8,7 +8,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   let response: NextResponse;
 
-  if (pathname === '/sv' || pathname.startsWith('/sv/') || pathname === '/en' || pathname.startsWith('/en/')) {
+  // The /topsecret shim is a deployment-routing concern. Local Playwright CI
+  // exercises the actual route tree directly to avoid Next dev reprocessing
+  // rewrite targets and creating a redirect loop. This flag is never set in production.
+  const bypassPrivateShim = process.env.E2E_BYPASS_PRIVATE_PREFIX === '1';
+
+  if (bypassPrivateShim) {
+    response = NextResponse.next({ request });
+  } else if (pathname === '/sv' || pathname.startsWith('/sv/') || pathname === '/en' || pathname.startsWith('/en/')) {
     const url = request.nextUrl.clone();
     url.pathname = `${PRIVATE_PREFIX}${pathname}`;
     response = NextResponse.redirect(url, 307);
