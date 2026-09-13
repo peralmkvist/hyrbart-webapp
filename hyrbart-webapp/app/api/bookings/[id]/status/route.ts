@@ -5,6 +5,7 @@ import { getProducts } from '@/lib/sanity-products';
 import { sendPushToUser } from '@/lib/push';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { ensureScheduledPayout } from '@/lib/payment-ledger';
+import { canBookingTransition, type BookingActor } from '@/lib/booking-state';
 
 const statusTitle: Record<string, string> = {
   accepted: 'Bokning godkänd',
@@ -44,11 +45,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const isOwner = booking.owner_id === user.id;
     const isRenter = booking.renter_id === user.id;
     if (!isOwner && !isRenter) return NextResponse.json({ error: 'Du får inte hantera den här bokningen.' }, { status: 403 });
+    const actor: BookingActor = isOwner ? 'owner' : 'renter';
+    if (!canBookingTransition(booking.status, requestedStatus, actor)) {
+      return NextResponse.json({ error: 'Den statusändringen är inte tillåten.' }, { status: 409 });
+    }
 
-    let allowed = false;
-    if (isOwner && ['requested', 'reserved'].includes(booking.status) && ['accepted', 'declined'].includes(requestedStatus)) allowed = true;
-    if (isOwner && booking.status === 'returned' && requestedStatus === 'completed') allowed = true;
-    if (!allowed) return NextResponse.json({ error: 'Den statusändringen är inte tillåten.' }, { status: 409 });
+    // This generic endpoint intentionally handles only owner decisions/completion.
+    // Payment, pickup/return and cancellation have dedicated endpoints with their own side effects.
+    if (!isOwner || !['accepted', 'declined', 'completed'].includes(requestedStatus)) {
+      return NextResponse.json({ error: 'Använd det specifika flödet för den här statusändringen.' }, { status: 409 });
+    }
 
     const previousStatus = booking.status;
     const now = new Date().toISOString();
@@ -65,7 +71,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       bookingId: id,
       actorId: user.id,
       eventType: 'booking_status_changed',
-      metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: isOwner ? 'owner' : 'renter' },
+      metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor },
     });
 
     if (updated.status === 'completed') {
