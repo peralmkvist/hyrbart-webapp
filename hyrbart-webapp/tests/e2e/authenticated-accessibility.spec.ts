@@ -43,13 +43,13 @@ test.describe('authenticated accessibility gate', () => {
 
   test('host profile and renter booking have no serious or critical axe violations', async () => {
     const hostPage = await owner.newPage();
-    await hostPage.goto('/topsecret/sv/vard/profil', { waitUntil: 'domcontentloaded' });
+    await hostPage.goto('/sv/vard/profil', { waitUntil: 'domcontentloaded' });
     await expect(hostPage.getByRole('heading', { name: 'Profil' })).toBeVisible();
     await expectNoBlockingA11yViolations(hostPage);
     await hostPage.close();
 
     const bookingPage = await renter.newPage();
-    await bookingPage.goto(`/topsecret/sv/bokningar/${fixture.bookings.lifecycle}`, { waitUntil: 'domcontentloaded' });
+    await bookingPage.goto(`/sv/bokningar/${fixture.bookings.lifecycle}`, { waitUntil: 'domcontentloaded' });
     await expect(bookingPage.getByRole('heading', { name: 'Bokning' })).toBeVisible();
     await expectNoBlockingA11yViolations(bookingPage);
     await bookingPage.close();
@@ -57,7 +57,7 @@ test.describe('authenticated accessibility gate', () => {
 
   test('verified-history dialog traps focus, closes with Escape and restores focus', async () => {
     const page = await owner.newPage();
-    await page.goto('/topsecret/sv/vard/profil', { waitUntil: 'domcontentloaded' });
+    await page.goto('/sv/vard/profil', { waitUntil: 'domcontentloaded' });
 
     const trigger = page.getByRole('button', { name: 'Ta med verifierad historik från annan plattform' });
     await trigger.focus();
