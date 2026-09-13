@@ -81,8 +81,14 @@ jobs:
           echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY" >> "$GITHUB_ENV"
           echo "E2E_TEST_SUPPORT=1" >> "$GITHUB_ENV"
           echo "E2E_FIXTURE_PATH=$GITHUB_WORKSPACE/hyrbart-webapp/tests/.auth-fixture.json" >> "$GITHUB_ENV"
-      - name: Authenticated PR smoke
+      - name: Authenticated PR accessibility and session smoke
         run: npm run test:e2e:auth
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authenticated-pr-playwright-report
+          path: hyrbart-webapp/playwright-report/
+          retention-days: 7
       - name: Cleanup authenticated fixture
         if: always()
         run: |
@@ -144,8 +150,18 @@ jobs:
           echo "E2E_FIXTURE_PATH=$GITHUB_WORKSPACE/hyrbart-webapp/tests/.auth-fixture.json" >> "$GITHUB_ENV"
           echo "E2E_OIDC_TOKEN=$OIDC_TOKEN" >> "$GITHUB_ENV"
           echo "E2E_BASE_URL=https://www.hyrbart.se" >> "$GITHUB_ENV"
+      - name: Authenticated accessibility E2E
+        run: npx playwright test tests/e2e/authenticated-accessibility.spec.ts --project=chromium-desktop
+      - name: Full listing-to-booking funnel E2E
+        run: npm run test:e2e:funnel
       - name: Full authenticated lifecycle E2E
         run: npm run test:e2e:lifecycle
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authenticated-main-playwright-report
+          path: hyrbart-webapp/playwright-report/
+          retention-days: 7
       - name: Cleanup production fixture
         if: always()
         run: |
