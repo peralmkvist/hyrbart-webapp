@@ -71,7 +71,7 @@ jobs:
           echo "::add-mask::$OIDC_TOKEN"
           RUN_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_JOB}"
           FIXTURE=$(curl -fsSL -X POST https://hyrbart.se/api/internal/e2e-fixtures \
-            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data "{\"runId\":\"$RUN_ID\"}")
           printf '%s' "$FIXTURE" > tests/.auth-fixture.json
@@ -97,7 +97,7 @@ jobs:
           print(json.dumps({'runId':f['runId'],'bookingIds':list(f['bookings'].values()),'userIds':[f['users']['renter']['id'],f['users']['owner']['id']]}))
           PY
           curl -fsSL -X DELETE https://hyrbart.se/api/internal/e2e-fixtures \
-            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data-binary @tests/.cleanup.json >/dev/null
 
@@ -137,7 +137,7 @@ jobs:
           echo "::add-mask::$OIDC_TOKEN"
           RUN_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_JOB}"
           FIXTURE=$(curl -fsSL -X POST https://hyrbart.se/api/internal/e2e-fixtures \
-            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data "{\"runId\":\"$RUN_ID\"}")
           printf '%s' "$FIXTURE" > tests/.auth-fixture.json
@@ -160,6 +160,6 @@ jobs:
           print(json.dumps({'runId':f['runId'],'bookingIds':list(f['bookings'].values()),'userIds':[f['users']['renter']['id'],f['users']['owner']['id']]}))
           PY
           curl -fsSL -X DELETE https://hyrbart.se/api/internal/e2e-fixtures \
-            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data-binary @tests/.cleanup.json >/dev/null
