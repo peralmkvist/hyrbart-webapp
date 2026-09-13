@@ -21,8 +21,11 @@ export async function GET(_request:Request,{params}:{params:Promise<{id:string}>
     admin.from('booking_condition_photos').select('*').eq('booking_id',caseRow.booking_id).order('created_at'),
   ]);
   const ids=booking?[booking.owner_id,booking.renter_id]:[];
-  const {data:profiles}=ids.length?await admin.from('profiles').select('id,display_name,email,city').in('id',ids):{data:[] as any[]};
-  const names=new Map((profiles||[]).map((profile:any)=>[profile.id,profile.display_name||profile.email||'Användare']));
+  const {data:profiles,error:profilesError}=ids.length
+    ? await admin.from('profiles').select('id,display_name,city').in('id',ids)
+    : {data:[] as any[],error:null};
+  if(profilesError)return NextResponse.json({error:'PROFILE_LOAD_FAILED'},{status:500});
+  const names=new Map((profiles||[]).map((profile:any)=>[profile.id,profile.display_name||'Användare']));
   const signedEvidence=await Promise.all((evidence||[]).map(async(item:any)=>{
     const {data}=await admin.storage.from(EVIDENCE_BUCKET).createSignedUrl(item.storage_path,3600);
     return {...item,url:data?.signedUrl||null,uploader_name:names.get(item.uploaded_by)||'Användare'};
