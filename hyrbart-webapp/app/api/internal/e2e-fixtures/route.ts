@@ -14,6 +14,7 @@ type BookingSeed = { label:Label; id:string };
 
 function safeRunId(value:unknown){const raw=String(value||'').trim().toLowerCase();const sanitized=raw.replace(/[^a-z0-9_-]/g,'-').slice(0,48);return sanitized||crypto.randomUUID().slice(0,12)}
 function isoDate(days:number){return new Date(Date.now()+days*86400000).toISOString().slice(0,10)}
+function productIdForRun(runId:string){return `${PRODUCT_ID}-e2e-${runId}`.slice(0,120)}
 async function authenticate(request:Request){try{return await requireGithubActionsOidc(request)}catch(error){console.warn('Rejected E2E fixture request',error);return null}}
 
 async function makeTestUser(role:'renter'|'owner',runId:string):Promise<TestUser>{
@@ -23,21 +24,28 @@ async function makeTestUser(role:'renter'|'owner',runId:string):Promise<TestUser
   const {data:created,error:createError}=await admin.auth.admin.createUser({email,password,email_confirm:true,app_metadata:{hyrbart_e2e:true,run_id:runId,role},user_metadata:{display_name:`E2E ${role}`}});
   if(createError||!created.user)throw createError||new Error('Could not create E2E user.');
   const userId=created.user.id;
-  const {error:profileError}=await admin.from('profiles').upsert({id:userId,display_name:role==='renter'?'E2E Hyrestagare':'E2E Uthyrare',first_name:role==='renter'?'E2E Renter':'E2E Owner',last_name:'CI',city:'Test',payment_method_ready:role==='renter',payout_method_ready:role==='owner',bankid_verified:true,identity_verification_status:'verified',account_status:'active',updated_at:new Date().toISOString()});
-  if(profileError)throw profileError;
-  const authClient=createSupabaseClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  const {data:signedIn,error:signInError}=await authClient.auth.signInWithPassword({email,password});
-  if(signInError||!signedIn.session)throw signInError||new Error('Could not sign in E2E user.');
-  const session=signedIn.session;
-  return {id:userId,email,session:{access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at,expires_in:session.expires_in,token_type:session.token_type}};
+  try{
+    const {error:profileError}=await admin.from('profiles').upsert({id:userId,display_name:role==='renter'?'E2E Hyrestagare':'E2E Uthyrare',first_name:role==='renter'?'E2E Renter':'E2E Owner',last_name:'CI',city:'Test',payment_method_ready:role==='renter',payout_method_ready:role==='owner',bankid_verified:true,identity_verification_status:'verified',account_status:'active',updated_at:new Date().toISOString()});
+    if(profileError)throw profileError;
+    const authClient=createSupabaseClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    const {data:signedIn,error:signInError}=await authClient.auth.signInWithPassword({email,password});
+    if(signInError||!signedIn.session)throw signInError||new Error('Could not sign in E2E user.');
+    const session=signedIn.session;
+    return {id:userId,email,session:{access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at,expires_in:session.expires_in,token_type:session.token_type}};
+  }catch(error){
+    const {error:deleteError}=await admin.auth.admin.deleteUser(userId);
+    if(deleteError)console.warn('Could not roll back partially created E2E user',userId,deleteError.message);
+    throw error;
+  }
 }
 
 async function seedBookings(renterId:string,ownerId:string,runId:string):Promise<BookingSeed[]>{
   const admin=createAdminClient();
+  const productId=productIdForRun(runId);
   const definitions:{label:Label;offset:number}[]=[{label:'lifecycle',offset:14},{label:'cancellation',offset:18},{label:'dispute',offset:22},{label:'race',offset:26}];
   const rows=definitions.map(({label,offset})=>{
     const rentalStartAt=new Date(Date.now()+offset*86400000).toISOString();
-    return {renter_id:renterId,owner_id:ownerId,product_id:PRODUCT_ID,start_date:isoDate(offset),end_date:isoDate(offset+1),status:'requested',currency:'SEK',rental_price:1000,service_fee:100,request_type:'booking',message:`Authenticated E2E ${runId} ${label}`,cancellation_policy:'moderate',rental_start_at:rentalStartAt,pickup_due_at:rentalStartAt,return_due_at:new Date(Date.now()+(offset+1)*86400000).toISOString(),pickup_time:'10:00:00',return_time:'10:00:00',terms_version:'e2e',terms_accepted_at:new Date().toISOString(),terms_locale:'sv',request_expires_at:new Date(Date.now()+86400000).toISOString()};
+    return {renter_id:renterId,owner_id:ownerId,product_id:productId,start_date:isoDate(offset),end_date:isoDate(offset+1),status:'requested',currency:'SEK',rental_price:1000,service_fee:100,request_type:'booking',message:`Authenticated E2E ${runId} ${label}`,cancellation_policy:'moderate',rental_start_at:rentalStartAt,pickup_due_at:rentalStartAt,return_due_at:new Date(Date.now()+(offset+1)*86400000).toISOString(),pickup_time:'10:00:00',return_time:'10:00:00',terms_version:'e2e',terms_accepted_at:new Date().toISOString(),terms_locale:'sv',request_expires_at:new Date(Date.now()+86400000).toISOString()};
   });
   const {data,error}=await admin.from('bookings').insert(rows).select('id,message'); if(error)throw error;
   const prefix=`Authenticated E2E ${runId} `;
@@ -46,9 +54,42 @@ async function seedBookings(renterId:string,ownerId:string,runId:string):Promise
 
 async function removeConditionObjects(ids:string[]){const admin=createAdminClient();for(const id of ids){for(const stage of ['pickup','return']){const {data}=await admin.storage.from(CONDITION_BUCKET).list(`${id}/${stage}`,{limit:100});const paths=(data||[]).map(item=>`${id}/${stage}/${item.name}`);if(paths.length)await admin.storage.from(CONDITION_BUCKET).remove(paths)}}}
 
+async function rollbackFailedSeed(runId:string,users:Array<TestUser|undefined>){
+  const admin=createAdminClient();
+  try{
+    const prefix=`Authenticated E2E ${runId} `;
+    const {data:rows,error:lookupError}=await admin.from('bookings').select('id').like('message',`${prefix}%`);
+    if(lookupError)throw lookupError;
+    const bookingIds=(rows||[]).map(row=>String(row.id));
+    if(bookingIds.length){
+      await removeConditionObjects(bookingIds);
+      const {error:deleteBookingsError}=await admin.from('bookings').delete().in('id',bookingIds);
+      if(deleteBookingsError)throw deleteBookingsError;
+    }
+  }catch(error){console.warn('Could not roll back E2E bookings after failed seed',runId,error)}
+  for(const user of users){
+    if(!user)continue;
+    const {error}=await admin.auth.admin.deleteUser(user.id);
+    if(error)console.warn('Could not roll back E2E auth user after failed seed',user.id,error.message);
+  }
+}
+
 export async function POST(request:Request){
   const claims=await authenticate(request); if(!claims)return NextResponse.json({error:'NOT_FOUND'},{status:404});
-  try{const body=await request.json().catch(()=>({}));const runId=safeRunId(body.runId||claims.sha);const renter=await makeTestUser('renter',runId);const owner=await makeTestUser('owner',runId);const bookings=await seedBookings(renter.id,owner.id,runId);return NextResponse.json({ok:true,runId,users:{renter,owner},bookings:Object.fromEntries(bookings.map(item=>[item.label,item.id])),supabaseUrl:process.env.NEXT_PUBLIC_SUPABASE_URL,publishableKey:process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY},{headers:{'cache-control':'no-store'}})}catch(error){console.error('E2E fixture seed failed',error);return NextResponse.json({error:'E2E_FIXTURE_FAILED'},{status:500})}
+  const body=await request.json().catch(()=>({}));
+  const runId=safeRunId(body.runId||claims.sha);
+  let renter:TestUser|undefined;
+  let owner:TestUser|undefined;
+  try{
+    renter=await makeTestUser('renter',runId);
+    owner=await makeTestUser('owner',runId);
+    const bookings=await seedBookings(renter.id,owner.id,runId);
+    return NextResponse.json({ok:true,runId,users:{renter,owner},bookings:Object.fromEntries(bookings.map(item=>[item.label,item.id])),supabaseUrl:process.env.NEXT_PUBLIC_SUPABASE_URL,publishableKey:process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY},{headers:{'cache-control':'no-store'}})
+  }catch(error){
+    await rollbackFailedSeed(runId,[owner,renter]);
+    console.error('E2E fixture seed failed',error);
+    return NextResponse.json({error:'E2E_FIXTURE_FAILED'},{status:500})
+  }
 }
 
 export async function DELETE(request:Request){
