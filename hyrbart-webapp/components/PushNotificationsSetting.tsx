@@ -9,6 +9,15 @@ function urlBase64ToUint8Array(base64String: string) {
   return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
 
+const BellIcon = () => (
+  <span className="profileMenuIcon" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+      <path d="M10 21h4"/>
+    </svg>
+  </span>
+);
+
 export default function PushNotificationsSetting({ locale }: { locale: string }) {
   const en = locale === 'en';
   const [supported, setSupported] = useState<boolean | null>(null);
@@ -29,25 +38,23 @@ export default function PushNotificationsSetting({ locale }: { locale: string })
 
   async function enable() {
     if (!publicKey) {
-      setMessage(en ? 'Push notifications are not configured yet.' : 'Pushnotiser är inte konfigurerade ännu.');
+      setMessage(en ? 'Not configured yet' : 'Inte konfigurerat ännu');
       return;
     }
     setBusy(true); setMessage('');
     try {
       const permission = await Notification.requestPermission();
-      if (permission !== 'granted') throw new Error(en ? 'Notification permission was not granted.' : 'Tillåt notiser för att aktivera funktionen.');
+      if (permission !== 'granted') throw new Error(en ? 'Permission needed' : 'Tillåt notiser i webbläsaren');
       const registration = await navigator.serviceWorker.ready;
       let subscription = await registration.pushManager.getSubscription();
-      if (!subscription) {
-        subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
-      }
+      if (!subscription) subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
       const response = await fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(subscription.toJSON()) });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Kunde inte aktivera notiser.');
+      if (!response.ok) throw new Error(data.error || (en ? 'Could not enable notifications' : 'Kunde inte aktivera notiser'));
       setEnabled(true);
-      setMessage(en ? 'Push notifications are on.' : 'Pushnotiser är aktiverade.');
-    } catch (err) { setMessage(err instanceof Error ? err.message : (en ? 'Could not enable notifications.' : 'Kunde inte aktivera notiser.')); }
-    finally { setBusy(false); }
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : (en ? 'Could not enable notifications' : 'Kunde inte aktivera notiser'));
+    } finally { setBusy(false); }
   }
 
   async function disable() {
@@ -60,19 +67,34 @@ export default function PushNotificationsSetting({ locale }: { locale: string })
         await subscription.unsubscribe();
       }
       setEnabled(false);
-      setMessage(en ? 'Push notifications are off.' : 'Pushnotiser är avstängda.');
-    } catch { setMessage(en ? 'Could not turn off notifications.' : 'Kunde inte stänga av notiser.'); }
-    finally { setBusy(false); }
+    } catch {
+      setMessage(en ? 'Could not turn off notifications' : 'Kunde inte stänga av notiser');
+    } finally { setBusy(false); }
   }
 
-  if (supported === null) return null;
+  const value = supported === false ? 'unsupported' : enabled ? 'on' : 'off';
+  const status = message || (supported === false ? (en ? 'Not supported here' : 'Stöds inte här') : '');
 
-  return <div className="pushSettingCard">
-    <div className="pushSettingCopy">
-      <strong>{en ? 'Push notifications' : 'Pushnotiser'}</strong>
-      <span>{supported ? (en ? 'Get alerts for messages and booking requests.' : 'Få notiser om meddelanden och bokningsförfrågningar.') : (en ? 'Not supported in this browser. On iPhone, add Hyrbart to the Home Screen first.' : 'Stöds inte i den här webbläsaren. På iPhone behöver Hyrbart först läggas till på hemskärmen.')}</span>
-      {message ? <small>{message}</small> : null}
-    </div>
-    {supported ? <button type="button" onClick={enabled ? disable : enable} disabled={busy}>{busy ? '…' : enabled ? (en ? 'On' : 'På') : (en ? 'Enable' : 'Aktivera')}</button> : null}
+  return <div className="profileMenuRow profileInlineSetting">
+    <BellIcon />
+    <span className="profileMenuLabel profileSettingLabel">
+      <span>{en ? 'Push notifications' : 'Pushnotiser'}</span>
+      {status ? <small role="status">{status}</small> : null}
+    </span>
+    <select
+      className="profileInlineSelect"
+      aria-label={en ? 'Push notifications' : 'Pushnotiser'}
+      value={supported === null ? 'loading' : value}
+      disabled={busy || supported !== true}
+      onChange={event => {
+        if (event.target.value === 'on') void enable();
+        if (event.target.value === 'off') void disable();
+      }}
+    >
+      {supported === null ? <option value="loading">…</option> : null}
+      {supported === false ? <option value="unsupported">{en ? 'Unavailable' : 'Ej tillgängligt'}</option> : null}
+      <option value="off">{en ? 'Off' : 'Av'}</option>
+      <option value="on">{en ? 'On' : 'På'}</option>
+    </select>
   </div>;
 }
