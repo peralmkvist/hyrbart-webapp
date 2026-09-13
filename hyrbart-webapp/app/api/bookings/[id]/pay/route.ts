@@ -5,6 +5,7 @@ import { getProducts } from '@/lib/sanity-products';
 import { sendPushToUser } from '@/lib/push';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { ensureSimulatedCapture } from '@/lib/payment-ledger';
+import { canBookingTransition } from '@/lib/booking-state';
 
 function formatDateRange(from: string, to: string) {
   const format = (value: string) => new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`));
@@ -27,9 +28,12 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     if (bookingError) throw bookingError;
     if (!booking) return NextResponse.json({ error: 'Bokningen hittades inte.' }, { status: 404 });
     if (booking.renter_id !== user.id) return NextResponse.json({ error: 'Endast hyrestagaren kan betala bokningen.' }, { status: 403 });
-    if (!['accepted', 'paid'].includes(booking.status)) return NextResponse.json({ error: 'Bokningen är inte redo för betalning.' }, { status: 409 });
 
     const alreadyPaid = booking.status === 'paid';
+    if (!alreadyPaid && !canBookingTransition(booking.status, 'paid', 'renter')) {
+      return NextResponse.json({ error: 'Bokningen är inte redo för betalning.' }, { status: 409 });
+    }
+
     if (!alreadyPaid) {
       const { data: profile, error: profileError } = await admin
         .from('profiles')
@@ -49,7 +53,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         .from('bookings')
         .update({ status: 'paid', updated_at: new Date().toISOString() })
         .eq('id', id)
-        .eq('status', 'accepted')
+        .eq('status', booking.status)
         .select('id,status,total_price')
         .single();
       if (updateError) throw updateError;
@@ -59,7 +63,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         actorId: user.id,
         eventType: 'payment_captured',
         metadata: {
-          previous_status: 'accepted',
+          previous_status: booking.status,
           new_status: updated.status,
           payment_id: payment.id,
           provider: payment.provider,
