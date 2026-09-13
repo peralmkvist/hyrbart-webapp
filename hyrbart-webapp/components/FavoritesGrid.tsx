@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ProductVisual from './ProductVisual';
 import { ProductBadgeLabel } from './ProductPricing';
 
@@ -16,6 +16,7 @@ function clearLegacyLocalFavorites(){try{window.localStorage.removeItem(STORAGE_
 
 export default function FavoritesGrid({locale,products}:{locale:string;products:FavoriteProduct[]}){
  const en=locale==='en';
+ const filterWrapRef=useRef<HTMLDivElement>(null);
  const [slugs,setSlugs]=useState<string[]>([]),[loading,setLoading]=useState(true),[authenticated,setAuthenticated]=useState(true);
  const [filterOpen,setFilterOpen]=useState(false),[filter,setFilter]=useState('all'),[editing,setEditing]=useState(false),[removing,setRemoving]=useState<string|null>(null);
  async function sync(){
@@ -30,6 +31,12 @@ export default function FavoritesGrid({locale,products}:{locale:string;products:
   }catch{}finally{setLoading(false)}
  }
  useEffect(()=>{void sync();const listener=()=>void sync();window.addEventListener(EVENT,listener);return()=>window.removeEventListener(EVENT,listener)},[]);
+ useEffect(()=>{
+  if(!filterOpen)return;
+  const close=(event:PointerEvent)=>{if(filterWrapRef.current&&!filterWrapRef.current.contains(event.target as Node))setFilterOpen(false)};
+  document.addEventListener('pointerdown',close);
+  return()=>document.removeEventListener('pointerdown',close);
+ },[filterOpen]);
  const favorites=slugs.map(slug=>products.find(product=>product.slug===slug)).filter((product):product is FavoriteProduct=>Boolean(product));
  const types=useMemo(()=>Array.from(new Set(favorites.map(product=>en?(product.typeEn??product.type):product.type))).sort(),[favorites,en]);
  const visible=filter==='all'?favorites:favorites.filter(product=>(en?(product.typeEn??product.type):product.type)===filter);
@@ -40,7 +47,7 @@ export default function FavoritesGrid({locale,products}:{locale:string;products:
  const header=<header className="favoritesHeader2">
   <h1>{en?'Favorites':'Favoriter'}</h1>
   <div className="favoritesToolbar2">
-   <div className="favoritesFilterWrap2">
+   <div ref={filterWrapRef} className="favoritesFilterWrap2">
     <button type="button" className={`favoritesToolButton2 ${filter!=='all'?'active':''}`} aria-label={en?'Filter favorites':'Filtrera favoriter'} aria-expanded={filterOpen} onClick={()=>setFilterOpen(value=>!value)}>
      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
     </button>
