@@ -14,6 +14,10 @@ function range(from:string,to:string){
   return `${format(from)} – ${format(to)}`;
 }
 
+function addHours(value: Date, hours: number) {
+  return new Date(value.getTime() + hours * 60 * 60 * 1000).toISOString();
+}
+
 export async function GET(){
   try{
     const supabase=await createClient();
@@ -100,8 +104,10 @@ export async function POST(request:Request){
 
     const status=requestType==='reserve-question'?'reserved':'requested';
     const startAt=`${from}T${startTime}:00+02:00`;
+    const returnAt=`${to}T${startTime}:00+02:00`;
     const policy=product.cancellationPolicy||'moderate';
     const acceptedAt=new Date().toISOString();
+    const createdAt=new Date(acceptedAt);
     const {data:booking,error}=await admin.from('bookings').insert({
       renter_id:user.id,
       owner_id:owner.id,
@@ -109,6 +115,10 @@ export async function POST(request:Request){
       start_date:from,
       end_date:to,
       rental_start_at:startAt,
+      pickup_due_at:startAt,
+      return_due_at:returnAt,
+      request_expires_at:status==='requested'?addHours(createdAt,24):null,
+      reservation_expires_at:status==='reserved'?addHours(createdAt,12):null,
       cancellation_policy:policy,
       status,
       request_type:requestType,
