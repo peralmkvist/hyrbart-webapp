@@ -41,6 +41,7 @@ export default async function AdminOverview({params}:{params:Promise<{locale:str
     </div>
 
     <section style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12,margin:'20px 0'}}>
+      <Link className="modeSwitchButton" href={`/${locale}/admin/sok`}>Global sök →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/arenden`}>Support, skador & tvister →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/historik`}>Verifiera extern historik →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/importer`}>Hantera annonsimporter →</Link>
