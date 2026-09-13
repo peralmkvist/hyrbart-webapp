@@ -102,12 +102,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       throw insertError;
     }
 
+    const now = new Date();
+    const updates: Record<string, unknown> = { status: nextStatus, updated_at: now.toISOString() };
+    if (stage === 'return') updates.auto_complete_at = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+
     const { data: transitioned, error: updateError } = await admin
       .from('bookings')
-      .update({ status: nextStatus, updated_at: new Date().toISOString() })
+      .update(updates)
       .eq('id', id)
       .eq('status', expectedStatus)
-      .select('id,status')
+      .select('id,status,auto_complete_at')
       .maybeSingle();
     if (updateError) throw updateError;
     if (!transitioned) {
@@ -120,7 +124,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       bookingId: id,
       actorId: user.id,
       eventType: stage === 'pickup' ? 'pickup_documented' : 'return_documented',
-      metadata: { photo_id: inserted.id, previous_status: expectedStatus, new_status: nextStatus, stage },
+      metadata: { photo_id: inserted.id, previous_status: expectedStatus, new_status: nextStatus, stage, auto_complete_at: transitioned.auto_complete_at || null },
     });
 
     const { data: signed } = await admin.storage.from(BUCKET).createSignedUrl(path, 60 * 60);

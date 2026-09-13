@@ -17,7 +17,7 @@ const transitions: Record<BookingStatus, Partial<Record<BookingStatus, readonly 
   requested: {
     accepted: ['owner'],
     declined: ['owner'],
-    cancelled: ['renter'],
+    cancelled: ['renter', 'system'],
   },
   reserved: {
     accepted: ['owner'],
@@ -26,7 +26,7 @@ const transitions: Record<BookingStatus, Partial<Record<BookingStatus, readonly 
   },
   accepted: {
     paid: ['renter', 'system'],
-    cancelled: ['renter', 'owner'],
+    cancelled: ['renter', 'owner', 'system'],
   },
   paid: {
     active: ['renter'],
@@ -39,7 +39,7 @@ const transitions: Record<BookingStatus, Partial<Record<BookingStatus, readonly 
     disputed: ['renter', 'owner', 'admin'],
   },
   returned: {
-    completed: ['owner', 'admin'],
+    completed: ['owner', 'admin', 'system'],
     disputed: ['renter', 'owner', 'admin'],
   },
   completed: {

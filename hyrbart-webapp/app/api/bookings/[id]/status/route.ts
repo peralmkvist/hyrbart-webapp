@@ -18,6 +18,15 @@ function formatDateRange(from: string, to: string) {
   return `${format(from)} – ${format(to)}`;
 }
 
+function paymentDeadline(pickupAt?: string | null) {
+  const now = Date.now();
+  const twelveHours = now + 12 * 60 * 60 * 1000;
+  const twoHoursBeforePickup = pickupAt ? new Date(pickupAt).getTime() - 2 * 60 * 60 * 1000 : Number.POSITIVE_INFINITY;
+  const preferred = Math.min(twelveHours, twoHoursBeforePickup);
+  const minimum = now + 30 * 60 * 1000;
+  return new Date(Math.max(minimum, preferred)).toISOString();
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let body: { status?: string };
@@ -36,7 +45,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     const { data: booking, error: loadError } = await admin
       .from('bookings')
-      .select('id,owner_id,renter_id,product_id,start_date,end_date,status,currency,rental_price,service_fee,total_price')
+      .select('id,owner_id,renter_id,product_id,start_date,end_date,status,currency,rental_price,service_fee,total_price,rental_start_at,pickup_due_at')
       .eq('id', id)
       .maybeSingle();
     if (loadError) throw loadError;
@@ -50,20 +59,26 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Den statusändringen är inte tillåten.' }, { status: 409 });
     }
 
-    // This generic endpoint intentionally handles only owner decisions/completion.
-    // Payment, pickup/return and cancellation have dedicated endpoints with their own side effects.
     if (!isOwner || !['accepted', 'declined', 'completed'].includes(requestedStatus)) {
       return NextResponse.json({ error: 'Använd det specifika flödet för den här statusändringen.' }, { status: 409 });
     }
 
     const previousStatus = booking.status;
     const now = new Date().toISOString();
+    const updates: Record<string, unknown> = { status: requestedStatus, updated_at: now };
+    if (requestedStatus === 'accepted') {
+      updates.payment_due_at = paymentDeadline(booking.pickup_due_at || booking.rental_start_at);
+      updates.request_expires_at = null;
+      updates.reservation_expires_at = null;
+    }
+    if (requestedStatus === 'completed') updates.auto_complete_at = null;
+
     const { data: updated, error: updateError } = await admin
       .from('bookings')
-      .update({ status: requestedStatus, updated_at: now })
+      .update(updates)
       .eq('id', id)
       .eq('status', previousStatus)
-      .select('id,status')
+      .select('id,status,payment_due_at')
       .single();
     if (updateError) throw updateError;
 
@@ -71,7 +86,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       bookingId: id,
       actorId: user.id,
       eventType: 'booking_status_changed',
-      metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor },
+      metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor, payment_due_at: updated.payment_due_at || null },
     });
 
     if (updated.status === 'completed') {
@@ -97,7 +112,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       });
     }
 
-    return NextResponse.json({ ok: true, status: updated.status });
+    return NextResponse.json({ ok: true, status: updated.status, paymentDueAt: updated.payment_due_at || null });
   } catch (error) {
     console.error('Booking status update failed', error);
     return NextResponse.json({ error: 'Kunde inte uppdatera bokningen.' }, { status: 500 });
