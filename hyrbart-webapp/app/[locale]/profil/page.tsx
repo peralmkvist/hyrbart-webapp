@@ -10,13 +10,14 @@ import './profile-menu.css';
 
 const MenuChevron = () => <span className="profileChevron" aria-hidden="true">›</span>;
 
-type MenuIconName = 'account' | 'host' | 'review' | 'help' | 'profile' | 'terms' | 'privacy' | 'logout';
+type MenuIconName = 'account' | 'host' | 'review' | 'notifications' | 'help' | 'profile' | 'terms' | 'privacy' | 'logout';
 
 const MenuIcon = ({ name }: { name: MenuIconName }) => {
   const common = { width:24,height:24,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round' as const,strokeLinejoin:'round' as const,'aria-hidden':true };
   if (name === 'account') return <svg {...common}><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>;
   if (name === 'host') return <svg {...common}><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h2"/><path d="M10 12h10"/><circle cx="8" cy="12" r="2"/><path d="M4 18h8"/><path d="M16 18h4"/><circle cx="14" cy="18" r="2"/></svg>;
   if (name === 'review') return <svg {...common}><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>;
+  if (name === 'notifications') return <svg {...common}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>;
   if (name === 'help') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.5 2.5 0 1 1 4.4 1.6c-.9.9-2.2 1.3-2.2 2.9"/><path d="M12 17h.01"/></svg>;
   if (name === 'profile') return <svg {...common}><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.2-6 7-6s6.2 2 7 6"/></svg>;
   if (name === 'terms') return <svg {...common}><path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>;
@@ -44,13 +45,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
 
   const {first,last}=monthBounds();
   const today=new Date().toISOString().slice(0,10);
-  const [{data:profile},ownerSummary,renterSummary,{data:monthlyBookings},{data:firstRental}]=await Promise.all([
+  const [{data:profile},ownerSummary,renterSummary,{data:monthlyBookings},{data:firstRental},notificationCount]=await Promise.all([
     supabase.from('profiles').select('display_name, city, avatar_url').eq('id', user.id).maybeSingle(),
     getUserReviewSummary(user.id,'owner'),
     getUserReviewSummary(user.id,'renter'),
     supabase.from('bookings').select('total_price,start_date,status').eq('renter_id',user.id).gte('start_date',first).lte('start_date',last).in('status',['paid','active','returned','completed']),
     supabase.from('bookings').select('start_date').eq('renter_id',user.id).in('status',['paid','active','returned','completed']).lte('start_date',today).order('start_date',{ascending:true}).limit(1).maybeSingle(),
-  ]) as [{data:Profile|null},Awaited<ReturnType<typeof getUserReviewSummary>>,Awaited<ReturnType<typeof getUserReviewSummary>>,{data:{total_price:number|null;start_date:string;status:string}[]|null},{data:{start_date:string}|null}];
+    supabase.from('user_notifications').select('id',{count:'exact',head:true}).eq('user_id',user.id).is('read_at',null),
+  ]) as [{data:Profile|null},Awaited<ReturnType<typeof getUserReviewSummary>>,Awaited<ReturnType<typeof getUserReviewSummary>>,{data:{total_price:number|null;start_date:string;status:string}[]|null},{data:{start_date:string}|null},{count:number|null}];
 
   async function signOut() {
     'use server';
@@ -71,8 +73,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
     : null;
   const monthlySpend=(monthlyBookings||[]).reduce((sum,row)=>sum+Number(row.total_price||0),0);
   const ratingLabel=weightedRating==null?'–':weightedRating.toFixed(2).replace('.',',');
+  const unread=notificationCount.count||0;
 
-  const row = (label:string, icon:MenuIconName) => <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span><MenuChevron /></>;
+  const row = (label:string, icon:MenuIconName, suffix?:string) => <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span>{suffix?<strong style={{marginLeft:'auto',fontSize:13}}>{suffix}</strong>:null}<MenuChevron /></>;
 
   return <section className="ds2Page profileDashboard">
     <header className="ds2Header"><h1>{en ? 'Profile' : 'Profil'}</h1></header>
@@ -94,6 +97,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
       <div className="profileMenuList">
         <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/konto`}>{row(en ? 'Account settings' : 'Kontoinställningar','account')}</Link>
         <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/installningar`}>{row(en ? 'Renter settings' : 'Hyrarinställningar','host')}</Link>
+        <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/notiser`}>{row(en ? 'Notifications' : 'Notiser','notifications',unread?String(unread):undefined)}</Link>
         <ExternalHistoryModalSetting locale={locale}/>
         <PushNotificationsSetting locale={locale}/>
         <ProfileLanguageSetting locale={locale}/>
