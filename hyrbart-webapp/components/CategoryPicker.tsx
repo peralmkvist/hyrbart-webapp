@@ -18,44 +18,59 @@ function findPath(nodes:readonly CategoryNode[],target:string,parents:CategoryNo
   return null;
 }
 
+function optionsAt(path:string[],depth:number):readonly CategoryNode[]{
+  if(depth===0)return CATEGORY_TAXONOMY;
+  let nodes:readonly CategoryNode[]=CATEGORY_TAXONOMY;
+  for(let i=0;i<depth;i++){
+    const selected=nodes.find(node=>node.name===path[i]);
+    if(!selected?.children)return [];
+    nodes=selected.children;
+  }
+  return nodes;
+}
+
 export default function CategoryPicker({value,onChange,en=false}:Props){
-  const initial=useMemo(()=>value?findPath(CATEGORY_TAXONOMY,value):null,[value]);
-  const [main,setMain]=useState(initial?.[0]?.name||'');
-  const [sub,setSub]=useState(initial?.[1]?.name||'');
-  const [detail,setDetail]=useState(initial?.[2]?.name||'');
+  const initial=useMemo(()=>value?findPath(CATEGORY_TAXONOMY,value)?.map(node=>node.name)||[]:[],[value]);
+  const [path,setPath]=useState<string[]>(initial);
 
   useEffect(()=>{
-    if(!value)return;
-    const path=findPath(CATEGORY_TAXONOMY,value);
-    if(path){setMain(path[0]?.name||'');setSub(path[1]?.name||'');setDetail(path[2]?.name||'');}
+    if(!value){setPath([]);return;}
+    const found=findPath(CATEGORY_TAXONOMY,value)?.map(node=>node.name);
+    if(found)setPath(found);
   },[value]);
 
-  const mainNode=CATEGORY_TAXONOMY.find(x=>x.name===main);
-  const subNode=mainNode?.children?.find(x=>x.name===sub);
-  const subOptions=mainNode?.children||[];
-  const detailOptions=subNode?.children||[];
+  const levels=useMemo(()=>{
+    const result:{options:readonly CategoryNode[];selected:string;depth:number}[]=[];
+    let depth=0;
+    while(true){
+      const options=optionsAt(path,depth);
+      if(!options.length)break;
+      result.push({options,selected:path[depth]||'',depth});
+      const selected=options.find(node=>node.name===path[depth]);
+      if(!selected?.children?.length)break;
+      depth++;
+    }
+    return result;
+  },[path]);
 
-  function chooseMain(name:string){
-    setMain(name);setSub('');setDetail('');
-    if(!name){onChange('',[]);return;}
-    const node=CATEGORY_TAXONOMY.find(x=>x.name===name);
-    if(node&&!node.children?.length)onChange(node.name,[node.name]);else onChange('',[]);
+  function choose(depth:number,name:string){
+    const next=[...path.slice(0,depth),...(name?[name]:[])];
+    setPath(next);
+    if(!name){onChange('',next);return;}
+    const node=optionsAt(next,depth).find(item=>item.name===name);
+    if(node&&!node.children?.length)onChange(node.name,next);else onChange('',next);
   }
-  function chooseSub(name:string){
-    setSub(name);setDetail('');
-    if(!name){onChange('',[]);return;}
-    const node=mainNode?.children?.find(x=>x.name===name);
-    if(node&&!node.children?.length)onChange(node.name,[main,node.name]);else onChange('',[]);
-  }
-  function chooseDetail(name:string){
-    setDetail(name);
-    if(name)onChange(name,[main,sub,name]);else onChange('',[]);
-  }
+
+  const labels=(depth:number)=>{
+    if(depth===0)return en?'Main category':'Huvudkategori';
+    if(depth===1)return en?'Subcategory':'Underkategori';
+    if(depth===2)return en?'Detailed category':'Detaljkategori';
+    return en?`Category level ${depth+1}`:`Kategorinivå ${depth+1}`;
+  };
+  const placeholders=(depth:number)=>en?`Choose ${labels(depth).toLowerCase()}`:`Välj ${labels(depth).toLowerCase()}`;
 
   return <div className="newListingCategoryPicker">
-    <label className="newListingField"><span>{en?'Main category':'Huvudkategori'}</span><select value={main} onChange={e=>chooseMain(e.target.value)}><option value="">{en?'Choose main category':'Välj huvudkategori'}</option>{CATEGORY_TAXONOMY.map(node=><option key={node.name} value={node.name}>{node.name}</option>)}</select></label>
-    {main&&subOptions.length>0?<label className="newListingField"><span>{en?'Subcategory':'Underkategori'}</span><select value={sub} onChange={e=>chooseSub(e.target.value)}><option value="">{en?'Choose subcategory':'Välj underkategori'}</option>{subOptions.map(node=><option key={node.name} value={node.name}>{node.name}</option>)}</select></label>:null}
-    {sub&&detailOptions.length>0?<label className="newListingField"><span>{en?'Detailed category':'Detaljkategori'}</span><select value={detail} onChange={e=>chooseDetail(e.target.value)}><option value="">{en?'Choose detailed category':'Välj detaljkategori'}</option>{detailOptions.map(node=><option key={node.name} value={node.name}>{node.name}</option>)}</select></label>:null}
-    {value?<small className="newListingCategoryPath">{[main,sub,detail].filter(Boolean).join(' › ')}</small>:null}
+    {levels.map(({options,selected,depth})=><label className="newListingField" key={depth}><span>{labels(depth)}</span><select value={selected} onChange={e=>choose(depth,e.target.value)}><option value="">{placeholders(depth)}</option>{options.map(node=><option key={node.name} value={node.name}>{node.name}</option>)}</select></label>)}
+    {value?<small className="newListingCategoryPath">{path.join(' › ')}</small>:null}
   </div>;
 }
