@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { recordBookingEvent } from '@/lib/booking-events';
+import { canBookingTransition } from '@/lib/booking-state';
 
 const BUCKET = 'booking-condition-photos';
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -76,7 +77,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (file.size > MAX_BYTES) return NextResponse.json({ error: 'Bilden får vara högst 10 MB.' }, { status: 413 });
 
     const expectedStatus = stage === 'pickup' ? 'paid' : 'active';
-    if (booking.status !== expectedStatus) {
+    const nextStatus = stage === 'pickup' ? 'active' : 'returned';
+    if (booking.status !== expectedStatus || !canBookingTransition(booking.status, nextStatus, 'renter')) {
       return NextResponse.json({ error: stage === 'pickup' ? 'Bokningen måste vara betald innan utlämning.' : 'Bokningen är inte redo för återlämning.' }, { status: 409 });
     }
 
@@ -100,7 +102,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       throw insertError;
     }
 
-    const nextStatus = stage === 'pickup' ? 'active' : 'returned';
     const { data: transitioned, error: updateError } = await admin
       .from('bookings')
       .update({ status: nextStatus, updated_at: new Date().toISOString() })
@@ -110,6 +111,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .maybeSingle();
     if (updateError) throw updateError;
     if (!transitioned) {
+      await admin.from('booking_condition_photos').delete().eq('id', inserted.id);
+      await admin.storage.from(BUCKET).remove([path]);
       return NextResponse.json({ error: 'Bokningen ändrades samtidigt. Ladda om och försök igen.' }, { status: 409 });
     }
 
