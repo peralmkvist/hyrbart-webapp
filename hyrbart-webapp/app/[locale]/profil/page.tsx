@@ -63,6 +63,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
   const city = profile?.city;
   const initial = displayName.trim().charAt(0).toUpperCase() || 'H';
   const publicProfileHref = `/${locale}/profil/per`;
+  const insightsHref = `/topsecret/${locale}/profil/omdomen?role=renter`;
   const renterTenure=formatProfileTenure(firstRental?.start_date,locale);
   const reviews=ownerSummary.count+renterSummary.count;
   const weightedRating=reviews>0
@@ -82,8 +83,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
       </Link>
       <div className="profileStats"><div><strong>{renterTenure}</strong><span>{en ? 'Time as renter' : 'Tid som hyrare'}</span></div><div><strong>{reviews}</strong><span>{en ? 'published reviews' : 'publicerade omdömen'}</span></div><div><strong>{ratingLabel}</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
     </div>
-    <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Expenses' : 'Utgifter'}</h2><p>{en ? `SEK ${monthlySpend.toLocaleString('en-GB')} this month` : `${monthlySpend.toLocaleString('sv-SE')} kr den här månaden`}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><div className="profileInsightCard"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{reviews} {en ? 'published reviews' : 'publicerade omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></div></div>
-    <div className="profileMenuList profileReviewShortcut"><Link className="profileMenuRow" href={`/topsecret/${locale}/profil/omdomen?role=renter`}>{row(en ? 'Reviews' : 'Omdömen','review')}</Link></div>
+    <div className="profileInsightGrid">
+      <div className="profileInsightCard"><h2>{en ? 'Expenses' : 'Utgifter'}</h2><p>{en ? `SEK ${monthlySpend.toLocaleString('en-GB')} this month` : `${monthlySpend.toLocaleString('sv-SE')} kr den här månaden`}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div>
+      <Link className="profileInsightCard profileInsightLink" href={insightsHref}><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{reviews} {en ? 'published reviews' : 'publicerade omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></Link>
+    </div>
     <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}/vard/annonser`}>{en ? 'Switch to host mode' : 'Växla till uthyrarläge'}</Link>
 
     <div className="profileMenuSection">
