@@ -104,11 +104,11 @@ export default function HostListingsManager({locale}:{locale:string}){
         const status=item.listingStatus||'active';
         const statusText=status==='active'?(en?'Active':'Aktiv'):status==='paused'?(en?'Paused':'Pausad'):(en?'Draft':'Utkast');
         return <article className="hostListingManageCard" key={item.id}>
-          <div className="hostListingManageMain">
+          <Link className="hostListingManageMain" href={`/${locale}/produkter/${encodeURIComponent(item.slug)}?hostPreview=1`} aria-label={en?`Preview ${[item.brand,item.name].filter(Boolean).join(' ')}`:`Förhandsgranska ${[item.brand,item.name].filter(Boolean).join(' ')}`}>
             {item.image?<img src={item.image} alt=""/>:<div className="hostListingManagePlaceholder">H</div>}
             <div><span>{item.typeSv||item.category||''}</span><strong>{[item.brand,item.name].filter(Boolean).join(' ')||'Annons'}</strong><small>{item.dailyPrice?`${item.dailyPrice} kr/${en?'day':'dygn'}`:''}</small></div>
             <i className={`status-${status}`}>{statusText}</i>
-          </div>
+          </Link>
           <div className="hostListingManageActions">
             <Link href={`/${locale}/vard/annonser/${encodeURIComponent(item.id)}/redigera`}>{en?'Edit':'Redigera'}</Link>
             {status==='active'?<button disabled={busy===item.id} onClick={()=>action(item,'pause')}>{en?'Pause':'Pausa'}</button>:<button disabled={busy===item.id} onClick={()=>action(item,'activate')}>{en?'Activate':'Aktivera'}</button>}
