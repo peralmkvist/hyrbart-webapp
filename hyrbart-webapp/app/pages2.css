@@ -40,4 +40,24 @@
 .hostAddListingButton { min-height:64px; margin-top:22px; padding:0 18px; border-radius:18px; background:var(--accent); display:flex; align-items:center; justify-content:center; gap:10px; color:#111; font-size:1rem; font-weight:800; box-shadow:0 4px 16px rgba(17,17,17,.06); }.hostAddListingPlus { width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#111; color:#fff; font-size:1.2rem; line-height:1; }
 .hostListingsGrid { margin-top:22px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 12px; }.hostListingCard { min-width:0; }.hostListingVisual { position:relative; aspect-ratio:1.05; overflow:hidden; border-radius:18px; background:#f1f1ef; }.hostListingVisual .productVisual { width:100%; height:100%; min-height:0; background:transparent!important; }.hostListingVisual .productPhoto { padding:11px!important; object-fit:contain; }.hostListingStatus { position:absolute; top:9px; left:9px; padding:5px 8px; border-radius:999px; background:rgba(255,255,255,.94); box-shadow:0 2px 8px rgba(0,0,0,.08); font-size:.62rem; font-weight:800; }.hostListingCopy { padding:8px 2px 2px; }.hostListingCopy span { display:block; color:var(--muted); font-size:.69rem; }.hostListingCopy strong { display:block; margin-top:3px; font-size:.82rem; line-height:1.14; letter-spacing:-.015em; }.hostListingCopy b { display:block; margin-top:5px; font-size:.75rem; }
 .newListingPlaceholder { margin-top:26px; padding:28px 22px; border-radius:20px; background:#f0f0ee; }.newListingPlaceholder h2 { margin:0; font-size:1.25rem; }.newListingPlaceholder p { margin:8px 0 0; color:var(--muted); line-height:1.45; }
+
+/* Favorites */
+.favoritesPage2 .ds2Header { margin-bottom:20px; }
+.favoritesToolbar2 { position:relative; z-index:20; display:flex; justify-content:flex-end; align-items:center; gap:10px; min-height:44px; margin-bottom:18px; }
+.favoritesFilterWrap2 { position:relative; }
+.favoritesToolButton2 { width:44px; height:44px; padding:0; border:1px solid var(--line); border-radius:50%; display:grid; place-items:center; background:#fff; color:#111; }
+.favoritesToolButton2 svg { width:20px; height:20px; }
+.favoritesToolButton2.active { background:#111; color:#fff; border-color:#111; }
+.favoritesEditButton2 { min-height:44px; padding:0 16px; border:1px solid var(--line); border-radius:999px; background:#fff; color:#111; font:inherit; font-size:.82rem; font-weight:750; }
+.favoritesEditButton2.active { background:#111; color:#fff; border-color:#111; }
+.favoritesFilterMenu2 { position:absolute; top:52px; right:0; width:190px; max-height:300px; overflow:auto; padding:6px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 12px 32px rgba(17,17,17,.13); }
+.favoritesFilterMenu2 button { width:100%; min-height:42px; padding:0 12px; border:0; border-radius:11px; background:transparent; text-align:left; font:inherit; font-size:.82rem; font-weight:650; }
+.favoritesFilterMenu2 button.selected { background:#f1f1ef; font-weight:800; }
+.favoritesGrid2 { margin-top:0; }
+.favoriteTileWrap2 { position:relative; min-width:0; }
+.favoriteDeleteButton2 { position:absolute; top:9px; right:9px; z-index:8; width:38px; height:38px; padding:0; border:0; border-radius:50%; display:grid; place-items:center; background:#fff; color:#b42318; box-shadow:0 3px 12px rgba(17,17,17,.14); }
+.favoriteDeleteButton2 svg { width:18px; height:18px; }
+.favoriteDeleteButton2:disabled { opacity:.45; }
+.favoritesStatus2 { margin-top:0!important; }
+
 @media(min-width:700px){.hostListingsGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
