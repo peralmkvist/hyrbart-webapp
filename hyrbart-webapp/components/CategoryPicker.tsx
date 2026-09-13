@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { CATEGORY_TAXONOMY, type CategoryNode } from '@/lib/category-taxonomy';
+import { CATEGORY_TAXONOMY, type CategoryNode } from '@/lib/category-taxonomy-complete';
 
 type Props={
   value:string;
