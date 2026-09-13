@@ -60,9 +60,10 @@ test.describe('authenticated accessibility gate', () => {
     await page.goto('/sv/vard/profil', { waitUntil: 'domcontentloaded' });
 
     const trigger = page.getByRole('button', { name: 'Ta med verifierad historik från annan plattform' });
+    await expect(trigger).toBeEnabled();
     await trigger.focus();
     await expect(trigger).toBeFocused();
-    await page.keyboard.press('Enter');
+    await trigger.press('Enter');
 
     const dialog = page.getByRole('dialog', { name: 'Ta med din historik' });
     await expect(dialog).toBeVisible();
