@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
+import { consumeRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -43,6 +44,14 @@ export async function POST(request: Request) {
   const providedKey = request.headers.get('x-translation-key') ?? '';
   if (!providedKey || !secureEquals(providedKey, translationKey)) {
     return NextResponse.json({ error: 'Ogiltig översättningsnyckel.' }, { status: 401 });
+  }
+
+  const limit = await consumeRateLimit(request, 'translation', 5, 600);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: 'För många översättningsförsök. Försök igen senare.' }, {
+      status: 429,
+      headers: limit.resetAt ? { 'Retry-After': String(Math.max(1, Math.ceil((new Date(limit.resetAt).getTime() - Date.now()) / 1000))) } : undefined,
+    });
   }
 
   let body: { entries?: TranslationEntry[] };
