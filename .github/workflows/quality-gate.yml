@@ -27,8 +27,6 @@ jobs:
     defaults:
       run:
         working-directory: hyrbart-webapp
-    env:
-      E2E_BASE_URL: https://hyrbart.se
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
