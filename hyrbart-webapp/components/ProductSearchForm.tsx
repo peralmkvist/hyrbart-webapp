@@ -22,6 +22,7 @@ type RecentSearch = { q?: string; from?: string; to?: string; place?: string; ra
 type ActiveStep = 'what' | 'when' | 'where' | null;
 
 const RECENT_SEARCHES_KEY = 'hyrbartRecentSearches';
+const DEFAULT_SEARCH_LOCATION_KEY = 'hyrbartDefaultSearchLocation';
 
 function compactDate(value: string, en: boolean) {
   if (!value) return '';
@@ -97,6 +98,16 @@ export default function ProductSearchForm({
       setRecentSearches([]);
     }
   }, []);
+
+  useEffect(() => {
+    if (initialPlace || initialNearby) return;
+    try {
+      const raw = window.localStorage.getItem(DEFAULT_SEARCH_LOCATION_KEY);
+      const saved = raw ? JSON.parse(raw) as { place?: string; radius?: string } : null;
+      if (saved?.place) setPlace(saved.place);
+      if (saved?.radius) setRadius(saved.radius);
+    } catch {}
+  }, [initialPlace, initialNearby]);
 
   useEffect(() => {
     if (!searchStarted) return;
@@ -183,6 +194,11 @@ export default function ProductSearchForm({
       window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
       setRecentSearches(next);
     } catch {}
+  }
+
+  function clearRecentSearches() {
+    try { window.localStorage.removeItem(RECENT_SEARCHES_KEY); } catch {}
+    setRecentSearches([]);
   }
 
   function navigate(next: { query?: string; from?: string; to?: string; place?: string; radius?: string; nearby?: boolean } = {}, collapse = true) {
@@ -354,7 +370,7 @@ export default function ProductSearchForm({
       </label>
       {activeStep === 'what' && showProductSuggestions && <div className="searchSuggestMenu2 whatSuggestMenu2" role="listbox">
         {query.trim() && productSuggestions.map(item => <button type="button" className="searchSuggestItem2" key={`${item.kind}-${item.label}`} onPointerDown={e => e.preventDefault()} onClick={() => pickProduct(item.label)}><span>{item.label}</span><small>{item.kind === 'product' ? (en ? 'product' : 'produkt') : item.kind === 'category' ? (en ? 'category' : 'kategori') : (en ? 'type' : 'typ')}</small></button>)}
-        {!query.trim() && recentSearches.length > 0 && <><div className="searchSuggestHeading2">{en ? 'Recent searches' : 'Senaste sökningar'}</div>{recentSearches.map((item, index) => <button type="button" className="searchSuggestItem2 recentSuggestItem2" key={`${item.ts || index}-${item.q || ''}`} onPointerDown={e => e.preventDefault()} onClick={() => pickRecent(item)}><span><b>{item.q || (en ? 'All products' : 'Alla produkter')}</b>{recentMeta(item) && <small>{recentMeta(item)}</small>}</span><SearchIcon /></button>)}</>}
+        {!query.trim() && recentSearches.length > 0 && <><div className="searchSuggestHeading2 searchSuggestHeadingWithAction2"><span>{en ? 'Recent searches' : 'Senaste sökningar'}</span><button type="button" onPointerDown={e => e.preventDefault()} onClick={clearRecentSearches}>{en ? 'Clear' : 'Rensa'}</button></div>{recentSearches.map((item, index) => <button type="button" className="searchSuggestItem2 recentSuggestItem2" key={`${item.ts || index}-${item.q || ''}`} onPointerDown={e => e.preventDefault()} onClick={() => pickRecent(item)}><span><b>{item.q || (en ? 'All products' : 'Alla produkter')}</b>{recentMeta(item) && <small>{recentMeta(item)}</small>}</span><SearchIcon /></button>)}</>}
       </div>}
     </div>
 
