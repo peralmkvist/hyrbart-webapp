@@ -37,7 +37,7 @@ async function seedBookings(renterId:string,ownerId:string,runId:string):Promise
   const definitions:{label:Label;offset:number}[]=[{label:'lifecycle',offset:14},{label:'cancellation',offset:18},{label:'dispute',offset:22},{label:'race',offset:26}];
   const rows=definitions.map(({label,offset})=>{
     const rentalStartAt=new Date(Date.now()+offset*86400000).toISOString();
-    return {renter_id:renterId,owner_id:ownerId,product_id:PRODUCT_ID,start_date:isoDate(offset),end_date:isoDate(offset+1),status:'requested',currency:'SEK',rental_price:1000,service_fee:100,total_price:1100,request_type:'booking',message:`Authenticated E2E ${runId} ${label}`,cancellation_policy:'moderate',rental_start_at:rentalStartAt,pickup_due_at:rentalStartAt,return_due_at:new Date(Date.now()+(offset+1)*86400000).toISOString(),pickup_time:'10:00:00',return_time:'10:00:00',terms_version:'e2e',terms_accepted_at:new Date().toISOString(),terms_locale:'sv',request_expires_at:new Date(Date.now()+86400000).toISOString()};
+    return {renter_id:renterId,owner_id:ownerId,product_id:PRODUCT_ID,start_date:isoDate(offset),end_date:isoDate(offset+1),status:'requested',currency:'SEK',rental_price:1000,service_fee:100,request_type:'booking',message:`Authenticated E2E ${runId} ${label}`,cancellation_policy:'moderate',rental_start_at:rentalStartAt,pickup_due_at:rentalStartAt,return_due_at:new Date(Date.now()+(offset+1)*86400000).toISOString(),pickup_time:'10:00:00',return_time:'10:00:00',terms_version:'e2e',terms_accepted_at:new Date().toISOString(),terms_locale:'sv',request_expires_at:new Date(Date.now()+86400000).toISOString()};
   });
   const {data,error}=await admin.from('bookings').insert(rows).select('id,message'); if(error)throw error;
   const prefix=`Authenticated E2E ${runId} `;
