@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { canBookingTransition } from '@/lib/booking-state';
+import { notifyUser } from '@/lib/notifications';
 
 const BUCKET = 'booking-condition-photos';
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -125,6 +126,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       actorId: user.id,
       eventType: stage === 'pickup' ? 'pickup_documented' : 'return_documented',
       metadata: { photo_id: inserted.id, previous_status: expectedStatus, new_status: nextStatus, stage, auto_complete_at: transitioned.auto_complete_at || null },
+    });
+
+    await notifyUser({
+      userId: booking.owner_id,
+      bookingId: id,
+      type: stage === 'pickup' ? 'pickup_documented' : 'return_documented',
+      title: stage === 'pickup' ? 'Uthyrningen har startat' : 'Produkten är återlämnad',
+      body: stage === 'pickup' ? 'Hyrestagaren har dokumenterat utlämningen och markerat hyran som pågående.' : 'Hyrestagaren har dokumenterat återlämningen. Kontrollera skicket och avsluta bokningen om allt ser bra ut.',
+      url: `/topsecret/sv/bokningar/${id}`,
+      eventKey: `handover:${id}:${stage}`,
     });
 
     const { data: signed } = await admin.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
