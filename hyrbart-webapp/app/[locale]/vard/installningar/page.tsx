@@ -5,13 +5,17 @@ export default async function HostSettingsPage({ params }: { params: Promise<{ l
   const { locale } = await params;
   const en = locale === 'en';
   const items = en ? [
-    { title: 'Host profile', copy: 'Name and pickup locations used for your listings.', href: `/topsecret/${locale}/vard/onboarding/profil` },
+    { title: 'Profile settings', copy: 'Manage the profile details shared between renting and hosting.', href: `/topsecret/${locale}/vard/profil/konto?back=vard&section=profile` },
+    { title: 'Verification & safety', copy: 'See the identity verification shared across both roles.', href: `/topsecret/${locale}/vard/profil/verifiering?back=vard` },
+    { title: 'Pickup locations', copy: 'Manage the locations renters can use to collect your items.', href: `/topsecret/${locale}/vard/onboarding/profil` },
     { title: 'Payouts', copy: 'Manage the information used for payouts.', href: `/topsecret/${locale}/vard/onboarding/utbetalning` },
     { title: 'Automated messages', copy: 'Set up messages around your rentals.', href: `/topsecret/${locale}/vard/meddelanden/automatiserade` },
     { title: 'Import listings', copy: 'Bring listings into Hyrbart from another source.', href: `/topsecret/${locale}/vard/importera` },
     { title: 'Bookings and availability', copy: 'Review bookings and manage when your items are available.', href: `/topsecret/${locale}/vard` },
   ] : [
-    { title: 'Uthyrarprofil', copy: 'Namn och utlämningsplatser som används för dina annonser.', href: `/topsecret/${locale}/vard/onboarding/profil` },
+    { title: 'Profilinställningar', copy: 'Hantera profiluppgifter som delas mellan hyrar- och uthyrarläget.', href: `/topsecret/${locale}/vard/profil/konto?back=vard&section=profile` },
+    { title: 'Verifiering & trygghet', copy: 'Se identitetsverifieringen som delas mellan båda rollerna.', href: `/topsecret/${locale}/vard/profil/verifiering?back=vard` },
+    { title: 'Utlämningsplatser', copy: 'Hantera platser där hyrare kan hämta dina saker.', href: `/topsecret/${locale}/vard/onboarding/profil` },
     { title: 'Utbetalningar', copy: 'Hantera uppgifterna som används för utbetalningar.', href: `/topsecret/${locale}/vard/onboarding/utbetalning` },
     { title: 'Automatiserade meddelanden', copy: 'Ställ in meddelanden kring dina uthyrningar.', href: `/topsecret/${locale}/vard/meddelanden/automatiserade` },
     { title: 'Importera annonser', copy: 'Ta in annonser till Hyrbart från en annan källa.', href: `/topsecret/${locale}/vard/importera` },

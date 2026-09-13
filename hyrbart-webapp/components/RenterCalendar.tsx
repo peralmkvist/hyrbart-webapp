@@ -79,7 +79,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
       { key:'action' as const, title:en?'Requests':'Förfrågningar', items:groupedBookings.action },
       { key:'upcoming' as const, title:en?'Upcoming':'Kommande', items:groupedBookings.upcoming },
       { key:'active' as const, title:en?'Active':'Pågående', items:groupedBookings.active },
-      { key:'completed' as const, title:en?'Completed':'Avslutade', items:groupedBookings.completed },
+      { key:'completed' as const, title:en?'History':'Historik', items:groupedBookings.completed },
     ];
     return listFilter === 'all' ? groups : groups.filter(group => group.key === listFilter);
   }, [en, groupedBookings, listFilter]);
@@ -111,7 +111,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
         <h1>{en?'Bookings':'Bokningar'}</h1>
         <div className="hostCalendarTopActions">
           <div className="hostCalendarViewPicker">
-            <button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={() => setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>
+            <button type="button" className="hostCalendarViewButton" aria-expanded={viewMenuOpen} onClick={()=>setViewMenuOpen(v=>!v)}>{view==='month'?<ListingsIcon/>:<ListIcon/>}</button>
             {viewMenuOpen&&<div className="hostCalendarViewMenu" role="menu"><button type="button" className={view==='list'?'active':''} onClick={()=>{setView('list');setViewMenuOpen(false)}}><span>{en?'List':'Lista'}</span><ListIcon/></button><button type="button" className={view==='month'?'active':''} onClick={()=>{setView('month');setViewMenuOpen(false)}}><span>{en?'Calendar':'Kalender'}</span><ListingsIcon/></button></div>}
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function RenterCalendar({ locale }: { locale: string }) {
             ['action', en?'Requests':'Förfrågningar'],
             ['upcoming', en?'Upcoming':'Kommande'],
             ['active', en?'Active':'Pågående'],
-            ['completed', en?'Completed':'Avslutade'],
+            ['completed', en?'History':'Historik'],
           ] as Array<[ListFilter,string]>).map(([key,label])=><button key={key} type="button" className={listFilter===key?'active':''} onClick={()=>setListFilter(key)}>{label}{key==='action'&&actionCount>0?<span>{actionCount}</span>:null}</button>)}
         </div>
 
