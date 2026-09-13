@@ -52,8 +52,8 @@ export function resolveCategory(value?:string|null):DiscoveryCategory|null{
   if(!value)return null;
   const normalized=normalize(value);
   const candidates=byName.get(normalized);
-  if(candidates?.length===1)return candidates[0];
-  if(candidates?.length>1)return candidates.find(item=>item.path.length===1)||candidates[0];
+  if(candidates&&candidates.length===1)return candidates[0];
+  if(candidates&&candidates.length>1)return candidates.find(item=>item.path.length===1)||candidates[0];
   const legacyRoot=LEGACY_ROOTS[value]||Object.entries(LEGACY_ROOTS).find(([key])=>normalize(key)===normalized)?.[1];
   return legacyRoot?{name:value,root:legacyRoot,path:[legacyRoot,value],searchText:`${legacyRoot} ${value}`}:null;
 }
