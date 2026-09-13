@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -31,7 +32,7 @@ export default function BookingActions({ slug, from, to, locale }: Props) {
     try {
       const response = await fetch('/api/booking-request-safe', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, from, to, requestType: 'booking' }),
+        body: JSON.stringify({ slug, from, to, requestType: 'booking', locale }),
       });
       const data = await response.json() as { error?: string; code?: string; bookingId?: string };
       if (response.status === 401) {
@@ -53,6 +54,7 @@ export default function BookingActions({ slug, from, to, locale }: Props) {
   return <section className="bookingActions2" aria-label={en ? 'Booking actions' : 'Bokningsalternativ'}>
     {unavailable ? <div className="bookingAvailabilityWarning2" role="status"><strong>{en ? 'Not available for these dates' : 'Inte tillgänglig dessa datum'}</strong><span>{en ? 'The item is booked, reserved or blocked by the host. Change the dates to continue.' : 'Artikeln är bokad, reserverad eller blockerad av uthyraren. Ändra datum för att fortsätta.'}</span></div> : null}
     <button type="button" className="bookingPrimary2" disabled={sending || checking || unavailable} onClick={send}>{checking ? (en ? 'Checking availability…' : 'Kontrollerar tillgänglighet…') : sending ? (en ? 'Sending…' : 'Skickar…') : (en ? 'Send booking request' : 'Skicka bokningsförfrågan')}</button>
+    <p className="bookingHelper2">{en ? 'By sending a request you accept Hyrbart’s ' : 'Genom att skicka en förfrågan godkänner du Hyrbarts '}<Link href={`/topsecret/${locale}/hyresvillkor`}>{en ? 'rental terms' : 'hyresvillkor'}</Link>.</p>
     {feedback ? <p className="bookingFeedback2" role="status">{feedback}</p> : null}
   </section>;
 }
