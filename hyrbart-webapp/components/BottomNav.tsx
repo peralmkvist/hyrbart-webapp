@@ -5,15 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CalendarIcon, HeartIcon, ListingsIcon, PersonIcon, SearchIcon } from './Icons';
 
-function AddCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 8v8M8 12h8" />
-    </svg>
-  );
-}
-
 type BookingSummary = { status?: string; role?: 'owner' | 'renter' };
 
 export default function BottomNav() {
@@ -69,14 +60,13 @@ export default function BottomNav() {
     : { explore: 'Utforska', calendar: 'Bokningar', wishlist: 'Favoriter', profile: 'Profil', aria: 'Hyresmeny' };
 
   const hostLabels = isEnglish
-    ? { calendar: 'Bookings', listings: 'Listings', add: 'Add', profile: 'Profile', aria: 'Host menu' }
-    : { calendar: 'Bokningar', listings: 'Annonser', add: 'Lägg till', profile: 'Profil', aria: 'Uthyrarmeny' };
+    ? { calendar: 'Bookings', listings: 'Listings', profile: 'Profile', aria: 'Host menu' }
+    : { calendar: 'Bokningar', listings: 'Annonser', profile: 'Profil', aria: 'Uthyrarmeny' };
 
   const items = hostMode
     ? [
-        { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, booking: false, match: (p: string) => p === `/${locale}/vard/annonser` },
+        { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, booking: false, match: (p: string) => p === `/${locale}/vard/annonser` || p.startsWith(`/${locale}/vard/annonser/`) },
         { href: `${base}/vard`, label: hostLabels.calendar, Icon: CalendarIcon, booking: true, match: (p: string) => p === `/${locale}/vard` || p.startsWith(`/${locale}/vard/bokningar`) },
-        { href: `${base}/vard/annonser/ny`, label: hostLabels.add, Icon: AddCircleIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/vard/annonser/ny`) },
         { href: `${base}/vard/profil`, label: hostLabels.profile, Icon: PersonIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/vard/profil`) || p.startsWith(`/${locale}/vard/meny`) },
       ]
     : [
