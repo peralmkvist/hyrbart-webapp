@@ -6,6 +6,7 @@ import { notifyUser } from '@/lib/notifications';
 
 const ACCOUNT_STATUSES = new Set(['active','restricted','frozen']);
 const FLAG_SEVERITIES = new Set(['low','medium','high','critical']);
+const FLAG_STATUSES = new Set(['open','reviewing','resolved','dismissed']);
 
 export async function POST(request:Request,{params}:{params:Promise<{id:string}>}){
   const adminUser=await requireAdmin();
@@ -48,6 +49,23 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
     const {data,error}=await admin.from('risk_flags').insert({user_id:id,booking_id:bookingId,severity,reason,created_by:adminUser.id}).select('*').single();
     if(error)throw error;
     await recordAdminAction({adminUserId:adminUser.id,action:'risk_flag_created',entityType:'user',entityId:id,metadata:{flag_id:data.id,severity,reason,booking_id:bookingId}});
+    return NextResponse.json({ok:true,flag:data});
+  }
+
+  if(action==='risk_flag_status'){
+    const flagId=String(body.flagId||'');
+    const status=String(body.status||'');
+    if(!flagId||!FLAG_STATUSES.has(status)||status==='open')return NextResponse.json({error:'INVALID_FLAG_STATUS'},{status:400});
+    const {data:flag,error:flagError}=await admin.from('risk_flags').select('id,user_id,status').eq('id',flagId).maybeSingle();
+    if(flagError)throw flagError;
+    if(!flag||flag.user_id!==id)return NextResponse.json({error:'FLAG_NOT_FOUND'},{status:404});
+    if(['resolved','dismissed'].includes(flag.status))return NextResponse.json({error:'FLAG_ALREADY_CLOSED'},{status:409});
+    const closing=['resolved','dismissed'].includes(status);
+    const update={status,resolved_by:closing?adminUser.id:null,resolved_at:closing?new Date().toISOString():null};
+    const {data,error}=await admin.from('risk_flags').update(update).eq('id',flagId).eq('status',flag.status).select('*').maybeSingle();
+    if(error)throw error;
+    if(!data)return NextResponse.json({error:'FLAG_CHANGED'},{status:409});
+    await recordAdminAction({adminUserId:adminUser.id,action:'risk_flag_status_changed',entityType:'user',entityId:id,metadata:{flag_id:flagId,previous_status:flag.status,new_status:status}});
     return NextResponse.json({ok:true,flag:data});
   }
 
