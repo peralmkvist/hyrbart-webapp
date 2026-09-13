@@ -4,8 +4,6 @@ import { loadAuthenticatedFixture } from './auth-fixture';
 const fixture = loadAuthenticatedFixture();
 
 test.describe('authenticated local quality gate', () => {
-  test.skip(({ }, testInfo) => testInfo.project.name !== 'chromium-desktop', 'Runs once against the PR server.');
-
   test('rejects unauthenticated notification preferences', async ({ browser }) => {
     const context = await browser.newContext();
     const response = await context.request.get('/api/notifications/preferences');
