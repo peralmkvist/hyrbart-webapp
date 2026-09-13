@@ -20,9 +20,10 @@ test('unknown route returns branded 404 instead of framework default', async ({ 
 });
 
 test('skip link is keyboard reachable and moves focus to main content', async ({ page }) => {
-  await page.goto('/sv', { waitUntil: 'networkidle' });
+  await page.goto('/sv', { waitUntil: 'domcontentloaded' });
   const skipLink = page.getByRole('link', { name: /Hoppa till innehåll/i });
   await expect(skipLink).toBeAttached();
+  await expect(page.locator('#main-content')).toBeAttached();
 
   await page.keyboard.press('Tab');
   await expect(skipLink).toBeFocused();
