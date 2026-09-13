@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { getProducts } from '@/lib/sanity-products';
 import styles from './page.module.css';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DemoRenterBookingPage({params}:{params:Promise<{locale:string}>}){
   const {locale}=await params;
   const en=locale==='en';
