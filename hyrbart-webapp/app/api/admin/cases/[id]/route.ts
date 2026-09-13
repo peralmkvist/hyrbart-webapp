@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin';
 import { recordAdminAction } from '@/lib/admin-audit';
-import { settleBookingDispute, type ResolutionType } from '@/lib/dispute-settlement';
 import { notifyBookingParties } from '@/lib/notifications';
 
+type ResolutionType='full_refund'|'full_payout'|'split'|'no_financial_action';
 const STATUSES=new Set(['open','under_review','resolved','rejected']);
 const RESOLUTIONS=new Set<ResolutionType>(['full_refund','full_payout','split','no_financial_action']);
 const EVIDENCE_BUCKET='booking-case-evidence';
@@ -59,38 +59,41 @@ export async function PATCH(req:Request,{params}:{params:Promise<{id:string}>}){
   const closing=['resolved','rejected'].includes(status);
   if(closing&&decision.length<10)return NextResponse.json({error:'DECISION_REQUIRED'},{status:400});
   if(closing&&!RESOLUTIONS.has(resolutionType))return NextResponse.json({error:'RESOLUTION_REQUIRED'},{status:400});
-  if(caseRow.resolved_at&&closing)return NextResponse.json({error:'ALREADY_RESOLVED'},{status:409});
+
+  let settlement:any=null;
+  let updated:any=null;
+
+  if(closing){
+    const {data,error}=await admin.rpc('resolve_booking_case_atomic',{
+      p_case_id:id,
+      p_admin_user_id:user.id,
+      p_status:status,
+      p_decision:decision,
+      p_resolution_type:resolutionType,
+      p_refund_amount:Number.isFinite(refundAmount)?Math.round(refundAmount):0,
+      p_payout_amount:Number.isFinite(payoutAmount)?Math.round(payoutAmount):0,
+    });
+    if(error){
+      const code=String(error.message||'SETTLEMENT_FAILED').split(':')[0];
+      if(['REFUND_EXCEEDS_TOTAL','PAYOUT_EXCEEDS_RENTAL','SETTLEMENT_EXCEEDS_TOTAL','DECISION_REQUIRED','RESOLUTION_REQUIRED','INVALID_STATUS'].includes(code))return NextResponse.json({error:code},{status:400});
+      if(['PAYOUT_ALREADY_PAID','ALREADY_RESOLVED'].includes(code))return NextResponse.json({error:code},{status:409});
+      if(code==='CASE_NOT_FOUND')return NextResponse.json({error:'NOT_FOUND'},{status:404});
+      throw error;
+    }
+    settlement=data;
+    updated=data?.case;
+  }else{
+    const now=new Date().toISOString();
+    const {data,error}=await admin.from('booking_cases').update({status,updated_at:now}).eq('id',id).eq('resolved_at',null).select('*').maybeSingle();
+    if(error)return NextResponse.json({error:'SAVE_FAILED'},{status:500});
+    if(!data)return NextResponse.json({error:'ALREADY_RESOLVED'},{status:409});
+    updated=data;
+  }
 
   if(note){
     const {error:noteError}=await admin.from('admin_support_notes').insert({case_id:id,booking_id:caseRow.booking_id,admin_user_id:user.id,note});
     if(noteError)throw noteError;
   }
-
-  let settlement:any=null;
-  if(closing){
-    try{
-      settlement=await settleBookingDispute({bookingId:caseRow.booking_id,adminUserId:user.id,resolutionType,refundAmount,payoutAmount});
-    }catch(error:any){
-      const code=String(error?.message||'SETTLEMENT_FAILED');
-      if(['REFUND_EXCEEDS_TOTAL','PAYOUT_EXCEEDS_RENTAL','SETTLEMENT_EXCEEDS_TOTAL'].includes(code))return NextResponse.json({error:code},{status:400});
-      if(code==='PAYOUT_ALREADY_PAID')return NextResponse.json({error:code},{status:409});
-      throw error;
-    }
-  }
-
-  const now=new Date().toISOString();
-  const update:any={status,updated_at:now};
-  if(closing){
-    update.resolution=decision;
-    update.resolution_note=decision;
-    update.resolution_type=resolutionType;
-    update.refund_amount=settlement?.refundAmount||0;
-    update.payout_amount=settlement?.payoutAmount||0;
-    update.resolved_at=now;
-    update.resolved_by=user.id;
-  }
-  const {data:updated,error}=await admin.from('booking_cases').update(update).eq('id',id).select('*').single();
-  if(error)return NextResponse.json({error:'SAVE_FAILED'},{status:500});
 
   await admin.from('booking_events').insert({
     booking_id:caseRow.booking_id,
