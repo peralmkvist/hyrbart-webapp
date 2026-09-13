@@ -73,6 +73,7 @@ export async function PATCH(req:Request,{params}:{params:Promise<{id:string}>}){
     }catch(error:any){
       const code=String(error?.message||'SETTLEMENT_FAILED');
       if(['REFUND_EXCEEDS_TOTAL','PAYOUT_EXCEEDS_RENTAL','SETTLEMENT_EXCEEDS_TOTAL'].includes(code))return NextResponse.json({error:code},{status:400});
+      if(code==='PAYOUT_ALREADY_PAID')return NextResponse.json({error:code},{status:409});
       throw error;
     }
   }
