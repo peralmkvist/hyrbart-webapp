@@ -18,6 +18,8 @@ export function PersonIcon(props: IconProps) { return <svg {...common} {...props
 export function SearchIcon(props: IconProps) { return <svg {...common} {...props}><circle cx="10.7" cy="10.7" r="6.2"/><path d="m15.4 15.4 4.5 4.5"/></svg>; }
 export function HeartIcon(props: IconProps) { return <svg {...common} {...props}><path d="M20.5 8.8c0 5-8.5 10-8.5 10s-8.5-5-8.5-10a4.5 4.5 0 0 1 8.5-2 4.5 4.5 0 0 1 8.5 2Z"/></svg>; }
 export function MessageIcon(props: IconProps) { return <svg {...common} {...props}><path d="M4 5.5h16v11H9l-4.5 3v-3H4z"/></svg>; }
+export function MailIcon(props: IconProps) { return <svg {...common} {...props}><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4.5 7 7.5 6 7.5-6"/></svg>; }
+export function BanknoteIcon(props: IconProps) { return <svg {...common} {...props}><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5h.01M18 14.5h.01"/></svg>; }
 export function CalendarIcon(props: IconProps) { return <svg {...common} {...props}><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M8 3.5v4M16 3.5v4M4 9.5h16"/></svg>; }
 export function ListingsIcon(props: IconProps) { return <svg {...common} {...props}><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>; }
 export function BookIcon(props: IconProps) { return <svg {...common} {...props}><path d="M4.5 5.1c2.4-.8 4.7-.6 7.5.8v13c-2.8-1.4-5.1-1.6-7.5-.8z"/><path d="M19.5 5.1c-2.4-.8-4.7-.6-7.5.8v13c2.8-1.4 5.1-1.6 7.5-.8z"/></svg>; }
