@@ -1,0 +1,5 @@
+'use client';
+
+export default function GlobalError({reset}:{error:Error&{digest?:string};reset:()=>void}){
+  return <html lang="sv"><body><section style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,fontFamily:'Inter,system-ui,sans-serif',background:'#f4f4f1',color:'#15191b'}}><div style={{width:'min(100%,540px)',padding:28,border:'1px solid #d9dcda',borderRadius:24,background:'#fff'}}><div style={{width:54,height:54,borderRadius:16,display:'grid',placeItems:'center',background:'#c6f000',fontSize:22,fontWeight:900,marginBottom:20}}>!</div><h1 style={{margin:0,fontSize:'2rem'}}>Hyrbart kunde inte laddas</h1><p style={{lineHeight:1.5,color:'#62676b'}}>Ett oväntat fel uppstod. Försök ladda om sidan. Ingen ändring görs i din bokning bara för att den här sidan visas.</p><button type="button" onClick={reset} style={{minHeight:48,padding:'0 18px',border:0,borderRadius:14,background:'#15191b',color:'#fff',font:'inherit',fontWeight:800,cursor:'pointer'}}>Försök igen</button></div></section></body></html>;
+}
