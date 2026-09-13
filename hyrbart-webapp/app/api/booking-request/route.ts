@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getProduct, getProducts } from '@/lib/sanity-products';
 import { calculateRentalPricing } from '@/lib/rental-pricing';
-import { sendPushToUser } from '@/lib/push';
+import { notifyUser } from '@/lib/notifications';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { RENTAL_TERMS_VERSION, normalizeTermsLocale } from '@/lib/legal';
 
@@ -87,13 +87,15 @@ export async function POST(request:Request){
     const {data:{user}}=await supabase.auth.getUser();
     if(!user)return NextResponse.json({error:'Logga in för att skicka en bokningsförfrågan.'},{status:401});
 
-    const {data:renterProfile}=await admin.from('profiles').select('payment_method_ready').eq('id',user.id).maybeSingle();
+    const {data:renterProfile}=await admin.from('profiles').select('payment_method_ready,account_status').eq('id',user.id).maybeSingle();
+    if(renterProfile?.account_status&&renterProfile.account_status!=='active')return NextResponse.json({error:'Kontot är begränsat och kan inte skapa nya bokningar.',code:'ACCOUNT_RESTRICTED'},{status:403});
     if(!renterProfile?.payment_method_ready)return NextResponse.json({error:'Lägg till en betalningsmetod innan du kan boka.',code:'PAYMENT_METHOD_REQUIRED'},{status:409});
 
     const product=await getProduct(slug);
     if(!product?.id||!product.owner?.id)return NextResponse.json({error:'Annonsen eller uthyraren hittades inte.'},{status:404});
-    const {data:owner}=await admin.from('profiles').select('id').eq('sanity_profile_id',product.owner.id).maybeSingle();
+    const {data:owner}=await admin.from('profiles').select('id,account_status').eq('sanity_profile_id',product.owner.id).maybeSingle();
     if(!owner?.id)return NextResponse.json({error:'Uthyraren har ännu inget Hyrbart-konto.'},{status:409});
+    if(owner.account_status&&owner.account_status!=='active')return NextResponse.json({error:'Annonsen kan inte bokas just nu.',code:'OWNER_ACCOUNT_RESTRICTED'},{status:409});
     if(owner.id===user.id)return NextResponse.json({error:'Du kan inte boka din egen annons.'},{status:400});
 
     const pricing=calculateRentalPricing(product.price,from,to,product.rentalPrices,product.discounts);
@@ -132,20 +134,18 @@ export async function POST(request:Request){
     if(error)throw error;
 
     try{
-      await recordBookingEvent({
-        bookingId:booking.id,
-        actorId:user.id,
-        eventType:'booking_created',
-        metadata:{status,request_type:requestType,terms_version:RENTAL_TERMS_VERSION,cancellation_policy:policy},
-      });
+      await recordBookingEvent({bookingId:booking.id,actorId:user.id,eventType:'booking_created',metadata:{status,request_type:requestType,terms_version:RENTAL_TERMS_VERSION,cancellation_policy:policy}});
     }catch(eventError){console.error('Could not record booking creation event',eventError);}
 
     if(message.trim())await admin.from('booking_messages').insert({booking_id:booking.id,sender_id:user.id,body:message.trim().slice(0,2000)});
-    await sendPushToUser(owner.id,{
+    await notifyUser({
+      userId:owner.id,
+      bookingId:booking.id,
+      type:requestType==='reserve-question'?'reservation_created':'booking_requested',
       title:requestType==='reserve-question'?'Ny reservation':'Ny bokningsförfrågan',
       body:`${[product.brand,product.name].filter(Boolean).join(' ')}\n${range(from,to)}`,
       url:`/topsecret/sv/bokningar/${booking.id}`,
-      tag:`booking-request-${booking.id}`,
+      eventKey:`booking-request:${booking.id}`,
     });
 
     return NextResponse.json({ok:true,bookingId:booking.id,status:booking.status,total:booking.total_price,reserved:requestType==='reserve-question',cancellationPolicy:policy,termsVersion:RENTAL_TERMS_VERSION});
