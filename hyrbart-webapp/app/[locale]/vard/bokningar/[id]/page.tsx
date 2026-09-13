@@ -82,6 +82,7 @@ export default async function HostBookingPage({params}:{params:Promise<{locale:s
       {booking.terms_version?<><div className={styles.divider}/><div className={styles.infoRow}><div><span>{en?'Terms version':'Villkorsversion'}</span><strong>{booking.terms_version}</strong></div></div></>:null}
     </section>
 
+    <Link href={`/topsecret/${locale}/bokningar/${booking.id}/avtal`} className={styles.message}>{en?'View booking agreement':'Visa bokningsunderlag'}</Link>
     {booking.message?<section className={styles.card}><div className={styles.infoRow}><div><span>{en?'Message from renter':'Meddelande från hyrespersonen'}</span><strong>{booking.message}</strong></div></div></section>:null}
     <Link href={`/${locale}/vard/meddelanden`} className={styles.message}>{en?'Send message':'Skicka meddelande'}</Link>
   </main>;
