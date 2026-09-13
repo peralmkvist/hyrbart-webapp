@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { processBookingAutomations } from '@/lib/booking-automations';
+import { processNotificationMaintenance } from '@/lib/notification-maintenance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,10 +20,11 @@ function authorized(request: Request) {
 export async function POST(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const result = await processBookingAutomations();
-    return NextResponse.json({ ok: true, ...result });
+    const booking = await processBookingAutomations();
+    const notifications = await processNotificationMaintenance();
+    return NextResponse.json({ ok: true, ...booking, notifications });
   } catch (error) {
-    console.error('Booking automation worker failed', error);
+    console.error('Automation worker failed', error);
     return NextResponse.json({ error: 'Automation worker failed' }, { status: 500 });
   }
 }
