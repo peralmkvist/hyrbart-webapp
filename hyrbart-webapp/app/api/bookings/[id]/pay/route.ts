@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getProducts } from '@/lib/sanity-products';
-import { sendPushToUser } from '@/lib/push';
+import { notifyUser } from '@/lib/notifications';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { ensureSimulatedCapture } from '@/lib/payment-ledger';
 import { canBookingTransition } from '@/lib/booking-state';
@@ -37,10 +37,11 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     if (!alreadyPaid) {
       const { data: profile, error: profileError } = await admin
         .from('profiles')
-        .select('payment_method_ready')
+        .select('payment_method_ready,account_status')
         .eq('id', user.id)
         .maybeSingle();
       if (profileError) throw profileError;
+      if (profile?.account_status === 'frozen') return NextResponse.json({ error: 'Kontot är fryst.', code: 'ACCOUNT_FROZEN' }, { status: 403 });
       if (!profile?.payment_method_ready) {
         return NextResponse.json({ error: 'Lägg till en betalningsmetod innan du kan betala.', code: 'PAYMENT_METHOD_REQUIRED' }, { status: 409 });
       }
@@ -62,39 +63,18 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         bookingId: id,
         actorId: user.id,
         eventType: 'payment_captured',
-        metadata: {
-          previous_status: booking.status,
-          new_status: updated.status,
-          payment_id: payment.id,
-          provider: payment.provider,
-          amount: payment.amount,
-          currency: payment.currency,
-          simulated: payment.provider === 'simulation',
-        },
+        metadata: { previous_status: booking.status, new_status: updated.status, payment_id: payment.id, provider: payment.provider, amount: payment.amount, currency: payment.currency, simulated: payment.provider === 'simulation' },
       });
 
       if (booking.owner_id) {
         const products = await getProducts();
         const product = products.find(item => item.id === booking.product_id);
         const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt';
-        await sendPushToUser(booking.owner_id, {
-          title: 'Betalning genomförd',
-          body: `${productName}\n${formatDateRange(booking.start_date, booking.end_date)}`,
-          url: `/topsecret/sv/bokningar/${id}`,
-          tag: `booking-payment-${id}`,
-        });
+        await notifyUser({userId:booking.owner_id,bookingId:id,type:'payment_captured',title:'Betalning genomförd',body:`${productName}\n${formatDateRange(booking.start_date, booking.end_date)}`,url:`/topsecret/sv/bokningar/${id}`,eventKey:`booking-payment:${id}`});
       }
     }
 
-    return NextResponse.json({
-      ok: true,
-      status: 'paid',
-      total: Number(booking.total_price || payment.amount || 0),
-      paymentId: payment.id,
-      provider: payment.provider,
-      simulated: payment.provider === 'simulation',
-      idempotent: alreadyPaid,
-    });
+    return NextResponse.json({ ok: true, status: 'paid', total: Number(booking.total_price || payment.amount || 0), paymentId: payment.id, provider: payment.provider, simulated: payment.provider === 'simulation', idempotent: alreadyPaid });
   } catch (error) {
     console.error('Payment failed', error);
     return NextResponse.json({ error: 'Kunde inte genomföra testbetalningen.' }, { status: 500 });
