@@ -5,13 +5,13 @@ export default async function RenterSettingsPage({ params }: { params: Promise<{
   const { locale } = await params;
   const en = locale === 'en';
   const items = en ? [
-    { title: 'Profile settings', copy: 'Manage the profile details shared between renting and hosting.', href: `/topsecret/${locale}/profil/konto` },
+    { title: 'Profile settings', copy: 'Manage the profile details shared between renting and hosting.', href: `/topsecret/${locale}/profil/konto?section=profile` },
     { title: 'Payment settings', copy: 'Payment methods and payment-related preferences for rentals.', href: `/topsecret/${locale}/profil/installningar/betalning` },
     { title: 'Default search location', copy: 'Choose the place and radius used when you start a new search.', href: `/topsecret/${locale}/profil/installningar/plats` },
     { title: 'Verification & safety', copy: 'See your identity verification status and Hyrbart safety information.', href: `/topsecret/${locale}/profil/verifiering` },
     { title: 'Blocked users', copy: 'See and manage people you have blocked.', href: `/topsecret/${locale}/profil/installningar/blockerade` },
   ] : [
-    { title: 'Profilinställningar', copy: 'Hantera profiluppgifter som delas mellan hyrar- och uthyrarläget.', href: `/topsecret/${locale}/profil/konto` },
+    { title: 'Profilinställningar', copy: 'Hantera profiluppgifter som delas mellan hyrar- och uthyrarläget.', href: `/topsecret/${locale}/profil/konto?section=profile` },
     { title: 'Betalningsinställningar', copy: 'Betalmetoder och betalningsrelaterade inställningar för hyror.', href: `/topsecret/${locale}/profil/installningar/betalning` },
     { title: 'Standardplats för sökning', copy: 'Välj plats och radie som används när du startar en ny sökning.', href: `/topsecret/${locale}/profil/installningar/plats` },
     { title: 'Verifiering & trygghet', copy: 'Se status för identitetsverifiering och Hyrbarts trygghetsfunktioner.', href: `/topsecret/${locale}/profil/verifiering` },
