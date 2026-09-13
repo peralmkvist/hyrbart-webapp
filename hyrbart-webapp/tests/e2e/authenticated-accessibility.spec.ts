@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Browser, type BrowserContext } from '@playwright/test';
+import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { loadAuthenticatedFixture, type FixtureSession } from './auth-fixture';
 
 const fixture = loadAuthenticatedFixture();
@@ -17,7 +17,7 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
   return context;
 }
 
-async function expectNoBlockingA11yViolations(page: Parameters<typeof AxeBuilder>[0]['page']) {
+async function expectNoBlockingA11yViolations(page: Page) {
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
