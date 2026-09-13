@@ -50,7 +50,10 @@ async function acceptAndPay(owner: BrowserContext, renter: BrowserContext, booki
 }
 
 test.describe('production authenticated booking lifecycle', () => {
-  test.describe.configure({ mode: 'serial' });
+  // The suite mutates one isolated fixture per scenario. Retrying an already
+  // mutated fixture obscures the original failure (for example with a 409 on
+  // a second accept), so destructive production E2E runs once per fixture.
+  test.describe.configure({ mode: 'serial', retries: 0 });
 
   let renter: BrowserContext;
   let owner: BrowserContext;
