@@ -112,7 +112,7 @@ export default function ListingImportFlow({locale}:{locale:string}){
       <p style={{marginTop:0}}>{en?'These are stored only in the import staging area. They are not live listings.':'Dessa ligger endast i importens staginglager. De är inte publicerade annonser.'}</p>
       {items.length?<div style={{display:'grid',gap:4}}>{items.map(item=>{
         const data=item.normalized_data||item.source_payload||{};
-        const itemTitle=String(data.title||item.source_reference||en?'Untitled draft':'Namnlöst utkast');
+        const itemTitle=String(data.title||item.source_reference||(en?'Untitled draft':'Namnlöst utkast'));
         return <div key={item.id} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:10,padding:'13px 0',borderBottom:'1px solid var(--line)'}}><div style={{minWidth:0}}><strong>{itemTitle}</strong><small style={{display:'block',marginTop:3,color:'var(--muted)'}}>{String(data.category||'')} {data.price?`· ${String(data.price)}`:''}</small></div><b>{en?'Draft':'Utkast'}</b></div>;
       })}</div>:<div style={{padding:'18px 0',color:'var(--muted)'}}>{en?'No staging drafts yet.':'Inga staging-utkast ännu.'}</div>}
     </section>:null}
