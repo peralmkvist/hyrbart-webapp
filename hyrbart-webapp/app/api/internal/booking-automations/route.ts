@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { processBookingAutomations } from '@/lib/booking-automations';
+import { processAutomatedHostMessages } from '@/lib/automated-host-messages';
 import { processNotificationMaintenance } from '@/lib/notification-maintenance';
 
 export const runtime = 'nodejs';
@@ -41,12 +42,10 @@ async function withTransientRetry<T>(label: string, operation: () => Promise<T>)
 export async function POST(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    // Both processors are idempotent: booking actions use automation event keys and
-    // notifications use unique event keys. Retrying the whole processor is therefore
-    // safer than failing the five-minute cron run on a short Supabase gateway outage.
     const booking = await withTransientRetry('Booking automation', processBookingAutomations);
+    const hostMessages = await withTransientRetry('Host automated messages', processAutomatedHostMessages);
     const notifications = await withTransientRetry('Notification maintenance', processNotificationMaintenance);
-    return NextResponse.json({ ok: true, ...booking, notifications });
+    return NextResponse.json({ ok: true, ...booking, hostMessages, notifications });
   } catch (error) {
     console.error('Automation worker failed', error);
     return NextResponse.json({ error: 'Automation worker failed' }, { status: 500 });
