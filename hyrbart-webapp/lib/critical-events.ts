@@ -26,7 +26,7 @@ export const CRITICAL_EVENT_CONTRACT: Record<CriticalEventName, CriticalEventCon
   booking_created: {
     owner: 'Product',
     purpose: 'Measure conversion from browsing to a created booking or reservation.',
-    requiredProperties: ['status', 'request_type', 'currency', 'total_price'],
+    requiredProperties: ['status', 'request_type'],
   },
   booking_status_changed: {
     owner: 'Product',
