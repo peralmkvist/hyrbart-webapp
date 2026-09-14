@@ -26,6 +26,7 @@ export default async function OperationsPage({params,searchParams}:{params:Promi
   return <main className="adminPage">
     <header className="adminHeader"><div><span>HYRBART ADMIN</span><h1>Drift & larm</h1><p>Strukturerade driftfel och korrelationsspår. Senaste 100 persistenta händelser.</p></div></header>
     <p><Link href={`/${locale}/admin`}>← Till adminöversikten</Link></p>
+    <section style={{display:'flex',gap:10,flexWrap:'wrap',margin:'14px 0 18px'}}><Link className="modeSwitchButton" href={`/${locale}/admin/drift/playbook`}>Incident- & supportplaybook →</Link><a className="modeSwitchButton" href="/api/health" target="_blank" rel="noreferrer">Health check →</a></section>
     <div className="adminStats" style={{gridTemplateColumns:'repeat(3,minmax(100px,1fr))'}}><div><b>{critical}</b><span>Kritiska</span></div><div><b>{errors}</b><span>Fel</span></div><div><b>{warnings}</b><span>Varningar</span></div></div>
     {correlation?<section style={{margin:'16px 0',padding:14,border:'1px solid var(--line)',borderRadius:16}}><strong>Trace: {correlation}</strong> <Link href={`/${locale}/admin/drift`}>Rensa filter</Link></section>:null}
     <section className="adminQueue">
