@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import RentalRulesSettings from '@/components/RentalRulesSettings';
-import '../../../../profil/profile-menu.css';
+import '../../../profil/profile-menu.css';
 
 export default async function RentalRulesPage({params}:{params:Promise<{locale:string}>}){
   const {locale}=await params; const en=locale==='en';
