@@ -1,10 +1,11 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 type Confidence='verified'|'user_provided'|'suggested'|'missing';
 type Item={
   id:string;
+  status:string;
   source_reference:string|null;
   source_url:string|null;
   normalized_data:Record<string,unknown>;
@@ -56,24 +57,47 @@ export default function ImportDraftReview({item,locale,onSaved}:{item:Item;local
     return value==='verified'?'Verifierat':value==='user_provided'?'Användaruppgift':value==='suggested'?'Föreslaget':'Saknas';
   }
 
+  function fieldLabel(key:string){return key==='title'?(en?'Title':'Rubrik'):key==='description'?(en?'Description':'Beskrivning'):key==='price'?(en?'Price text':'Pristext'):(en?'Category':'Kategori');}
   function setField(key:string,value:string){setValues(current=>({...current,[key]:value}));}
+
+  const checklist=useMemo(()=>[
+    ...fieldNames.map(key=>({key,label:fieldLabel(key),ok:Boolean(values[key].trim())&&confidence[key]!=='missing'})),
+    {key:'image',label:en?'At least one image':'Minst en bild',ok:assets.some(asset=>asset.asset_kind==='image')},
+  ],[values,confidence,assets,en]);
+  const canMarkReady=checklist.every(item=>item.ok);
+
+  async function persist(status:'draft'|'ready'){
+    const nextConfidence={...confidence};
+    for(const key of fieldNames){if(!values[key].trim())nextConfidence[key]='missing';}
+    const response=await fetch('/api/imports/assisted/items',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      itemId:item.id,
+      sourceReference:values.reference.trim()||null,
+      sourceUrl:values.sourceUrl.trim()||null,
+      normalizedData:{title:values.title.trim(),description:values.description.trim(),price:values.price.trim(),category:values.category.trim()},
+      fieldConfidence:nextConfidence,
+      status,
+    })});
+    const payload=await response.json() as {error?:string;readiness?:{missing?:string[]}};
+    if(!response.ok){
+      if(payload.error==='INVALID_SOURCE_URL')throw new Error(en?'Use a valid HTTPS source URL or leave it blank.':'Använd en giltig HTTPS-källänk eller lämna fältet tomt.');
+      if(payload.error==='ITEM_NOT_READY')throw new Error(en?'The draft is not ready yet. Complete the checklist first.':'Utkastet är inte redo ännu. Slutför checklistan först.');
+      throw new Error(en?'Could not save changes.':'Kunde inte spara ändringarna.');
+    }
+    setConfidence(nextConfidence);
+    await onSaved();
+  }
 
   async function save(event:FormEvent){
     event.preventDefault();setBusy(true);setMessage('');
-    try{
-      const nextConfidence={...confidence};
-      for(const key of fieldNames){if(!values[key].trim())nextConfidence[key]='missing';}
-      const response=await fetch('/api/imports/assisted/items',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        itemId:item.id,
-        sourceReference:values.reference.trim()||null,
-        sourceUrl:values.sourceUrl.trim()||null,
-        normalizedData:{title:values.title.trim(),description:values.description.trim(),price:values.price.trim(),category:values.category.trim()},
-        fieldConfidence:nextConfidence,
-      })});
-      const payload=await response.json() as {error?:string};
-      if(!response.ok)throw new Error(payload.error==='INVALID_SOURCE_URL'?(en?'Use a valid HTTPS source URL or leave it blank.':'Använd en giltig HTTPS-källänk eller lämna fältet tomt.'):(en?'Could not save changes.':'Kunde inte spara ändringarna.'));
-      setConfidence(nextConfidence);setMessage(en?'Changes saved in staging.':'Ändringarna är sparade i staging.');await onSaved();
-    }catch(error){setMessage(error instanceof Error?error.message:(en?'Something went wrong.':'Något gick fel.'));}
+    try{await persist('draft');setMessage(en?'Changes saved in staging.':'Ändringarna är sparade i staging.');}
+    catch(error){setMessage(error instanceof Error?error.message:(en?'Something went wrong.':'Något gick fel.'));}
+    finally{setBusy(false);}
+  }
+
+  async function markReady(){
+    setBusy(true);setMessage('');
+    try{await persist('ready');setMessage(en?'Ready for publication. Publication remains disabled while CMS restore is pending.':'Redo för publicering. Själva publiceringen är fortsatt avstängd medan CMS-återställningen pågår.');}
+    catch(error){setMessage(error instanceof Error?error.message:(en?'Something went wrong.':'Något gick fel.'));}
     finally{setBusy(false);}
   }
 
@@ -104,9 +128,9 @@ export default function ImportDraftReview({item,locale,onSaved}:{item:Item;local
 
   return <article style={{borderTop:'1px solid var(--line)',paddingTop:18,display:'grid',gap:16}}>
     <form onSubmit={save} style={{display:'grid',gap:12}}>
-      <div style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'baseline'}}><strong>{values.title||values.reference||(en?'Untitled draft':'Namnlöst utkast')}</strong><span style={{fontSize:12,fontWeight:800,color:'var(--muted)'}}>{en?'STAGING':'STAGING'}</span></div>
+      <div style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'baseline'}}><strong>{values.title||values.reference||(en?'Untitled draft':'Namnlöst utkast')}</strong><span style={{fontSize:12,fontWeight:800,color:item.status==='ready'?'inherit':'var(--muted)'}}>{item.status==='ready'?(en?'READY':'REDO'):(en?'STAGING':'STAGING')}</span></div>
       {fieldNames.map(key=><label key={key} style={{display:'grid',gap:6,fontWeight:700}}>
-        <span style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'center'}}><span>{key==='title'?(en?'Title':'Rubrik'):key==='description'?(en?'Description':'Beskrivning'):key==='price'?(en?'Price text':'Pristext'):(en?'Category':'Kategori')}</span><select value={confidence[key]} onChange={e=>setConfidence(current=>({...current,[key]:e.target.value as Confidence}))} style={qualityStyle} aria-label={`${key} quality`}><option value="verified">{confidenceLabel('verified')}</option><option value="user_provided">{confidenceLabel('user_provided')}</option><option value="suggested">{confidenceLabel('suggested')}</option><option value="missing">{confidenceLabel('missing')}</option></select></span>
+        <span style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'center'}}><span>{fieldLabel(key)}</span><select value={confidence[key]} onChange={e=>setConfidence(current=>({...current,[key]:e.target.value as Confidence}))} style={qualityStyle} aria-label={`${key} quality`}><option value="verified">{confidenceLabel('verified')}</option><option value="user_provided">{confidenceLabel('user_provided')}</option><option value="suggested">{confidenceLabel('suggested')}</option><option value="missing">{confidenceLabel('missing')}</option></select></span>
         {key==='description'?<textarea value={values.description} onChange={e=>setField('description',e.target.value)} rows={5} style={{...inputStyle,padding:11,resize:'vertical'}}/>:<input value={values[key]} onChange={e=>setField(key,e.target.value)} style={inputStyle}/>} 
       </label>)}
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:12}}><label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Original URL':'Ursprunglig länk'}<input type="url" value={values.sourceUrl} onChange={e=>setField('sourceUrl',e.target.value)} style={inputStyle}/></label><label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Reference':'Referens'}<input value={values.reference} onChange={e=>setField('reference',e.target.value)} style={inputStyle}/></label></div>
@@ -117,6 +141,13 @@ export default function ImportDraftReview({item,locale,onSaved}:{item:Item;local
       <div><strong>{en?'Images & documents':'Bilder & dokument'}</strong><p style={{margin:'4px 0 0',fontSize:13,color:'var(--muted)'}}>{en?'Files remain private in import staging. They are not published.':'Filerna ligger privat i importens staging och publiceras inte.'}</p></div>
       {assets.length?<div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{assets.map(asset=>asset.asset_kind==='image'&&asset.preview_url?<a key={asset.id} href={asset.preview_url} target="_blank" rel="noreferrer" style={{display:'block'}}><img src={asset.preview_url} alt={asset.source_filename||''} style={{width:86,height:86,objectFit:'cover',borderRadius:12,border:'1px solid var(--line)'}}/></a>:<a key={asset.id} href={asset.preview_url||'#'} target={asset.preview_url?'_blank':undefined} rel="noreferrer" style={{padding:'10px 12px',border:'1px solid var(--line)',borderRadius:12,color:'inherit',textDecoration:'none',fontSize:13}}>{asset.source_filename|| (en?'Document':'Dokument')}</a>)}</div>:<span style={{fontSize:13,color:'var(--muted)'}}>{en?'No files attached yet.':'Inga filer bifogade ännu.'}</span>}
       <form onSubmit={uploadAsset} style={{display:'grid',gap:9}}><input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf" onChange={e=>setFile(e.target.files?.[0]||null)}/><label style={{display:'flex',gap:8,alignItems:'flex-start',fontSize:13}}><input type="checkbox" checked={rightsConfirmed} onChange={e=>setRightsConfirmed(e.target.checked)} style={{marginTop:2}}/><span>{en?'I confirm that I have the right to use this file in my Hyrbart listing.':'Jag bekräftar att jag har rätt att använda filen i min Hyrbart-annons.'}</span></label><button type="submit" disabled={assetBusy||!file||!rightsConfirmed} className="modeSwitchButton" style={{border:0,cursor:'pointer',justifySelf:'start'}}>{assetBusy?(en?'Uploading…':'Laddar upp…'):(en?'Attach file':'Bifoga fil')}</button></form>
+    </section>
+
+    <section style={{display:'grid',gap:10,padding:'14px',border:'1px solid var(--line)',borderRadius:14}}>
+      <div><strong>{en?'Ready for publication':'Redo för publicering'}</strong><p style={{margin:'4px 0 0',fontSize:13,color:'var(--muted)'}}>{en?'Complete every requirement before the draft can be marked ready. This does not publish anything.':'Slutför alla krav innan utkastet kan markeras som redo. Detta publicerar ingenting.'}</p></div>
+      <div style={{display:'grid',gap:7}}>{checklist.map(check=><div key={check.key} style={{display:'flex',gap:8,alignItems:'center',fontSize:14}}><span aria-hidden="true">{check.ok?'✓':'○'}</span><span>{check.label}</span></div>)}</div>
+      <button type="button" onClick={markReady} disabled={busy||!canMarkReady} className="modeSwitchButton" style={{border:0,cursor:canMarkReady?'pointer':'not-allowed',justifySelf:'start'}}>{item.status==='ready'?(en?'Revalidate readiness':'Validera redo-status igen'):(en?'Mark ready for publication':'Markera som redo för publicering')}</button>
+      {item.status==='ready'?<small style={{fontWeight:700}}>{en?'Ready in staging. CMS publication is still disabled.':'Redo i staging. CMS-publicering är fortfarande avstängd.'}</small>:null}
     </section>
     {message?<p role="status" style={{margin:0,fontWeight:700}}>{message}</p>:null}
   </article>;
