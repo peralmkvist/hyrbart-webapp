@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getUserReviewSummary } from '@/lib/review-summaries';
-import '../../../../profil/profile-menu.css';
+import '../../../profil/profile-menu.css';
 import '../host-profile-insights.css';
 
 type Profile = { sanity_profile_id:string|null };
