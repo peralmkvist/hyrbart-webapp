@@ -16,12 +16,19 @@ type OperationalEvent = {
   persist?: boolean;
 };
 
-const BLOCKED_KEYS = /password|secret|token|authorization|cookie|email|phone|address|message_body|body/i;
+const BLOCKED_KEYS = /password|secret|token|authorization|cookie|email|phone|address|message_body|body|description|reason|file_?name|filename|attachment|query_text|place|latitude|longitude|(^|_)lat$|(^|_)lng$/i;
+
+function sanitizeText(value: string) {
+  return value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted-email]')
+    .replace(/(?:\+?\d[\d\s().-]{7,}\d)/g, '[redacted-phone]')
+    .slice(0, 500);
+}
 
 function sanitize(value: unknown, depth = 0): unknown {
   if (depth > 4) return '[max-depth]';
   if (value === null || value === undefined || typeof value === 'number' || typeof value === 'boolean') return value;
-  if (typeof value === 'string') return value.length > 500 ? `${value.slice(0, 500)}…` : value;
+  if (typeof value === 'string') return sanitizeText(value);
   if (Array.isArray(value)) return value.slice(0, 20).map(item => sanitize(item, depth + 1));
   if (typeof value === 'object') {
     const out: Record<string, unknown> = {};
@@ -30,7 +37,7 @@ function sanitize(value: unknown, depth = 0): unknown {
     }
     return out;
   }
-  return String(value);
+  return sanitizeText(String(value));
 }
 
 export function correlationIdFromRequest(request: Request) {
@@ -38,13 +45,14 @@ export function correlationIdFromRequest(request: Request) {
 }
 
 export function errorSummary(error: unknown) {
-  if (error instanceof Error) return { name: error.name, message: error.message.slice(0, 500) };
-  return { message: String(error).slice(0, 500) };
+  if (error instanceof Error) return { name: error.name, message: sanitizeText(error.message) };
+  return { message: sanitizeText(String(error)) };
 }
 
 export async function logOperationalEvent(event: OperationalEvent) {
   const timestamp = new Date().toISOString();
   const metadata = sanitize(event.metadata ?? {}) as Record<string, unknown>;
+  const safeMessage = sanitizeText(event.message);
   const payload = {
     ts: timestamp,
     kind: 'hyrbart_operational_event',
@@ -55,7 +63,7 @@ export async function logOperationalEvent(event: OperationalEvent) {
     route: event.route ?? null,
     entity_type: event.entityType ?? null,
     entity_id: event.entityId ?? null,
-    message: event.message,
+    message: safeMessage,
     metadata,
   };
   const encoded = JSON.stringify(payload);
@@ -75,10 +83,10 @@ export async function logOperationalEvent(event: OperationalEvent) {
       route: event.route ?? null,
       entity_type: event.entityType ?? null,
       entity_id: event.entityId ?? null,
-      message: event.message.slice(0, 1000),
+      message: safeMessage.slice(0, 1000),
       metadata,
     });
-    if (error) console.error(JSON.stringify({ ts: timestamp, kind: 'hyrbart_observability_write_failed', correlation_id: event.correlationId, error: error.message }));
+    if (error) console.error(JSON.stringify({ ts: timestamp, kind: 'hyrbart_observability_write_failed', correlation_id: event.correlationId, error: sanitizeText(error.message) }));
   } catch (error) {
     console.error(JSON.stringify({ ts: timestamp, kind: 'hyrbart_observability_write_failed', correlation_id: event.correlationId, error: errorSummary(error) }));
   }
