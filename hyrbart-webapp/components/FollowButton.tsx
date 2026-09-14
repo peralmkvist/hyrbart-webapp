@@ -11,6 +11,7 @@ export default function FollowButton({ userId, locale, compact = false }: Props)
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [authenticated, setAuthenticated] = useState(true);
+  const [self, setSelf] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -20,7 +21,8 @@ export default function FollowButton({ userId, locale, compact = false }: Props)
         if (cancelled) return;
         if (response.status === 401) { setAuthenticated(false); return; }
         if (!response.ok) return;
-        const data = await response.json() as { following?: boolean; followerCount?: number };
+        const data = await response.json() as { self?: boolean; following?: boolean; followerCount?: number };
+        setSelf(Boolean(data.self));
         setFollowing(Boolean(data.following));
         setCount(Number(data.followerCount || 0));
       } finally { if (!cancelled) setLoading(false); }
@@ -49,6 +51,7 @@ export default function FollowButton({ userId, locale, compact = false }: Props)
     } finally { setSaving(false); }
   }
 
+  if (self) return null;
   const buttonStyle = {border:'1px solid #111',borderRadius:999,padding:compact?'8px 14px':'10px 20px',background:following?'#fff':'#111',color:following?'#111':'#fff',fontWeight:800,cursor:saving?'wait':'pointer'} as const;
   if (loading) return <button type="button" disabled aria-busy="true" style={{...buttonStyle,opacity:.55}}>{en ? 'Loading…' : 'Laddar…'}</button>;
   return <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',justifyContent:compact?'flex-start':'center'}}>
