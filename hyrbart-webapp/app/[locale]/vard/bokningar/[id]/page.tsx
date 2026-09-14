@@ -4,6 +4,7 @@ import HostBookingManage from '@/components/HostBookingManage';
 import BookingConditionEvidence from '@/components/BookingConditionEvidence';
 import BookingCancellationFlow from '@/components/BookingCancellationFlow';
 import RenterReputationCard from '@/components/RenterReputationCard';
+import LateReturnCard from '@/components/LateReturnCard';
 import { createClient } from '@/lib/supabase/server';
 import { getProducts } from '@/lib/sanity-products';
 import styles from '../demo/page.module.css';
@@ -27,9 +28,10 @@ export default async function HostBookingPage({params}:{params:Promise<{locale:s
   const {data:booking,error}=await supabase.from('bookings').select('*').eq('id',id).maybeSingle();
   if(error||!booking||booking.owner_id!==user.id) notFound();
 
-  const [products, renterResult] = await Promise.all([
+  const [products, renterResult, lateResult] = await Promise.all([
     getProducts(),
     supabase.from('profiles').select('display_name,avatar_url,city,bankid_verified,identity_verification_status').eq('id',booking.renter_id).maybeSingle(),
+    supabase.from('booking_late_returns').select('*').eq('booking_id',id).maybeSingle(),
   ]);
   const product=products.find(item=>item.id===booking.product_id);
   const renter=renterResult.data;
@@ -67,6 +69,7 @@ export default async function HostBookingPage({params}:{params:Promise<{locale:s
       <small style={{display:'block',marginTop:10,color:'var(--muted)'}}>{en?'The booked price is locked even if the listing price changes later.':'Bokningens pris är låst även om annonspriset ändras senare.'}</small>
     </section>
 
+    <LateReturnCard late={lateResult.data} locale={locale} isOwner={true}/>
     <BookingConditionEvidence bookingId={booking.id} status={booking.status} locale={locale} isRenter={false}/>
     <HostBookingManage bookingId={booking.id} status={booking.status} locale={locale} className={styles.manage}/>
     <BookingCancellationFlow bookingId={booking.id} status={booking.status} isOwner={true} totalPrice={Number(booking.total_price||0)} locale={locale}/>
