@@ -8,6 +8,7 @@ import { notifyUser } from '@/lib/notifications';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { RENTAL_TERMS_VERSION, normalizeTermsLocale } from '@/lib/legal';
 import { stockholmLocalDateTimeToIso } from '@/lib/timezone';
+import { hasRequiredProfilePhoto, PROFILE_PHOTO_REQUIRED_CODE, profilePhotoRequiredMessage } from '@/lib/profile-requirements';
 
 export const runtime = 'nodejs';
 
@@ -95,8 +96,9 @@ export async function POST(request:Request){
     const {data:{user}}=await supabase.auth.getUser();
     if(!user)return NextResponse.json({error:'Logga in för att skicka en bokningsförfrågan.'},{status:401});
 
-    const {data:renterProfile}=await admin.from('profiles').select('payment_method_ready,account_status').eq('id',user.id).maybeSingle();
+    const {data:renterProfile}=await admin.from('profiles').select('payment_method_ready,account_status,avatar_url').eq('id',user.id).maybeSingle();
     if(renterProfile?.account_status&&renterProfile.account_status!=='active')return NextResponse.json({error:'Kontot är begränsat och kan inte skapa nya bokningar.',code:'ACCOUNT_RESTRICTED'},{status:403});
+    if(!hasRequiredProfilePhoto(renterProfile?.avatar_url))return NextResponse.json({error:profilePhotoRequiredMessage(locale,'renter'),code:PROFILE_PHOTO_REQUIRED_CODE},{status:409});
     if(!renterProfile?.payment_method_ready)return NextResponse.json({error:'Lägg till en betalningsmetod innan du kan boka.',code:'PAYMENT_METHOD_REQUIRED'},{status:409});
 
     const product=await getProduct(slug);
