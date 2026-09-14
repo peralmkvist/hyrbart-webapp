@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import ExternalHistoryModalSetting from '@/components/ExternalHistoryModalSetting';
 import ProfileLanguageSetting from '@/components/ProfileLanguageSetting';
 import PushNotificationsSetting from '@/components/PushNotificationsSetting';
+import HostRevenueGoal from '@/components/HostRevenueGoal';
 import { createClient } from '@/lib/supabase/server';
 import { getUserReviewSummary } from '@/lib/review-summaries';
 import { formatProfileTenure } from '@/lib/profile-tenure';
@@ -112,6 +113,7 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
         <div className="profileStats"><div><strong>{hostTenure}</strong><span>{en ? 'Time as host' : 'Tid som uthyrare'}</span></div><div><strong>{reviewCount}</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>{ratingLabel}</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
       </div>
       <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? `SEK ${monthlyRevenue.toLocaleString('en-GB')} this month` : `${monthlyRevenue.toLocaleString('sv-SE')} kr den här månaden`}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><Link href={insightsHref} className="profileInsightCard profileInsightLink"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{reviewCount} {en ? 'reviews' : 'omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></Link></div>
+      <HostRevenueGoal locale={locale}/>
       <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
 
       <div className="profileMenuSection">
