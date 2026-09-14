@@ -92,7 +92,7 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
   const displayName = profile?.display_name || (en ? 'Hyrbart user' : 'Hyrbart-användare');
   const city = profile?.city;
   const initial = displayName.trim().charAt(0).toUpperCase() || 'H';
-  const publicProfileHref = `/${locale}/profil/per`;
+  const publicProfileHref = `/${locale}/profil/${user.id}`;
   const insightsHref = `/topsecret/${locale}/vard/profil/omdomen?role=owner&back=vard`;
   const reviewCount = ownerSummary.count;
   const ratingLabel = ownerSummary.overall == null ? '–' : ownerSummary.overall.toFixed(2).replace('.', ',');
@@ -122,6 +122,7 @@ export default async function HostProfilePage({ params }: { params: Promise<{ lo
           <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/konto?back=vard`}>{row(en ? 'Account settings' : 'Kontoinställningar','account')}</Link>
           <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/installningar`}>{row(en ? 'Host settings' : 'Uthyrarinställningar','host')}</Link>
           <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/notiser?back=vard`}>{row(en ? 'Notifications' : 'Notiser','notifications',unread?String(unread):undefined)}</Link>
+          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/foljare`}>{row(en ? 'My followers' : 'Mina följare','profile')}</Link>
           <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/varva`}>{row(en ? 'Refer a host' : 'Värva en uthyrare','referral')}</Link>
           <ExternalHistoryModalSetting locale={locale}/>
           <PushNotificationsSetting locale={locale}/>
