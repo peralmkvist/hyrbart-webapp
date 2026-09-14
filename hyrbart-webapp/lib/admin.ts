@@ -24,13 +24,13 @@ export async function getAdminAccess(permission:AdminPermission='admin.access'){
   if(!token)return null;
   const admin=createAdminClient();
   const tokenHash=hashAdminSessionToken(token);
-  const {data:session,error:sessionError}=await admin.from('admin_sessions').select('id,admin_account_id,expires_at,last_seen_at,revoked_at').eq('token_hash',tokenHash).maybeSingle();
+  const {data:session,error:sessionError}=await admin.from('admin_sessions').select('id,admin_account_id,expires_at,last_seen_at,revoked_at,mfa_verified').eq('token_hash',tokenHash).maybeSingle();
   if(sessionError)throw sessionError;
-  if(!session||session.revoked_at||new Date(session.expires_at).getTime()<=Date.now())return null;
+  if(!session||session.revoked_at||!session.mfa_verified||new Date(session.expires_at).getTime()<=Date.now())return null;
 
-  const {data:account,error:accountError}=await admin.from('admin_accounts').select('id,user_id,active,locked_until').eq('id',session.admin_account_id).maybeSingle();
+  const {data:account,error:accountError}=await admin.from('admin_accounts').select('id,user_id,active,locked_until,mfa_enabled').eq('id',session.admin_account_id).maybeSingle();
   if(accountError)throw accountError;
-  if(!account?.active||(account.locked_until&&new Date(account.locked_until).getTime()>Date.now()))return null;
+  if(!account?.active||!account.mfa_enabled||(account.locked_until&&new Date(account.locked_until).getTime()>Date.now()))return null;
 
   const {data:membership,error:membershipError}=await admin.from('admin_memberships').select('role,active').eq('user_id',account.user_id).maybeSingle();
   if(membershipError)throw membershipError;
