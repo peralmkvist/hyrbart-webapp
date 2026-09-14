@@ -73,3 +73,32 @@ export async function PATCH(request:Request) {
 
   return NextResponse.json({ ok:true, preference:data });
 }
+
+export async function POST(request:Request) {
+  const supabase = await createClient();
+  const { data:{user} } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error:'UNAUTHENTICATED' }, { status:401 });
+  const body = await request.json().catch(()=>({}));
+  if (body.action !== 'reset_recommended') return NextResponse.json({ error:'INVALID_REQUEST' }, { status:400 });
+
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+  const rows = NOTIFICATION_TYPES.map(type => ({
+    user_id:user.id,
+    notification_type:type,
+    ...NOTIFICATION_POLICY[type].defaults,
+    in_app: MANDATORY_IN_APP.has(type) ? true : NOTIFICATION_POLICY[type].defaults.in_app,
+    updated_at:now,
+  }));
+  const { error } = await admin.from('notification_channel_preferences').upsert(rows,{onConflict:'user_id,notification_type'});
+  if (error) return NextResponse.json({ error:'RESET_FAILED' }, { status:500 });
+
+  const auditRows = NOTIFICATION_TYPES.flatMap(type => (['in_app','push','email','sms'] as NotificationChannel[]).map(channel => ({
+    user_id:user.id,
+    notification_type:type,
+    channel,
+    enabled: MANDATORY_IN_APP.has(type) && channel === 'in_app' ? true : NOTIFICATION_POLICY[type].defaults[channel],
+  })));
+  await admin.from('notification_preference_audit').insert(auditRows);
+  return NextResponse.json({ ok:true });
+}
