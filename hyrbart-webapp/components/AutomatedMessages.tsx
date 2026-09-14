@@ -1,43 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-type Item={id?:string;name:string;trigger:string;enabled:boolean;message:{sv?:string;en?:string}};
-const defaults:Item[]=[
- {name:'Bokning godkänd',trigger:'booking-approved',enabled:true,message:{sv:'Hej! Din bokning är godkänd. Jag återkommer med praktisk information inför hämtningen.',en:'Hi! Your booking is confirmed. I will send practical pickup information before your rental.'}},
- {name:'Inför hämtning',trigger:'pickup-24h',enabled:true,message:{sv:'Hej! En påminnelse inför morgondagens hämtning. Hör gärna av dig om du undrar något.',en:'Hi! A quick reminder before tomorrow’s pickup. Feel free to message me if you have any questions.'}},
- {name:'Återlämning',trigger:'return-morning',enabled:true,message:{sv:'Hej! Hoppas hyran har fungerat bra. Här kommer en påminnelse om återlämningen idag.',en:'Hi! I hope the rental has gone well. Here is a reminder about today’s return.'}},
-];
-const triggerSv:Record<string,string>={'booking-approved':'När bokningen godkänns','pickup-24h':'24 timmar före hämtning','return-morning':'På morgonen för återlämning'};
-const triggerEn:Record<string,string>={'booking-approved':'When the booking is approved','pickup-24h':'24 hours before pickup','return-morning':'On the morning of return'};
+type Listing={id:string;brand?:string;name?:string;typeSv?:string;listingStatus?:string};
+type Asset={id:string;file_name:string;url?:string|null};
+type Item={id:string;name:string;body:string;trigger_event:string;offset_minutes:number;enabled:boolean;all_listings:boolean;product_ids:string[];assets:Asset[]};
+type Draft=Omit<Item,'id'|'assets'>;
+const empty:Draft={name:'',body:'',trigger_event:'booking_accepted',offset_minutes:0,enabled:true,all_listings:true,product_ids:[]};
+const triggerLabels={
+ sv:{booking_requested:'När en bokningsförfrågan skapas',booking_accepted:'När bokningen accepteras',booking_paid:'När bokningen är betald',pickup_due:'I förhållande till hämtning',return_due:'I förhållande till återlämning',booking_completed:'När uthyrningen avslutas'},
+ en:{booking_requested:'When a booking request is created',booking_accepted:'When the booking is accepted',booking_paid:'When the booking is paid',pickup_due:'Relative to pickup',return_due:'Relative to return',booking_completed:'When the rental is completed'},
+};
+
+function relativeParts(minutes:number){const sign=minutes<0?'before':minutes>0?'after':'direct';const abs=Math.abs(minutes);if(abs%1440===0&&abs)return{amount:abs/1440,unit:'days',sign};if(abs%60===0&&abs)return{amount:abs/60,unit:'hours',sign};return{amount:abs||1,unit:'minutes',sign};}
+function toMinutes(amount:number,unit:string,sign:string){const factor=unit==='days'?1440:unit==='hours'?60:1;return sign==='direct'?0:Math.max(1,amount)*factor*(sign==='before'?-1:1);}
 
 export default function AutomatedMessages({locale}:{locale:string}){
- const en=locale==='en';
- const [items,setItems]=useState<Item[]>([]),[saving,setSaving]=useState<number|null>(null),[loaded,setLoaded]=useState(false);
-
- useEffect(()=>{fetch('/api/automated-messages',{cache:'no-store'}).then(r=>r.ok?r.json():{messages:[]}).then((data:{messages?:Item[]})=>{setItems(data.messages?.length?data.messages:defaults);setLoaded(true)}).catch(()=>{setItems(defaults);setLoaded(true)})},[]);
- async function save(index:number){setSaving(index);try{const item=items[index];const response=await fetch('/api/automated-messages',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(item)});if(!response.ok)throw new Error();const data=await response.json() as {messages?:Item[]};if(data.messages)setItems(data.messages)}finally{setSaving(null)}}
- function patch(index:number,update:Partial<Item>){setItems(current=>current.map((item,i)=>i===index?{...item,...update}:item))}
-
- if(!loaded)return <p style={{color:'var(--muted)'}}>{en?'Loading…':'Laddar…'}</p>;
-
- return <div style={{display:'grid',gap:18}}>{items.map((item,index)=><section key={item.id||item.trigger} style={{border:'1px solid var(--line)',borderRadius:22,background:'#fff',padding:18,boxShadow:'0 5px 18px rgba(17,17,17,.04)'}}>
-   <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16}}>
-     <div style={{minWidth:0}}>
-       <strong style={{display:'block',fontSize:'1.05rem',lineHeight:1.2,letterSpacing:'-.02em'}}>{item.name}</strong>
-       <span style={{display:'block',marginTop:5,color:'var(--muted)',fontSize:'.82rem',lineHeight:1.35}}>{(en?triggerEn:triggerSv)[item.trigger]}</span>
-     </div>
-     <label style={{display:'flex',alignItems:'center',gap:8,flex:'0 0 auto',fontWeight:750,fontSize:'.8rem',color:'var(--ink)'}}>
-       <input type="checkbox" checked={item.enabled} onChange={e=>patch(index,{enabled:e.target.checked})} style={{width:21,height:21,accentColor:'var(--accent)',cursor:'pointer'}}/>
-       {en?'Active':'Aktiv'}
-     </label>
-   </div>
-   <textarea
-     value={en?(item.message.en||''):(item.message.sv||'')}
-     onChange={e=>patch(index,{message:{...item.message,[en?'en':'sv']:e.target.value}})}
-     rows={4}
-     style={{width:'100%',boxSizing:'border-box',marginTop:18,padding:'14px 15px',border:'1px solid var(--line)',borderRadius:16,background:'#fff',color:'var(--ink)',font:'inherit',fontSize:'1rem',lineHeight:1.45,resize:'vertical',outline:'none'}}
-   />
-   <button type="button" onClick={()=>void save(index)} disabled={saving===index} style={{width:'100%',minHeight:50,marginTop:12,border:0,borderRadius:16,background:'var(--accent)',color:'var(--ink)',fontSize:'.95rem',fontWeight:850,letterSpacing:'-.01em',opacity:saving===index?.68:1}}>{saving===index?(en?'Saving…':'Sparar…'):(en?'Save':'Spara')}</button>
- </section>)}</div>
+ const en=locale==='en';const labels=en?triggerLabels.en:triggerLabels.sv;
+ const[items,setItems]=useState<Item[]>([]),[listings,setListings]=useState<Listing[]>([]),[draft,setDraft]=useState<Draft>(empty),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState('');
+ const activeListings=useMemo(()=>listings.filter(item=>item.listingStatus!=='deleted'),[listings]);
+ async function reload(){const[r,l]=await Promise.all([fetch('/api/automated-messages',{cache:'no-store'}),fetch('/api/host-listings',{cache:'no-store'})]);const rd=await r.json(),ld=await l.json();if(!r.ok)throw new Error(rd.error||'Load failed');setItems(rd.messages||[]);setListings(ld.listings||[]);}
+ useEffect(()=>{reload().catch(()=>setError(en?'Could not load templates.':'Kunde inte hämta mallarna.')).finally(()=>setLoading(false))},[en]);
+ async function upload(templateId:string,files:FileList|null){if(!files?.length)return;const form=new FormData();form.set('templateId',templateId);Array.from(files).slice(0,5).forEach(file=>form.append('files',file));const response=await fetch('/api/automated-messages/assets',{method:'POST',body:form});const data=await response.json();if(!response.ok)throw new Error(data.error||'Upload failed');}
+ async function create(files:FileList|null){setSaving(true);setError('');try{const response=await fetch('/api/automated-messages',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(draft)});const data=await response.json();if(!response.ok)throw new Error(data.error||'Create failed');await upload(data.id,files);setDraft(empty);await reload();}catch(e){setError(e instanceof Error?e.message:'Error');}finally{setSaving(false)}}
+ async function save(item:Item){setSaving(true);setError('');try{const response=await fetch('/api/automated-messages',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(item)});const data=await response.json();if(!response.ok)throw new Error(data.error||'Save failed');setItems(data.messages||[]);}catch(e){setError(e instanceof Error?e.message:'Error');}finally{setSaving(false)}}
+ async function remove(id:string){if(!confirm(en?'Delete this template?':'Ta bort den här mallen?'))return;setSaving(true);try{const r=await fetch(`/api/automated-messages?id=${encodeURIComponent(id)}`,{method:'DELETE'});const d=await r.json();if(!r.ok)throw new Error(d.error||'Delete failed');setItems(d.messages||[]);}catch(e){setError(e instanceof Error?e.message:'Error');}finally{setSaving(false)}}
+ async function removeAsset(id:string){const r=await fetch(`/api/automated-messages/assets?id=${encodeURIComponent(id)}`,{method:'DELETE'});const d=await r.json();if(!r.ok)throw new Error(d.error||'Delete failed');await reload();}
+ function patch(id:string,update:Partial<Item>){setItems(current=>current.map(item=>item.id===id?{...item,...update}:item));}
+ function listingSelector(value:{all_listings:boolean;product_ids:string[]},onChange:(next:{all_listings:boolean;product_ids:string[]})=>void){return <div style={{display:'grid',gap:8}}><label style={{fontWeight:750}}><input type="checkbox" checked={value.all_listings} onChange={e=>onChange({all_listings:e.target.checked,product_ids:e.target.checked?[]:value.product_ids})}/> {en?'All my listings':'Alla mina annonser'}</label>{!value.all_listings?<div style={{display:'grid',gap:6,maxHeight:180,overflow:'auto',padding:10,border:'1px solid var(--line)',borderRadius:14}}>{activeListings.map(listing=><label key={listing.id}><input type="checkbox" checked={value.product_ids.includes(listing.id)} onChange={e=>onChange({all_listings:false,product_ids:e.target.checked?[...value.product_ids,listing.id]:value.product_ids.filter(id=>id!==listing.id)})}/> {[listing.brand,listing.name||listing.typeSv].filter(Boolean).join(' ')||listing.id}</label>)}</div>:null}</div>}
+ function timing(trigger:string,offset:number,onChange:(minutes:number)=>void){const p=relativeParts(offset);const beforeAllowed=trigger==='pickup_due'||trigger==='return_due';return <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}><select value={p.sign} onChange={e=>onChange(toMinutes(p.amount,p.unit,e.target.value))} style={input}><option value="direct">{en?'Immediately':'Direkt'}</option>{beforeAllowed?<option value="before">{en?'Before':'Före'}</option>:null}<option value="after">{en?'After':'Efter'}</option></select>{p.sign!=='direct'?<><input type="number" min="1" max="10080" value={p.amount} onChange={e=>onChange(toMinutes(Number(e.target.value),p.unit,p.sign))} style={input}/><select value={p.unit} onChange={e=>onChange(toMinutes(p.amount,e.target.value,p.sign))} style={input}><option value="minutes">{en?'minutes':'minuter'}</option><option value="hours">{en?'hours':'timmar'}</option><option value="days">{en?'days':'dagar'}</option></select></>:<><span/><span/></>}</div>}
+ const input={width:'100%',boxSizing:'border-box' as const,padding:'12px 13px',border:'1px solid var(--line)',borderRadius:14,background:'#fff',font:'inherit'};
+ if(loading)return <p>{en?'Loading…':'Laddar…'}</p>;
+ return <div style={{display:'grid',gap:18}}>
+  <p style={{margin:0,color:'var(--muted)'}}>{en?'Create your own messages. Hyrbart does not provide preset templates.':'Skapa dina egna meddelanden. Hyrbart lägger inte in några färdiga mallar.'}</p>{error?<p style={{color:'#a21',margin:0}}>{error}</p>:null}
+  <TemplateEditor en={en} labels={labels} value={draft} input={input} timing={timing} listingSelector={listingSelector} onChange={setDraft} onSubmit={create} saving={saving}/>
+  {items.map(item=><section key={item.id} style={card}><input value={item.name} onChange={e=>patch(item.id,{name:e.target.value})} placeholder={en?'Template name':'Mallens namn'} style={input}/><textarea value={item.body} onChange={e=>patch(item.id,{body:e.target.value})} rows={5} placeholder={en?'Message':'Meddelande'} style={{...input,resize:'vertical'}}/><select value={item.trigger_event} onChange={e=>patch(item.id,{trigger_event:e.target.value,offset_minutes:0})} style={input}>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select>{timing(item.trigger_event,item.offset_minutes,value=>patch(item.id,{offset_minutes:value}))}{listingSelector(item,(next)=>patch(item.id,next))}<label style={{fontWeight:750}}><input type="checkbox" checked={item.enabled} onChange={e=>patch(item.id,{enabled:e.target.checked})}/> {en?'Active':'Aktiv'}</label><div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{item.assets.map(asset=><div key={asset.id} style={{position:'relative'}}>{asset.url?<img src={asset.url} alt={asset.file_name} style={{width:92,height:72,objectFit:'cover',borderRadius:12,border:'1px solid var(--line) }}/>:asset.file_name}<button type="button" onClick={()=>void removeAsset(asset.id)} style={{position:'absolute',right:4,top:4,border:0,borderRadius:99,width:24,height:24}}>×</button></div>)}</div><label style={{...input,display:'block',cursor:'pointer'}}>{en?'Add images (max 5)':'Lägg till bilder (max 5)'}<input type="file" accept="image/jpeg,image/png,image/webp,image/heic" multiple hidden onChange={async e=>{try{await upload(item.id,e.target.files);await reload();}catch(err){setError(err instanceof Error?err.message:'Error')}e.currentTarget.value='';}}/></label><div style={{display:'flex',gap:10}}><button type="button" disabled={saving} onClick={()=>void save(item)} style={primary}>{en?'Save':'Spara'}</button><button type="button" disabled={saving} onClick={()=>void remove(item.id)} style={secondary}>{en?'Delete':'Ta bort'}</button></div></section>)}
+ </div>;
 }
+
+function TemplateEditor({en,labels,value,input,timing,listingSelector,onChange,onSubmit,saving}:any){const[files,setFiles]=useState<FileList|null>(null);return <section style={card}><h2 style={{margin:0}}>{en?'New automated message':'Nytt automatiserat meddelande'}</h2><input value={value.name} onChange={e=>onChange({...value,name:e.target.value})} placeholder={en?'Template name':'Mallens namn'} style={input}/><textarea value={value.body} onChange={e=>onChange({...value,body:e.target.value})} rows={5} placeholder={en?'Write your message':'Skriv ditt meddelande'} style={{...input,resize:'vertical'}}/><select value={value.trigger_event} onChange={e=>onChange({...value,trigger_event:e.target.value,offset_minutes:0})} style={input}>{Object.entries(labels).map(([key,label])=><option key={key} value={key}>{String(label)}</option>)}</select>{timing(value.trigger_event,value.offset_minutes,(offset:number)=>onChange({...value,offset_minutes:offset}))}{listingSelector(value,(next:any)=>onChange({...value,...next}))}<label style={{...input,display:'block',cursor:'pointer'}}>{en?'Images (optional, max 5)':'Bilder (valfritt, max 5)'}<input type="file" accept="image/jpeg,image/png,image/webp,image/heic" multiple hidden onChange={e=>setFiles(e.target.files)}/></label><label style={{fontWeight:750}}><input type="checkbox" checked={value.enabled} onChange={e=>onChange({...value,enabled:e.target.checked})}/> {en?'Active':'Aktiv'}</label><button type="button" disabled={saving} onClick={()=>void onSubmit(files)} style={primary}>{saving?(en?'Saving…':'Sparar…'):(en?'Create template':'Skapa mall')}</button></section>}
+
+const card={display:'grid',gap:12,border:'1px solid var(--line)',borderRadius:22,background:'#fff',padding:18,boxShadow:'0 5px 18px rgba(17,17,17,.04)'} as const;
+const primary={minHeight:48,border:0,borderRadius:14,background:'var(--accent)',color:'var(--ink)',fontWeight:850,padding:'0 18px'} as const;
+const secondary={minHeight:48,border:'1px solid var(--line)',borderRadius:14,background:'#fff',color:'var(--ink)',fontWeight:800,padding:'0 18px'} as const;
