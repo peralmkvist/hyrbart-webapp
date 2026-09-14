@@ -47,6 +47,7 @@ export default function SearchResults({ locale, place, radius, center, items, me
   const en = locale === 'en';
   const [showMap, setShowMap] = useState(false);
   const [activeSlug, setActiveSlug] = useState<string | null>(items[0]?.slug ?? null);
+  const [favoriteCounts, setFavoriteCounts] = useState<Record<string, number>>({});
   const cardRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const mapNodeRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -70,6 +71,33 @@ export default function SearchResults({ locale, place, radius, center, items, me
     setShowMap(false);
     requestAnimationFrame(() => cardRefs.current[slug]?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
   }
+
+  useEffect(() => {
+    const slugs = Array.from(new Set(items.map(item => item.slug).filter(Boolean)));
+    if (!slugs.length) {
+      setFavoriteCounts({});
+      return;
+    }
+
+    const controller = new AbortController();
+    const syncCounts = async () => {
+      try {
+        const response = await fetch(`/api/favorites/count?slugs=${encodeURIComponent(slugs.join(','))}`, { cache: 'no-store', signal: controller.signal });
+        if (!response.ok) return;
+        const payload = await response.json() as { counts?: Record<string, number> };
+        setFavoriteCounts(payload.counts ?? {});
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') console.warn('Favorite count sync failed', error);
+      }
+    };
+
+    void syncCounts();
+    window.addEventListener('hyrbart:favorites-changed', syncCounts);
+    return () => {
+      controller.abort();
+      window.removeEventListener('hyrbart:favorites-changed', syncCounts);
+    };
+  }, [items]);
 
   useEffect(() => {
     if (!showMap) {
@@ -161,7 +189,9 @@ export default function SearchResults({ locale, place, radius, center, items, me
       ) : null}
 
       <section className="productGrid2">
-        {items.map(item => (
+        {items.map(item => {
+          const favoriteCount = favoriteCounts[item.slug] ?? 0;
+          return (
           <Link
             ref={node => { cardRefs.current[item.slug] = node; }}
             href={item.href}
@@ -179,11 +209,13 @@ export default function SearchResults({ locale, place, radius, center, items, me
               <strong className="productTileTitle2"><span className="productTileBrand2">{item.brand}</span><span className="productTileName2">{item.name}</span></strong>
               <span>{item.type}</span>
               {item.rating != null && item.reviewCount ? <span className="productReviewMini2">★ {item.rating.toFixed(1).replace('.', ',')} · {item.reviewCount} {en ? 'reviews' : 'omdömen'}</span> : null}
+              {favoriteCount > 0 ? <span className="productFavoriteCount124" aria-label={en ? `${favoriteCount} favorites` : `${favoriteCount} favoritmarkeringar`}>♡ {favoriteCount}</span> : null}
               {item.distanceKm != null ? <span className="productDistance2">{item.distanceKm < .1 ? (en ? '< 0.1 km away' : '< 0,1 km bort') : `${item.distanceKm.toLocaleString(en ? 'en-GB' : 'sv-SE', { maximumFractionDigits: 1 })} km ${en ? 'away' : 'bort'}`}</span> : null}
               <b>{item.priceLabel}</b>
             </div>
           </Link>
-        ))}
+          );
+        })}
       </section>
 
       <style jsx>{`
@@ -192,6 +224,7 @@ export default function SearchResults({ locale, place, radius, center, items, me
         .searchResultsViewBar133 button { display:inline-flex; align-items:center; gap:7px; min-height:40px; padding:8px 13px; border:1px solid var(--line); border-radius:999px; background:#fff; color:var(--ink); font-weight:800; cursor:pointer; }
         .searchResultsViewBar133 button span { font-size:1.05rem; }
         .searchResultsMap133 { margin-bottom:14px; }
+        .productFavoriteCount124 { color:var(--muted); font-size:.88rem; font-weight:700; }
       `}</style>
     </>
   );
