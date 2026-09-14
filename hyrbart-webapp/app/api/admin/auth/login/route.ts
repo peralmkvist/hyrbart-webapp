@@ -48,7 +48,11 @@ export async function POST(request:Request){
     return NextResponse.json({error:GENERIC_ERROR},{status:401,headers:{'Cache-Control':'no-store'}});
   }
 
-  const {data:account}=await admin.from('admin_accounts').select('mfa_enabled,mfa_secret_encrypted').eq('id',row.account_id).single();
+  const {data:account,error:accountError}=await admin.from('admin_accounts').select('mfa_enabled,mfa_secret_encrypted').eq('id',row.account_id).single();
+  if(accountError||!account){
+    await admin.from('admin_login_events').insert({admin_account_id:row.account_id,username,success:false,reason:'account_lookup_failed',ip_hash:ipHash,user_agent:userAgent});
+    return NextResponse.json({error:GENERIC_ERROR},{status:401,headers:{'Cache-Control':'no-store'}});
+  }
   if(!account.mfa_enabled){
     await admin.from('admin_accounts').update({failed_attempts:0,locked_until:null,updated_at:new Date().toISOString()}).eq('id',row.account_id);
     const session=await createAdminSession(row.account_id,false);
