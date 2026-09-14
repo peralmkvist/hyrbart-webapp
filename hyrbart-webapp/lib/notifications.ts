@@ -1,6 +1,7 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendPushToUser } from '@/lib/push';
+import { MANDATORY_IN_APP, NOTIFICATION_POLICY, notificationCategory, type NotificationCategory } from '@/lib/notification-policy';
 
 type NotifyInput = {
   userId: string;
@@ -22,23 +23,6 @@ type NotificationPreferences = {
   locale: 'sv' | 'en';
 };
 
-type NotificationCategory =
-  | 'follower'
-  | 'booking'
-  | 'booking_update'
-  | 'message'
-  | 'followed_host_listing'
-  | 'favorite_price_change'
-  | 'search_alert'
-  | 'pickup_return_reminder';
-
-type ChannelPreference = {
-  in_app: boolean;
-  push: boolean;
-  email: boolean;
-  sms: boolean;
-};
-
 type DeliveryContext = {
   locale: 'sv' | 'en';
   category: NotificationCategory | null;
@@ -54,19 +38,6 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   review_enabled: true,
   locale: 'sv',
 };
-
-const MATRIX_DEFAULTS: Record<NotificationCategory, ChannelPreference> = {
-  follower: { in_app: true, push: true, email: false, sms: false },
-  booking: { in_app: true, push: true, email: true, sms: false },
-  booking_update: { in_app: true, push: true, email: true, sms: false },
-  message: { in_app: true, push: true, email: false, sms: false },
-  followed_host_listing: { in_app: true, push: false, email: false, sms: false },
-  favorite_price_change: { in_app: true, push: false, email: false, sms: false },
-  search_alert: { in_app: true, push: true, email: false, sms: false },
-  pickup_return_reminder: { in_app: true, push: true, email: true, sms: false },
-};
-
-const MANDATORY_IN_APP = new Set<NotificationCategory>(['booking', 'booking_update', 'message', 'pickup_return_reminder']);
 
 function errorMessage(error: unknown) {
   return String(error instanceof Error ? error.message : (error as { message?: unknown })?.message ?? error).slice(0, 1000);
@@ -85,35 +56,6 @@ function isReminder(type: string) {
 
 function isReviewNotification(type: string) {
   return type.startsWith('review_');
-}
-
-function notificationCategory(type: string): NotificationCategory | null {
-  const value = type.toLowerCase();
-  if (value.includes('pickup') || value.includes('return') || value.includes('reminder')) return 'pickup_return_reminder';
-  if (value.includes('message') || value.includes('chat')) return 'message';
-  if (value.includes('follower') || value === 'followed') return 'follower';
-  if (value.includes('followed_host') || value.includes('followed_listing') || value.includes('new_listing_from_followed')) return 'followed_host_listing';
-  if ((value.includes('favorite') || value.includes('favourite')) && value.includes('price')) return 'favorite_price_change';
-  if (value.includes('search_alert') || value.includes('search_watch') || value.includes('saved_search')) return 'search_alert';
-  if (
-    value === 'booking_requested' ||
-    value === 'booking_request_created' ||
-    value === 'new_booking' ||
-    value === 'booking_created'
-  ) return 'booking';
-  if (
-    value.includes('booking') ||
-    value.includes('request_') ||
-    value.includes('reservation') ||
-    value.includes('payment_') ||
-    value.includes('accepted') ||
-    value.includes('cancel') ||
-    value.includes('expired') ||
-    value.includes('paid') ||
-    value.includes('active') ||
-    value.includes('completed')
-  ) return 'booking_update';
-  return null;
 }
 
 async function getLegacyPreferences(userId: string): Promise<NotificationPreferences> {
@@ -152,7 +94,7 @@ async function getDeliveryContext(userId: string, type: string): Promise<Deliver
     .maybeSingle();
   if (error) throw error;
 
-  const configured = { ...MATRIX_DEFAULTS[category], ...(data || {}) };
+  const configured = { ...NOTIFICATION_POLICY[category].defaults, ...(data || {}) };
   return {
     locale: legacy.locale,
     category,
@@ -160,6 +102,26 @@ async function getDeliveryContext(userId: string, type: string): Promise<Deliver
     push: configured.push,
     email: configured.email,
   };
+}
+
+async function externalFrequencyLimited(userId: string, category: NotificationCategory | null) {
+  if (!category) return false;
+  const limit = NOTIFICATION_POLICY[category].maxExternalPer24h;
+  if (!limit) return false;
+  const admin = createAdminClient();
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count, error } = await admin
+    .from('user_notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .contains('metadata', { preference_category: category })
+    .gte('created_at', since)
+    .or('push_status.eq.sent,email_status.eq.sent');
+  if (error) {
+    console.error('Notification frequency check failed', error);
+    return false;
+  }
+  return Number(count || 0) >= limit;
 }
 
 async function sendEmail(userId: string, subject: string, text: string, url?: string | null) {
@@ -195,6 +157,16 @@ async function deliverChannel(notification: any, context: DeliveryContext, chann
       [statusField]: 'skipped',
       [attemptsField]: attempts,
       [errorField]: context.category ? 'disabled_by_type_channel_preference' : 'disabled_by_legacy_preference',
+      last_delivery_attempt_at: now,
+    }).eq('id', notification.id);
+    return;
+  }
+
+  if (await externalFrequencyLimited(notification.user_id, context.category)) {
+    await admin.from('user_notifications').update({
+      [statusField]: 'skipped',
+      [attemptsField]: attempts,
+      [errorField]: 'frequency_limit_24h',
       last_delivery_attempt_at: now,
     }).eq('id', notification.id);
     return;
@@ -239,6 +211,7 @@ async function deliverChannel(notification: any, context: DeliveryContext, chann
 export async function notifyUser(input: NotifyInput) {
   const admin = createAdminClient();
   const context = await getDeliveryContext(input.userId, input.type);
+  const policy = context.category ? NOTIFICATION_POLICY[context.category] : null;
   const row = {
     user_id: input.userId,
     booking_id: input.bookingId ?? null,
@@ -247,7 +220,13 @@ export async function notifyUser(input: NotifyInput) {
     body: input.body,
     url: localizedUrl(input.url, context.locale),
     event_key: input.eventKey ?? null,
-    metadata: { ...(input.metadata ?? {}), preference_category: context.category },
+    metadata: {
+      ...(input.metadata ?? {}),
+      preference_category: context.category,
+      classification: policy?.classification ?? 'legacy',
+      priority: policy?.priority ?? 'normal',
+      sla_minutes: policy?.slaMinutes ?? null,
+    },
     in_app_visible: context.inApp,
   };
 
