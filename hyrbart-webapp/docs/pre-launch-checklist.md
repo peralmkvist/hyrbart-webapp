@@ -33,8 +33,8 @@ Status: working launch gate. Keep this file aligned with Jira and production beh
 - [x] Admin audit trail
 - [x] Finance/reconciliation view
 - [x] Listing moderation fail-closed
+- [x] Incident- och supportplaybook med payment/data/safety-tabletop
 - [ ] Final prohibited-items policy review
-- [ ] Final support escalation playbook
 
 ## 4. Reliability and security
 - [x] Booking automation cron + idempotency
@@ -46,6 +46,7 @@ Status: working launch gate. Keep this file aligned with Jira and production beh
 - [x] Global/locale loading, error and 404 fallbacks
 - [x] Deterministic booking state-machine + Stockholm timezone regression tests in CI
 - [x] Public desktop/mobile browser smoke tests in CI
+- [x] Correlation-id, structured operational logging and persistent alert trail
 - [ ] Supabase leaked-password protection (paid plan)
 - [ ] Authenticated seeded end-to-end booking/cancellation/dispute race suite in CI
 
@@ -84,7 +85,7 @@ Before removing no-index / opening Hyrbart publicly:
 - [ ] Production smoke test: cancellation/refund
 - [ ] Production smoke test: problem/damage/dispute and payout hold
 - [ ] Mobile smoke test on iOS Safari and Android Chrome
-- [ ] Admin/support runbook tested
-- [ ] Monitoring/alert ownership decided
+- [x] Admin/support runbook tested (payment, data, safety tabletop 2026-09-14)
+- [ ] Monitoring/alert ownership decided for external-customer operations
 - [ ] Backup/recovery procedure documented
 - [ ] Remove `robots: noindex` only after all launch blockers above are accepted
