@@ -1,6 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { notifyUser, retryFailedNotificationDeliveries } from '@/lib/notifications';
+import { notifyUser, reconcileEmailDeliveryStatuses, retryFailedNotificationDeliveries } from '@/lib/notifications';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -43,6 +43,7 @@ export async function processNotificationMaintenance() {
     }
   }
 
+  const emailDelivery = await reconcileEmailDeliveryStatuses(50);
   const retriedDeliveries = await retryFailedNotificationDeliveries(50);
-  return { reviewReminders, retriedDeliveries };
+  return { reviewReminders, emailDelivery, retriedDeliveries };
 }
