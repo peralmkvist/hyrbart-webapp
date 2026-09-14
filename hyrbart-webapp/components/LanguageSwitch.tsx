@@ -34,12 +34,21 @@ export default function LanguageSwitch() {
     : `/topsecret/${targetLocale}`;
   const label = currentLocale === 'en' ? 'Byt till svenska' : 'Switch to English';
 
-  const switchLanguage = () => {
+  const switchLanguage = async () => {
+    try {
+      await fetch('/api/profile/preferences', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ preferredLanguage: targetLocale }),
+      });
+    } catch {
+      // URL change is still allowed if preference persistence is temporarily unavailable.
+    }
     window.location.href = `${targetPath}${window.location.search}${window.location.hash}`;
   };
 
   return (
-    <button className="languageSwitch" onClick={switchLanguage} aria-label={label} title={label}>
+    <button className="languageSwitch" onClick={() => void switchLanguage()} aria-label={label} title={label}>
       {currentLocale === 'en' ? <BritishFlag /> : <SwedishFlag />}
     </button>
   );
