@@ -5,6 +5,10 @@ import type { NextRequest } from 'next/server';
 const PRIVATE_PREFIX = '/topsecret';
 const LOCALE_COOKIE = 'hyrbart_locale';
 
+function appPath(pathname:string){return pathname.startsWith(`${PRIVATE_PREFIX}/`)?pathname.slice(PRIVATE_PREFIX.length):pathname}
+function localeFor(pathname:string,saved:'sv'|'en'){const path=appPath(pathname);return path==='/en'||path.startsWith('/en/')?'en':path==='/sv'||path.startsWith('/sv/')?'sv':saved}
+function isPublicAuthPath(pathname:string){const path=appPath(pathname);return /^\/(sv|en)\/(logga-in|mfa|admin-inloggning|admin-installning|admin-mfa)(\/|$)/.test(path)||/^\/(sv|en)\/auth(\/|$)/.test(path)||path.startsWith('/auth/')}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
@@ -43,9 +47,7 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
+      getAll() { return request.cookies.getAll(); },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
@@ -53,7 +55,21 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {data:{user}}=await supabase.auth.getUser();
+  const isApi=pathname==='/api'||pathname.startsWith('/api/');
+  if(!user&&!isApi&&!isPublicAuthPath(pathname)){
+    const locale=localeFor(pathname,savedLocale);
+    const login=request.nextUrl.clone();
+    login.pathname=`${PRIVATE_PREFIX}/${locale}/logga-in`;
+    const next=`${pathname}${request.nextUrl.search}`;
+    login.search='';
+    login.searchParams.set('next',next);
+    const redirect=NextResponse.redirect(login,307);
+    redirect.headers.set('X-Robots-Tag','noindex, nofollow, noarchive, nosnippet, noimageindex');
+    redirect.headers.set('X-Request-ID',requestId);
+    response.cookies.getAll().forEach(cookie=>redirect.cookies.set(cookie));
+    return redirect;
+  }
   return response;
 }
 
