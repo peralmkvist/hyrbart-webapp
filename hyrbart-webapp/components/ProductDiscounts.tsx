@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { RentalPrice } from '@/lib/products';
 import type { RentalDiscountRules } from '@/lib/rental-pricing';
 
@@ -17,6 +18,20 @@ type DiscountItem = {
 function positivePercent(value?: number) {
   return Number.isFinite(value) && Number(value) > 0 ? Math.min(90, Math.round(Number(value))) : 0;
 }
+
+const styles: Record<string, CSSProperties> = {
+  section: { margin: '18px 0 0', padding: 16, border: '1px solid var(--line)', borderRadius: 18, background: '#fff' },
+  compactSection: { padding: '10px 12px', borderRadius: 14 },
+  heading: { display: 'flex', alignItems: 'center', gap: 9, marginBottom: 11 },
+  compactHeading: { marginBottom: 7 },
+  badge: { display: 'grid', placeItems: 'center', width: 30, height: 30, borderRadius: '50%', background: 'var(--accent)', color: '#111', fontWeight: 900 },
+  compactBadge: { width: 25, height: 25, fontSize: '.8rem' },
+  headingText: { fontSize: '1rem' },
+  list: { display: 'grid', gap: 9 },
+  item: { display: 'grid', gap: 2 },
+  title: { fontSize: '.94rem' },
+  condition: { color: 'var(--muted)', fontSize: '.86rem', lineHeight: 1.35 },
+};
 
 export default function ProductDiscounts({ locale = 'sv', discounts, rentalPrices, compact = false }: Props) {
   const en = locale === 'en';
@@ -64,32 +79,19 @@ export default function ProductDiscounts({ locale = 'sv', discounts, rentalPrice
   if (!items.length) return null;
 
   return (
-    <section className={`productDiscounts128${compact ? ' compact' : ''}`} aria-label={en ? 'Available discounts' : 'Tillgängliga rabatter'}>
-      <div className="productDiscounts128Heading">
-        <span aria-hidden="true">%</span>
-        <strong>{en ? 'Available discounts' : 'Tillgängliga rabatter'}</strong>
+    <section style={{ ...styles.section, ...(compact ? styles.compactSection : {}) }} aria-label={en ? 'Available discounts' : 'Tillgängliga rabatter'}>
+      <div style={{ ...styles.heading, ...(compact ? styles.compactHeading : {}) }}>
+        <span aria-hidden="true" style={{ ...styles.badge, ...(compact ? styles.compactBadge : {}) }}>%</span>
+        <strong style={styles.headingText}>{en ? 'Available discounts' : 'Tillgängliga rabatter'}</strong>
       </div>
-      <div className="productDiscounts128List">
+      <div style={styles.list}>
         {items.map(item => (
-          <div key={item.key} className="productDiscount128">
-            <strong>{item.title}</strong>
-            {!compact ? <span>{item.condition}</span> : null}
+          <div key={item.key} style={styles.item}>
+            <strong style={styles.title}>{item.title}</strong>
+            {!compact ? <span style={styles.condition}>{item.condition}</span> : null}
           </div>
         ))}
       </div>
-      <style jsx>{`
-        .productDiscounts128 { margin:18px 0 0; padding:16px; border:1px solid var(--line); border-radius:18px; background:#fff; }
-        .productDiscounts128Heading { display:flex; align-items:center; gap:9px; margin-bottom:11px; }
-        .productDiscounts128Heading > span { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--accent); color:#111; font-weight:900; }
-        .productDiscounts128Heading strong { font-size:1rem; }
-        .productDiscounts128List { display:grid; gap:9px; }
-        .productDiscount128 { display:grid; gap:2px; }
-        .productDiscount128 strong { font-size:.94rem; }
-        .productDiscount128 span { color:var(--muted); font-size:.86rem; line-height:1.35; }
-        .productDiscounts128.compact { padding:10px 12px; border-radius:14px; }
-        .productDiscounts128.compact .productDiscounts128Heading { margin-bottom:7px; }
-        .productDiscounts128.compact .productDiscounts128Heading > span { width:25px; height:25px; font-size:.8rem; }
-      `}</style>
     </section>
   );
 }
