@@ -3,7 +3,9 @@ import { getProducts } from '@/lib/sanity-products';
 import { getPublicReviewsForUser, getUserReviewSummary, resolveUserIdFromSanityProfile } from '@/lib/review-summaries';
 import { getVerifiedExternalReputation } from '@/lib/external-reputation';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import ReviewSummaryPanel from '@/components/ReviewSummaryPanel';
+import FollowButton from '@/components/FollowButton';
 import { BackIcon, CheckIcon } from '@/components/Icons';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +17,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const ownerProducts = products.filter(product => product.owner?.name === 'Per');
   const owner = ownerProducts[0]?.owner ?? products.find(product => product.owner)?.owner;
   const userId = await resolveUserIdFromSanityProfile(owner?.id);
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const [summary,reviews,rentals,external] = userId ? await Promise.all([
     getUserReviewSummary(userId,'owner'),
     getPublicReviewsForUser(userId,'owner'),
@@ -30,6 +34,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         {owner?.profileImage?<img src={owner.profileImage} alt={owner.name || 'Per'} />:<div className="publicProfileFallback">P</div>}
         <h2>{owner?.name || 'Per'}</h2><p>{owner?.city || 'Danderyd'}, Sverige</p>
         <div className="publicProfileVerified"><span><CheckIcon /></span>{en ? 'Verified with BankID' : 'Identifierad via BankID'}</div>
+        {userId && user?.id !== userId ? <div style={{marginTop:18}}><FollowButton userId={userId} locale={locale}/></div> : null}
       </div>
       <div className="publicProfileStats"><div><strong>{rentals.count||0}</strong><span>{en ? 'rentals' : 'uthyrningar'}</span></div><div><strong>{reviewCount}</strong><span>{en ? 'Hyrbart reviews' : 'Hyrbart-omdömen'}</span></div><div><strong>{rating!=null?rating.toFixed(1).replace('.',','):'–'}</strong><span>{en ? 'Hyrbart rating' : 'Hyrbart-betyg'}</span></div></div>
       {summary?.count?<ReviewSummaryPanel summary={summary} reviews={reviews} kind="owner" locale={locale}/>:<section className="reviewEmptyState"><h3>{en?'No published reviews yet':'Inga publicerade omdömen ännu'}</h3><p>{en?'Reviews appear here after the double-blind review period.':'Omdömen visas här efter den dubbelblinda recensionsperioden.'}</p></section>}
