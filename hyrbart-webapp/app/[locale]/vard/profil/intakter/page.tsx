@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import '../../../../profil/profile-menu.css';
+import '../../../profil/profile-menu.css';
 
 export default async function HostRevenuePage({params}:{params:Promise<{locale:string}>}){
   const {locale}=await params; const en=locale==='en';
