@@ -31,6 +31,9 @@ type DeliveryContext = {
   email: boolean;
 };
 
+type ResendSendResponse = { id?: string };
+type ResendEmailResponse = { id?: string; last_event?: string; message_id?: string | null };
+
 const DEFAULT_PREFERENCES: NotificationPreferences = {
   push_enabled: true,
   email_enabled: true,
@@ -139,7 +142,7 @@ async function externalFrequencyLimited(userId: string, category: NotificationCa
     .eq('user_id', userId)
     .contains('metadata', { preference_category: category })
     .gte('created_at', since)
-    .or('push_status.eq.sent,email_status.eq.sent');
+    .or('push_status.eq.sent,email_status.eq.sent,email_status.eq.delivered');
   if (error) {
     console.error('Notification frequency check failed');
     return false;
@@ -147,22 +150,25 @@ async function externalFrequencyLimited(userId: string, category: NotificationCa
   return Number(count || 0) >= limit;
 }
 
-async function sendEmail(userId: string, subject: string, text: string, url?: string | null) {
+async function sendEmail(userId: string, subject: string, text: string, url?: string | null, idempotencyKey?: string | null) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL || 'Hyrbart <hej@hyrbart.se>';
-  if (!apiKey) return { status: 'skipped' as const, reason: 'provider_not_configured' };
+  if (!apiKey) return { status: 'skipped' as const, reason: 'provider_not_configured', providerId: null };
   const admin = createAdminClient();
   const { data } = await admin.auth.admin.getUserById(userId);
   const email = data.user?.email;
-  if (!email) return { status: 'skipped' as const, reason: 'no_email' };
+  if (!email) return { status: 'skipped' as const, reason: 'no_email', providerId: null };
   const absoluteUrl = url ? `${process.env.NEXT_PUBLIC_SITE_URL || 'https://hyrbart.se'}${url.startsWith('/') ? url : `/${url}`}` : null;
+  const headers: Record<string,string> = { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+  if (idempotencyKey) headers['Idempotency-Key'] = `hyrbart-notification/${idempotencyKey}`.slice(0, 256);
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ from, to: [email], subject, text: absoluteUrl ? `${text}\n\n${absoluteUrl}` : text }),
   });
   if (!response.ok) throw new Error(`Email delivery failed: ${response.status}`);
-  return { status: 'sent' as const };
+  const payload = await response.json().catch(() => ({})) as ResendSendResponse;
+  return { status: 'sent' as const, providerId: payload.id || null };
 }
 
 async function deliverChannel(notification: any, context: DeliveryContext, channel: 'push' | 'email') {
@@ -212,12 +218,14 @@ async function deliverChannel(notification: any, context: DeliveryContext, chann
         last_delivery_attempt_at: now,
       }).eq('id', notification.id);
     } else {
-      const email = await sendEmail(notification.user_id, external.title, external.body, notification.url);
+      const email = await sendEmail(notification.user_id, external.title, external.body, notification.url, notification.event_key || notification.id);
       await admin.from('user_notifications').update({
         [statusField]: email.status,
         [attemptsField]: attempts,
         [sentAtField]: email.status === 'sent' ? now : null,
         [errorField]: email.status === 'sent' ? null : email.reason,
+        email_provider_id: email.providerId,
+        email_last_event: email.status === 'sent' ? 'sent' : null,
         last_delivery_attempt_at: now,
       }).eq('id', notification.id);
     }
@@ -270,6 +278,56 @@ export async function notifyUser(input: NotifyInput) {
     await admin.from('user_notifications').update({ email_status: 'skipped', email_last_error: 'email_disabled_for_event' }).eq('id', notification.id);
   }
   return notification;
+}
+
+export async function reconcileEmailDeliveryStatuses(limit = 50) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { checked: 0, delivered: 0, terminalFailed: 0, delayed: 0 };
+  const admin = createAdminClient();
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await admin.from('user_notifications')
+    .select('id,email_provider_id,email_status,email_last_event,email_delivered_at,email_terminal_failed_at')
+    .not('email_provider_id','is',null)
+    .gte('created_at', since)
+    .in('email_status',['sent','delivered'])
+    .order('created_at',{ascending:true})
+    .limit(limit);
+  if (error) throw error;
+
+  let checked = 0, delivered = 0, terminalFailed = 0, delayed = 0;
+  for (const notification of data || []) {
+    const response = await fetch(`https://api.resend.com/emails/${encodeURIComponent(notification.email_provider_id)}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: 'no-store',
+    });
+    if (!response.ok) {
+      if (response.status >= 500) throw new Error(`Email status lookup failed: ${response.status}`);
+      await admin.from('user_notifications').update({ email_last_error:`provider_status_lookup_${response.status}` }).eq('id',notification.id);
+      checked++;
+      continue;
+    }
+    const provider = await response.json() as ResendEmailResponse;
+    const event = String(provider.last_event || 'sent').toLowerCase();
+    const now = new Date().toISOString();
+    const update: Record<string,unknown> = { email_last_event:event, email_last_error:null };
+
+    if (event === 'delivered' || event === 'opened' || event === 'clicked') {
+      update.email_status = 'delivered';
+      update.email_delivered_at = notification.email_delivered_at || now;
+      delivered++;
+    } else if (event === 'bounced' || event === 'complained' || event === 'failed' || event === 'suppressed') {
+      update.email_status = 'terminal_failed';
+      update.email_terminal_failed_at = notification.email_terminal_failed_at || now;
+      update.email_last_error = `provider_${event}`;
+      terminalFailed++;
+    } else if (event === 'delivery_delayed') {
+      delayed++;
+    }
+
+    await admin.from('user_notifications').update(update).eq('id', notification.id);
+    checked++;
+  }
+  return { checked, delivered, terminalFailed, delayed };
 }
 
 export async function retryFailedNotificationDeliveries(limit = 50) {
