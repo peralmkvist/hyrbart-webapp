@@ -7,13 +7,16 @@ const LOCALE_COOKIE = 'hyrbart_locale';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-request-id', requestId);
   let response: NextResponse;
 
   const bypassPrivateShim = process.env.E2E_BYPASS_PRIVATE_PREFIX === '1';
   const savedLocale = request.cookies.get(LOCALE_COOKIE)?.value === 'en' ? 'en' : 'sv';
 
   if (bypassPrivateShim) {
-    response = NextResponse.next({ request });
+    response = NextResponse.next({ request: { headers: requestHeaders } });
   } else if (pathname === '/sv' || pathname.startsWith('/sv/') || pathname === '/en' || pathname.startsWith('/en/')) {
     const url = request.nextUrl.clone();
     url.pathname = `${PRIVATE_PREFIX}${pathname}`;
@@ -26,12 +29,13 @@ export async function middleware(request: NextRequest) {
     const internalPath = pathname.slice(PRIVATE_PREFIX.length) || `/${savedLocale}`;
     const url = request.nextUrl.clone();
     url.pathname = internalPath;
-    response = NextResponse.rewrite(url);
+    response = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   } else {
-    response = NextResponse.next({ request });
+    response = NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
+  response.headers.set('X-Request-ID', requestId);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
