@@ -4,9 +4,9 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import '../profile-menu.css';
 
-export default async function AccountSettingsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ back?: string; section?: string; saved?: string; error?: string }> }) {
+export default async function AccountSettingsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ back?: string; section?: string; saved?: string; error?: string; required?: string }> }) {
   const { locale } = await params;
-  const { back, section, saved, error } = await searchParams;
+  const { back, section, saved, error, required } = await searchParams;
   const en = locale === 'en';
   const profileSection = section === 'profile';
   const backHref = profileSection
@@ -63,13 +63,14 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
 
     <section className="profileSettingsCard">
       <div className="profileSettingsCardHeading"><span>{en ? 'PROFILE' : 'PROFIL'}</span><h2>{en ? 'Personal details' : 'Personliga uppgifter'}</h2></div>
+      {required === 'photo' ? <p role="alert" className="profileSettingsError">{en ? 'Add a profile photo before you can create a listing.' : 'Lägg till en profilbild innan du kan skapa en annons.'}</p> : null}
       {saved === '1' ? <p role="status" className="profileSettingsSuccess">{en ? 'Your changes have been saved.' : 'Dina ändringar har sparats.'}</p> : null}
       {error === 'invalid-avatar-url' ? <p role="alert" className="profileSettingsError">{en ? 'Enter a valid profile photo URL beginning with http:// or https://.' : 'Ange en giltig profilbildsadress som börjar med http:// eller https://.'}</p> : null}
       {error === 'save-failed' ? <p role="alert" className="profileSettingsError">{en ? 'The profile could not be saved. Please try again.' : 'Profilen kunde inte sparas. Försök igen.'}</p> : null}
       <form action={saveProfile} className="profileSettingsForm">
         <label><span>{en ? 'Name' : 'Namn'}</span><input name="display_name" defaultValue={profile?.display_name || ''} autoComplete="name" /></label>
         <label><span>{en ? 'City' : 'Ort'}</span><input name="city" defaultValue={profile?.city || ''} autoComplete="address-level2" /></label>
-        <label><span>{en ? 'Profile photo URL' : 'Profilbildens webbadress'}</span><input name="avatar_url" type="url" inputMode="url" defaultValue={profile?.avatar_url || ''} placeholder="https://…" aria-describedby="avatar-help" /><small id="avatar-help">{en ? 'Required before you can book or rent out. Use a direct http or https image URL.' : 'Krävs innan du kan boka eller hyra ut. Använd en direkt http- eller https-adress till bilden.'}</small></label>
+        <label><span>{en ? 'Profile photo URL' : 'Profilbildens webbadress'}</span><input name="avatar_url" type="url" inputMode="url" defaultValue={profile?.avatar_url || ''} placeholder="https://…" aria-describedby="avatar-help" /><small id="avatar-help">{en ? 'Required before you can book or create a listing. Use a direct http or https image URL.' : 'Krävs innan du kan boka eller skapa en annons. Använd en direkt http- eller https-adress till bilden.'}</small></label>
         <label><span>{en ? 'Email' : 'E-post'}</span><input value={user.email || ''} readOnly /></label>
         <button type="submit" className="profilePrimaryAction">{en ? 'Save changes' : 'Spara ändringar'}</button>
       </form>
