@@ -10,6 +10,7 @@ import BookingConditionEvidence from '@/components/BookingConditionEvidence';
 import BookingReviewFlow from '@/components/BookingReviewFlow';
 import RenterReputationCard from '@/components/RenterReputationCard';
 import BookingIssueCenter from '@/components/BookingIssueCenter';
+import LateReturnCard from '@/components/LateReturnCard';
 import styles from '../demo/page.module.css';
 
 function formatDate(value:string,locale:string){return new Intl.DateTimeFormat(locale==='en'?'en-GB':'sv-SE',{day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));}
@@ -27,7 +28,10 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
   if(error||!booking)notFound();
   if(booking.renter_id!==user.id&&booking.owner_id!==user.id)notFound();
 
-  const products=await getProducts();
+  const [products,lateResult]=await Promise.all([
+    getProducts(),
+    supabase.from('booking_late_returns').select('*').eq('booking_id',id).maybeSingle(),
+  ]);
   const product=products.find(item=>item.id===booking.product_id);
   const isOwner=booking.owner_id===user.id;
   const counterpartId=isOwner?booking.renter_id:booking.owner_id;
@@ -46,6 +50,7 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
     {isOwner?<RenterReputationCard userId={booking.renter_id} name={counterpartName} verified={counterpartVerified} locale={locale}/>:null}
     {isOwner?<OwnerBookingActions bookingId={booking.id} status={booking.status} locale={locale}/>:<BookingPaymentActions bookingId={booking.id} status={booking.status} locale={locale}/>} 
     <BookingCancellationFlow bookingId={booking.id} status={booking.status} isOwner={isOwner} totalPrice={Number(booking.total_price||0)} locale={locale}/>
+    <LateReturnCard late={lateResult.data} locale={locale} isOwner={isOwner}/>
     <BookingConditionEvidence bookingId={booking.id} status={booking.status} locale={locale} isRenter={!isOwner}/>
     <BookingIssueCenter bookingId={booking.id} status={booking.status} isOwner={isOwner} locale={locale}/>
     {booking.status==='completed'?<BookingReviewFlow bookingId={booking.id} isOwner={isOwner}/>:null}
