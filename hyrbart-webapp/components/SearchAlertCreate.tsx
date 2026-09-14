@@ -15,9 +15,11 @@ type Props = {
   minRating?: string;
   discountOnly?: boolean;
   resultCount: number;
+  lat?: number;
+  lng?: number;
 };
 
-export default function SearchAlertCreate({ locale, query = '', category = '', place = '', radius = '10', from = '', to = '', maxPrice = '', minRating = '', discountOnly = false, resultCount }: Props) {
+export default function SearchAlertCreate({ locale, query = '', category = '', place = '', radius = '10', from = '', to = '', maxPrice = '', minRating = '', discountOnly = false, resultCount, lat, lng }: Props) {
   const en = locale === 'en';
   const [open, setOpen] = useState(false);
   const [price, setPrice] = useState(maxPrice);
@@ -35,7 +37,7 @@ export default function SearchAlertCreate({ locale, query = '', category = '', p
       const response = await fetch('/api/search-alerts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ query, category, place, radius, from, to: to || from, maxPrice: price, minRating, discountOnly, locale, notificationChannel: channel }),
+        body: JSON.stringify({ query, category, place, radius, from, to: to || from, maxPrice: price, minRating, discountOnly, locale, notificationChannel: channel, lat, lng }),
       });
       if (response.status === 401) {
         window.location.href = `/topsecret/${locale}/logga-in?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
@@ -75,7 +77,7 @@ export default function SearchAlertCreate({ locale, query = '', category = '', p
         </div>
         <label style={{display:'grid',gap:6,maxWidth:360,marginBottom:14}}><span style={{fontWeight:750}}>{en?'Notification':'Notifiering'}</span><select value={channel} onChange={event=>setChannel(event.target.value as 'in_app'|'in_app_push')} style={{minHeight:42,border:'1px solid var(--line)',borderRadius:10,padding:'0 10px',background:'#fff'}}><option value="in_app_push">{en?'Notification centre + Web Push':'Notiscenter + Web Push'}</option><option value="in_app">{en?'Notification centre only':'Endast notiscenter'}</option></select></label>
         {minRating || discountOnly ? <p style={{fontSize:13,color:'var(--muted)'}}>{minRating ? `★ ${minRating}+` : null}{minRating && discountOnly ? ' · ' : null}{discountOnly ? (en?'discount required':'rabatt krävs') : null}</p> : null}
-        <p style={{fontSize:13,color:'var(--muted)',lineHeight:1.4}}>{en?'We notify only after checking the saved criteria again. Opening the notification performs a fresh search; availability and price may still change before booking.':'Vi skickar bara notis efter att de sparade kriterierna kontrollerats igen. När notisen öppnas görs en ny sökning; tillgänglighet och pris kan fortfarande ändras före bokning.'}</p>
+        <p style={{fontSize:13,color:'var(--muted)',lineHeight:1.4}}>{en?'The exact search centre and radius are saved with this watch. We notify only after checking the criteria again.':'Exakt sökcentrum och radie sparas med bevakningen. Vi skickar bara notis efter att kriterierna kontrollerats igen.'}</p>
         {error ? <p role="alert" style={{color:'#9b1c1c'}}>{error}</p> : null}
         <div style={{display:'flex',justifyContent:'flex-end',gap:8}}><button type="button" onClick={()=>setOpen(false)} style={{minHeight:42,padding:'0 14px',border:'1px solid var(--line)',borderRadius:12,background:'#fff',fontWeight:750}}>{en?'Cancel':'Avbryt'}</button><button type="button" disabled={saving} onClick={()=>void save()} style={{minHeight:42,padding:'0 14px',border:'1px solid var(--accent)',borderRadius:12,background:'var(--accent)',color:'#111',fontWeight:850}}>{saving?(en?'Saving…':'Sparar…'):(en?'Create watch':'Skapa bevakning')}</button></div>
       </>}
