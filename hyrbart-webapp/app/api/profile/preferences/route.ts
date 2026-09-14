@@ -1,6 +1,48 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-const projectId='djps09z6'; const dataset='production'; const apiVersion='2026-09-08'; const token=process.env.SANITY_API_WRITE_TOKEN;
-async function query<T>(groq:string):Promise<T>{const response=await fetch(`https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(groq)}`,{cache:'no-store'});if(!response.ok)throw new Error('Sanity query failed');return (await response.json() as {result:T}).result}
-export async function GET(){try{const profile=await query<{id?:string;preferredLanguage?:'sv'|'en'}|null>(`*[_type=="userProfile"][0]{"id":_id,preferredLanguage}`);return NextResponse.json({preferredLanguage:profile?.preferredLanguage||'sv'})}catch{return NextResponse.json({preferredLanguage:'sv'})}}
-export async function POST(request:Request){try{if(!token)throw new Error('Missing SANITY_API_WRITE_TOKEN');const {preferredLanguage}=await request.json() as {preferredLanguage?:string};if(preferredLanguage!=='sv'&&preferredLanguage!=='en')return NextResponse.json({error:'Invalid language'},{status:400});const profile=await query<{id?:string}|null>(`*[_type=="userProfile"][0]{"id":_id}`);if(!profile?.id)return NextResponse.json({error:'Profile not found'},{status:404});const response=await fetch(`https://${projectId}.api.sanity.io/v${apiVersion}/data/mutate/${dataset}`,{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify({mutations:[{patch:{id:profile.id,set:{preferredLanguage}}}]})});if(!response.ok)throw new Error(await response.text());return NextResponse.json({preferredLanguage})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Could not save preference'},{status:500})}}
+const COOKIE_NAME = 'hyrbart_locale';
+
+function language(value: unknown): 'sv' | 'en' | null {
+  return value === 'sv' || value === 'en' ? value : null;
+}
+
+export async function GET() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ preferredLanguage: 'sv' });
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('preferred_language')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (error) return NextResponse.json({ preferredLanguage: 'sv' });
+  return NextResponse.json({ preferredLanguage: language(data?.preferred_language) || 'sv' });
+}
+
+export async function POST(request: Request) {
+  const body = await request.json().catch(() => ({})) as { preferredLanguage?: string };
+  const preferredLanguage = language(body.preferredLanguage);
+  if (!preferredLanguage) return NextResponse.json({ error: 'Invalid language' }, { status: 400 });
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ preferred_language: preferredLanguage, updated_at: new Date().toISOString() })
+      .eq('id', user.id);
+    if (error) return NextResponse.json({ error: 'Could not save preference' }, { status: 500 });
+  }
+
+  const response = NextResponse.json({ preferredLanguage });
+  response.cookies.set(COOKIE_NAME, preferredLanguage, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+  return response;
+}
