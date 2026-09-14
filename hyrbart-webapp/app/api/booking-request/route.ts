@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getProduct, getProducts } from '@/lib/sanity-products';
 import { calculateRentalPricing } from '@/lib/rental-pricing';
+import { validateRentalRules } from '@/lib/rental-rules';
 import { notifyUser } from '@/lib/notifications';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { RENTAL_TERMS_VERSION, normalizeTermsLocale } from '@/lib/legal';
@@ -17,6 +18,12 @@ function range(from:string,to:string){
 
 function addHours(value: Date, hours: number) {
   return new Date(value.getTime() + hours * 60 * 60 * 1000).toISOString();
+}
+
+function durationText(minutes:number,locale:string){
+  if(minutes%1440===0)return `${minutes/1440} ${locale==='en'?(minutes===1440?'day':'days'):(minutes===1440?'dag':'dagar')}`;
+  if(minutes%60===0)return `${minutes/60} ${locale==='en'?(minutes===60?'hour':'hours'):(minutes===60?'timme':'timmar')}`;
+  return `${minutes} ${locale==='en'?'minutes':'minuter'}`;
 }
 
 export async function GET(){
@@ -99,6 +106,18 @@ export async function POST(request:Request){
     if(owner.account_status&&owner.account_status!=='active')return NextResponse.json({error:'Annonsen kan inte bokas just nu.',code:'OWNER_ACCOUNT_RESTRICTED'},{status:409});
     if(owner.id===user.id)return NextResponse.json({error:'Du kan inte boka din egen annons.'},{status:400});
 
+    const startAt=stockholmLocalDateTimeToIso(from,startTime);
+    const returnAt=stockholmLocalDateTimeToIso(to,returnTime);
+    if(new Date(returnAt).getTime()<=new Date(startAt).getTime())return NextResponse.json({error:'Återlämning måste vara efter utlämning.'},{status:400});
+
+    const rules=await validateRentalRules(product.id,startAt,returnAt);
+    if(!rules.ok){
+      const en=locale==='en';
+      if(rules.code==='MIN_DURATION')return NextResponse.json({error:en?`The minimum rental time is ${durationText(rules.rule.minRentalMinutes,'en')}.`:`Minsta uthyrningstid är ${durationText(rules.rule.minRentalMinutes,'sv')}.`,code:'MIN_RENTAL_DURATION'},{status:409});
+      if(rules.code==='MAX_DURATION')return NextResponse.json({error:en?`The maximum rental time is ${durationText(rules.rule.maxRentalMinutes||0,'en')}.`:`Längsta uthyrningstid är ${durationText(rules.rule.maxRentalMinutes||0,'sv')}.`,code:'MAX_RENTAL_DURATION'},{status:409});
+      return NextResponse.json({error:en?'The selected time is too close to another booking. Choose a time outside the host’s buffer.':'Den valda tiden ligger för nära en annan bokning. Välj en tid utanför uthyrarens buffert.',code:'RENTAL_BUFFER_CONFLICT'},{status:409});
+    }
+
     const pricing=calculateRentalPricing(product.price,from,to,product.rentalPrices,product.discounts);
     if(!pricing)return NextResponse.json({error:'Kunde inte beräkna priset.'},{status:409});
 
@@ -106,9 +125,6 @@ export async function POST(request:Request){
     if(overlap?.length)return NextResponse.json({error:'Datumen är inte längre tillgängliga.'},{status:409});
 
     const status=requestType==='reserve-question'?'reserved':'requested';
-    const startAt=stockholmLocalDateTimeToIso(from,startTime);
-    const returnAt=stockholmLocalDateTimeToIso(to,returnTime);
-    if(new Date(returnAt).getTime()<=new Date(startAt).getTime())return NextResponse.json({error:'Återlämning måste vara efter utlämning.'},{status:400});
     const policy=product.cancellationPolicy||'moderate';
     const acceptedAt=new Date().toISOString();
     const createdAt=new Date(acceptedAt);
@@ -154,6 +170,10 @@ export async function POST(request:Request){
 
     return NextResponse.json({ok:true,bookingId:booking.id,status:booking.status,total:booking.total_price,reserved:requestType==='reserve-question',cancellationPolicy:policy,termsVersion:RENTAL_TERMS_VERSION});
   }catch(error){
+    const message=String((error as any)?.message||'');
+    if(message.includes('RENTAL_RULE_MIN_DURATION'))return NextResponse.json({error:'Bokningen är kortare än uthyrarens minimitid.',code:'MIN_RENTAL_DURATION'},{status:409});
+    if(message.includes('RENTAL_RULE_MAX_DURATION'))return NextResponse.json({error:'Bokningen är längre än uthyrarens maxgräns.',code:'MAX_RENTAL_DURATION'},{status:409});
+    if(message.includes('RENTAL_RULE_BUFFER_CONFLICT'))return NextResponse.json({error:'Bokningen ligger för nära en annan bokning.',code:'RENTAL_BUFFER_CONFLICT'},{status:409});
     console.error('Booking request failed',error);
     return NextResponse.json({error:'Kunde inte skicka förfrågan.'},{status:500});
   }
