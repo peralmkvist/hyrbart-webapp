@@ -47,6 +47,9 @@ Status: working launch gate. Keep this file aligned with Jira and production beh
 - [x] Deterministic booking state-machine + Stockholm timezone regression tests in CI
 - [x] Public desktop/mobile browser smoke tests in CI
 - [x] Correlation-id, structured operational logging and persistent alert trail
+- [x] Non-destructive logical restore drill + documented recovery runbook
+- [ ] Managed Supabase backup policy before external launch
+- [ ] Storage-object backup/restore for private evidence and attachments
 - [ ] Supabase leaked-password protection (paid plan)
 - [ ] Authenticated seeded end-to-end booking/cancellation/dispute race suite in CI
 
@@ -76,7 +79,7 @@ These are intentionally deferred while Hyrbart stays on the no-cost implementati
 - [ ] Payout provider
 - [ ] Insurance/protection
 - [ ] Production transactional email provider/configuration
-- [ ] Supabase Pro security feature(s), if still needed
+- [ ] Supabase paid plan with managed backup policy; decide on PITR based on accepted RPO
 
 ## 8. Release gate
 Before removing no-index / opening Hyrbart publicly:
@@ -87,5 +90,6 @@ Before removing no-index / opening Hyrbart publicly:
 - [ ] Mobile smoke test on iOS Safari and Android Chrome
 - [x] Admin/support runbook tested (payment, data, safety tabletop 2026-09-14)
 - [ ] Monitoring/alert ownership decided for external-customer operations
-- [ ] Backup/recovery procedure documented
+- [x] Backup/recovery procedure documented and logical restore mechanics verified 2026-09-14
+- [ ] Managed backup + Storage backup restore drill in isolated environment before public launch
 - [ ] Remove `robots: noindex` only after all launch blockers above are accepted
