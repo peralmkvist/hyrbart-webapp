@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { canBookingTransition } from '@/lib/booking-state';
 import { notifyUser } from '@/lib/notifications';
+import { resolveLateReturn } from '@/lib/late-returns';
 
 const BUCKET = 'booking-condition-photos';
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -127,6 +128,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       eventType: stage === 'pickup' ? 'pickup_documented' : 'return_documented',
       metadata: { photo_id: inserted.id, previous_status: expectedStatus, new_status: nextStatus, stage, auto_complete_at: transitioned.auto_complete_at || null },
     });
+
+    if(stage==='return'){
+      try{
+        const late=await resolveLateReturn(id,now.toISOString());
+        if(late){await recordBookingEvent({bookingId:id,actorId:user.id,eventType:'late_return_resolved',metadata:{returned_at:late.returned_at,overdue_minutes:late.overdue_minutes,estimated_extension_amount:late.estimated_extension_amount,currency:late.currency,fee_status:late.fee_status,calculation_version:late.calculation_version}});}
+      }catch(lateError){console.error('Could not resolve late return',id,lateError);}
+    }
 
     await notifyUser({
       userId: booking.owner_id,
