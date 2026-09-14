@@ -67,8 +67,9 @@ export async function POST(request:Request){
   }
 
   if(action==='revoke_sessions'){
-    const {count}=await admin.from('admin_sessions').update({revoked_at:new Date().toISOString(),revoke_reason:'admin_revoked'}).eq('admin_account_id',accountId).is('revoked_at',null).select('id',{count:'exact',head:true});
-    await recordAdminAction({adminUserId:access.user.id,adminRole:access.role,action:'admin_sessions_revoked',entityType:'admin_account',entityId:accountId,metadata:{target_user_id:account.user_id,username:account.username,count:count||0}});
+    const {data:revoked,error}=await admin.from('admin_sessions').update({revoked_at:new Date().toISOString(),revoke_reason:'admin_revoked'}).eq('admin_account_id',accountId).is('revoked_at',null).select('id');
+    if(error)throw error;
+    await recordAdminAction({adminUserId:access.user.id,adminRole:access.role,action:'admin_sessions_revoked',entityType:'admin_account',entityId:accountId,metadata:{target_user_id:account.user_id,username:account.username,count:revoked?.length||0}});
     return NextResponse.json({ok:true});
   }
 
