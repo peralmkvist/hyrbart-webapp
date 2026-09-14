@@ -1,0 +1,2 @@
+create index if not exists automated_message_deliveries_template_idx on public.automated_message_deliveries(template_id);
+create index if not exists automated_message_template_assets_owner_idx on public.automated_message_template_assets(owner_id);
