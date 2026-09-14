@@ -38,17 +38,17 @@ export async function setAdminSessionCookie(token:string,expiresAt:Date){
   store.set(ADMIN_SESSION_COOKIE,token,{httpOnly:true,secure:true,sameSite:'strict',path:'/',expires:expiresAt});
 }
 
-export async function createAdminSession(adminAccountId:string){
+export async function createAdminSession(adminAccountId:string,mfaVerified=false){
   const token=newAdminSessionToken();
   const tokenHash=hashAdminSessionToken(token);
   const expiresAt=new Date(Date.now()+ADMIN_SESSION_HOURS*60*60*1000);
   const h=await headers();
   const {ipHash,userAgent}=requestFingerprint(getRequestIp(h),h.get('user-agent'));
   const admin=createAdminClient();
-  const {data,error}=await admin.from('admin_sessions').insert({admin_account_id:adminAccountId,token_hash:tokenHash,expires_at:expiresAt.toISOString(),ip_hash:ipHash,user_agent:userAgent}).select('id').single();
+  const {data,error}=await admin.from('admin_sessions').insert({admin_account_id:adminAccountId,token_hash:tokenHash,expires_at:expiresAt.toISOString(),ip_hash:ipHash,user_agent:userAgent,mfa_verified:mfaVerified}).select('id').single();
   if(error)throw error;
   await setAdminSessionCookie(token,expiresAt);
-  return{id:data.id,expiresAt};
+  return{id:data.id,expiresAt,mfaVerified};
 }
 
 export function sameOrigin(request:Request){
