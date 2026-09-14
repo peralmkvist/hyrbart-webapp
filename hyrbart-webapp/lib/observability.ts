@@ -1,5 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { recordCriticalEvent } from '@/lib/critical-events';
 
 export type OperationalSeverity = 'info'|'warning'|'error'|'critical';
 
@@ -87,6 +88,26 @@ export async function logOperationalEvent(event: OperationalEvent) {
       metadata,
     });
     if (error) console.error(JSON.stringify({ ts: timestamp, kind: 'hyrbart_observability_write_failed', correlation_id: event.correlationId, error: sanitizeText(error.message) }));
+
+    if (event.severity !== 'info') {
+      try {
+        await recordCriticalEvent({
+          eventName: 'deviation_detected',
+          bookingId: event.entityType === 'booking' ? event.entityId ?? null : null,
+          correlationId: event.correlationId,
+          idempotencyKey: `deviation_detected:${event.correlationId}:${event.eventType}`,
+          properties: {
+            deviation_type: event.eventType,
+            source: event.source,
+            severity: event.severity,
+            route: event.route ?? null,
+            entity_type: event.entityType ?? null,
+          },
+        });
+      } catch (criticalError) {
+        console.error(JSON.stringify({ ts: timestamp, kind: 'hyrbart_critical_event_write_failed', correlation_id: event.correlationId, error: errorSummary(criticalError) }));
+      }
+    }
   } catch (error) {
     console.error(JSON.stringify({ ts: timestamp, kind: 'hyrbart_observability_write_failed', correlation_id: event.correlationId, error: errorSummary(error) }));
   }
