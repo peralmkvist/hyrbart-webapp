@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getProducts } from '@/lib/sanity-products';
 import { sendPushToUser } from '@/lib/push';
 
 const BUCKET = 'booking-attachments';
@@ -23,23 +22,20 @@ async function enrichMessages(rows: any[]) {
   }));
 }
 
-async function notifyCounterpart(booking: { renter_id: string; owner_id: string; product_id: string }, senderId: string, bookingId: string, body: string) {
+async function notifyCounterpart(booking: { renter_id: string; owner_id: string; product_id: string }, senderId: string, bookingId: string) {
   const recipientId = booking.renter_id === senderId ? booking.owner_id : booking.renter_id;
   if (!recipientId) return;
 
   const admin = createAdminClient();
-  const [{ data: senderProfile }, products] = await Promise.all([
-    admin.from('profiles').select('display_name').eq('id', senderId).maybeSingle(),
-    getProducts(),
-  ]);
+  const { data: senderProfile } = await admin.from('profiles').select('display_name').eq('id', senderId).maybeSingle();
   const senderName = senderProfile?.display_name?.trim() || 'Hyrbart-användare';
-  const product = products.find(item => item.id === booking.product_id);
-  const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt';
-  const message = body.length > 120 ? `${body.slice(0, 117)}…` : body;
 
+  // Never put user-authored message text, attachment names, phone numbers, email addresses,
+  // addresses or other potentially sensitive content on the device lock screen. The full
+  // message is only available after opening the authenticated booking thread.
   await sendPushToUser(recipientId, {
     title: `Nytt meddelande från ${senderName}`,
-    body: `${productName}\n${message}`,
+    body: 'Öppna Hyrbart för att läsa meddelandet.',
     url: `/topsecret/sv/bokningar/${bookingId}`,
     tag: `booking-message-${bookingId}`,
   });
@@ -70,7 +66,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     }
   }
 
-  return NextResponse.json({ messages: await enrichMessages(visibleMessages), currentUserId: user.id });
+  return NextResponse.json({ messages: await enrichMessages(visibleMessages), currentUserId: user.id }, { headers: { 'cache-control': 'private, no-store' } });
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -106,7 +102,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await admin.storage.from(BUCKET).remove([path]);
       return NextResponse.json({ error: 'Kunde inte skicka bilagan.' }, { status: 500 });
     }
-    await notifyCounterpart(booking, user.id, id, text || `Bilaga: ${file.name}`);
+    await notifyCounterpart(booking, user.id, id);
     const [enriched] = await enrichMessages([message]);
     return NextResponse.json({ ok: true, message: enriched });
   }
@@ -120,6 +116,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .insert({ booking_id: id, sender_id: user.id, body: text })
     .select('id,sender_id,body,created_at,read_at,attachment_path,attachment_name,attachment_type,attachment_size').single();
   if (error) return NextResponse.json({ error: 'Kunde inte skicka meddelandet.' }, { status: 500 });
-  await notifyCounterpart(booking, user.id, id, text);
+  await notifyCounterpart(booking, user.id, id);
   return NextResponse.json({ ok: true, message: { ...message, attachment_url: null } });
 }
