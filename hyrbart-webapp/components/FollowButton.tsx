@@ -49,11 +49,12 @@ export default function FollowButton({ userId, locale, compact = false }: Props)
     } finally { setSaving(false); }
   }
 
-  if (loading) return <button type="button" className="followButton2" disabled aria-busy="true">{en ? 'Loading…' : 'Laddar…'}</button>;
-  return <div className={`followControl2 ${compact ? 'compact' : ''}`}>
-    <button type="button" className={`followButton2 ${following ? 'following' : ''}`} onClick={() => void toggle()} disabled={saving} aria-pressed={following}>
+  const buttonStyle = {border:'1px solid #111',borderRadius:999,padding:compact?'8px 14px':'10px 20px',background:following?'#fff':'#111',color:following?'#111':'#fff',fontWeight:800,cursor:saving?'wait':'pointer'} as const;
+  if (loading) return <button type="button" disabled aria-busy="true" style={{...buttonStyle,opacity:.55}}>{en ? 'Loading…' : 'Laddar…'}</button>;
+  return <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',justifyContent:compact?'flex-start':'center'}}>
+    <button type="button" onClick={() => void toggle()} disabled={saving} aria-pressed={following} style={{...buttonStyle,opacity:saving?.65:1}}>
       {saving ? (en ? 'Saving…' : 'Sparar…') : following ? (en ? 'Following' : 'Följer') : (en ? 'Follow' : 'Följ')}
     </button>
-    {count !== null ? <span className="followCount2">{count} {en ? (count === 1 ? 'follower' : 'followers') : (count === 1 ? 'följare' : 'följare')}</span> : null}
+    {count !== null ? <span style={{fontSize:13,color:'var(--muted)'}}>{count} {en ? (count === 1 ? 'follower' : 'followers') : 'följare'}</span> : null}
   </div>;
 }
