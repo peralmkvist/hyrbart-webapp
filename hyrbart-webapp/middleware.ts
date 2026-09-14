@@ -3,15 +3,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PRIVATE_PREFIX = '/topsecret';
+const LOCALE_COOKIE = 'hyrbart_locale';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   let response: NextResponse;
 
-  // The /topsecret shim is a deployment-routing concern. Local Playwright CI
-  // exercises the actual route tree directly to avoid Next dev reprocessing
-  // rewrite targets and creating a redirect loop. This flag is never set in production.
   const bypassPrivateShim = process.env.E2E_BYPASS_PRIVATE_PREFIX === '1';
+  const savedLocale = request.cookies.get(LOCALE_COOKIE)?.value === 'en' ? 'en' : 'sv';
 
   if (bypassPrivateShim) {
     response = NextResponse.next({ request });
@@ -21,10 +20,10 @@ export async function middleware(request: NextRequest) {
     response = NextResponse.redirect(url, 307);
   } else if (pathname === PRIVATE_PREFIX) {
     const url = request.nextUrl.clone();
-    url.pathname = `${PRIVATE_PREFIX}/sv`;
+    url.pathname = `${PRIVATE_PREFIX}/${savedLocale}`;
     response = NextResponse.redirect(url, 307);
   } else if (pathname.startsWith(`${PRIVATE_PREFIX}/`)) {
-    const internalPath = pathname.slice(PRIVATE_PREFIX.length) || '/sv';
+    const internalPath = pathname.slice(PRIVATE_PREFIX.length) || `/${savedLocale}`;
     const url = request.nextUrl.clone();
     url.pathname = internalPath;
     response = NextResponse.rewrite(url);
