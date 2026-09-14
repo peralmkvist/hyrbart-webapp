@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export type IdentityVerificationStatus = 'unverified'|'pending'|'verified'|'failed'|'cancelled'|'review_required'|'revoked';
 export type ProviderResultStatus = Exclude<IdentityVerificationStatus,'unverified'>;
 
-const isProduction = () => process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
+const isProduction = () => process.env.VERCEL_ENV ? process.env.VERCEL_ENV === 'production' : process.env.NODE_ENV === 'production';
 
 export function configuredIdentityProvider() {
   const provider = String(process.env.IDENTITY_VERIFICATION_PROVIDER || '').trim().toLowerCase();
