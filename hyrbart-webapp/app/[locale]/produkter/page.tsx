@@ -108,9 +108,10 @@ export default async function ProductsPage({
       }
 
       if (parsedMaxPrice > 0) {
-        const totalPrice = requestedFrom
-          ? calculateRentalPricing(product.price, requestedFrom, requestedTo || requestedFrom, product.rentalPrices, product.discounts).total
-          : product.dailyPrice;
+        const pricing = requestedFrom
+          ? calculateRentalPricing(product.price, requestedFrom, requestedTo || requestedFrom, product.rentalPrices, product.discounts)
+          : null;
+        const totalPrice = pricing?.total ?? product.dailyPrice;
         if (totalPrice == null || totalPrice > parsedMaxPrice) return false;
       }
 
