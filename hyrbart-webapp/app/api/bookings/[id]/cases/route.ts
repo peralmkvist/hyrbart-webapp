@@ -7,6 +7,7 @@ import { notifyUser } from '@/lib/notifications';
 const TYPES=['problem','damage','dispute'] as const;
 type CaseType=(typeof TYPES)[number];
 type BookingCaseResult={id:string;reason:string;[key:string]:unknown};
+const PRIVATE_HEADERS={'cache-control':'private, no-store'};
 const ALLOWED_STATUSES:Record<CaseType,readonly string[]>={
   problem:['accepted','paid','active','returned','completed'],
   damage:['active','returned','completed'],
@@ -17,12 +18,12 @@ export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){
   const {id}=await params;
   const s=await createClient();
   const {data:{user}}=await s.auth.getUser();
-  if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401});
+  if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401,headers:PRIVATE_HEADERS});
   const {data:b}=await s.from('bookings').select('owner_id,renter_id').eq('id',id).maybeSingle();
-  if(!b||![b.owner_id,b.renter_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
+  if(!b||![b.owner_id,b.renter_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404,headers:PRIVATE_HEADERS});
   const {data:cases}=await s.from('booking_cases').select('*').eq('booking_id',id).order('created_at',{ascending:false});
   const {data:events}=await s.from('booking_events').select('*').eq('booking_id',id).order('created_at',{ascending:false});
-  return NextResponse.json({cases:cases||[],events:events||[]});
+  return NextResponse.json({cases:cases||[],events:events||[]},{headers:PRIVATE_HEADERS});
 }
 
 export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
@@ -30,23 +31,23 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   const s=await createClient();
   const admin=createAdminClient();
   const {data:{user}}=await s.auth.getUser();
-  if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401});
+  if(!user)return NextResponse.json({error:'UNAUTHENTICATED'},{status:401,headers:PRIVATE_HEADERS});
 
   const {data:b,error:bookingError}=await admin.from('bookings').select('id,owner_id,renter_id,status').eq('id',id).maybeSingle();
   if(bookingError)throw bookingError;
-  if(!b||![b.owner_id,b.renter_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404});
+  if(!b||![b.owner_id,b.renter_id].includes(user.id))return NextResponse.json({error:'NOT_FOUND'},{status:404,headers:PRIVATE_HEADERS});
 
   let body:any;
-  try{body=await req.json();}catch{return NextResponse.json({error:'INVALID_CASE'},{status:400});}
+  try{body=await req.json();}catch{return NextResponse.json({error:'INVALID_CASE'},{status:400,headers:PRIVATE_HEADERS});}
   const caseType=body.case_type as CaseType;
-  if(!TYPES.includes(caseType)||!String(body.reason||'').trim())return NextResponse.json({error:'INVALID_CASE'},{status:400});
-  if(!ALLOWED_STATUSES[caseType].includes(b.status))return NextResponse.json({error:'CASE_NOT_ALLOWED_FOR_STATUS',status:b.status},{status:409});
+  if(!TYPES.includes(caseType)||!String(body.reason||'').trim())return NextResponse.json({error:'INVALID_CASE'},{status:400,headers:PRIVATE_HEADERS});
+  if(!ALLOWED_STATUSES[caseType].includes(b.status))return NextResponse.json({error:'CASE_NOT_ALLOWED_FOR_STATUS',status:b.status},{status:409,headers:PRIVATE_HEADERS});
 
   const description=String(body.description||'').trim();
-  if(['damage','dispute'].includes(caseType)&&description.length<10)return NextResponse.json({error:'DESCRIPTION_REQUIRED'},{status:400});
+  if(['damage','dispute'].includes(caseType)&&description.length<10)return NextResponse.json({error:'DESCRIPTION_REQUIRED'},{status:400,headers:PRIVATE_HEADERS});
 
   const claimedRaw=body.amount_claimed===null||body.amount_claimed===undefined||body.amount_claimed===''?null:Number(String(body.amount_claimed).replace(',','.'));
-  if(claimedRaw!==null&&(!Number.isFinite(claimedRaw)||claimedRaw<0))return NextResponse.json({error:'INVALID_AMOUNT'},{status:400});
+  if(claimedRaw!==null&&(!Number.isFinite(claimedRaw)||claimedRaw<0))return NextResponse.json({error:'INVALID_AMOUNT'},{status:400,headers:PRIVATE_HEADERS});
   const claimed=claimedRaw===null?null:Math.round(claimedRaw);
 
   const {data,error}=await admin.rpc('open_booking_case_atomic',{
@@ -59,9 +60,9 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   }).single();
   if(error){
     const message=String(error.message||'');
-    if(message.includes('CASE_ALREADY_OPEN'))return NextResponse.json({error:'CASE_ALREADY_OPEN'},{status:409});
-    if(message.includes('CASE_NOT_ALLOWED_FOR_STATUS'))return NextResponse.json({error:'CASE_NOT_ALLOWED_FOR_STATUS'},{status:409});
-    if(message.includes('NOT_PARTICIPANT'))return NextResponse.json({error:'NOT_FOUND'},{status:404});
+    if(message.includes('CASE_ALREADY_OPEN'))return NextResponse.json({error:'CASE_ALREADY_OPEN'},{status:409,headers:PRIVATE_HEADERS});
+    if(message.includes('CASE_NOT_ALLOWED_FOR_STATUS'))return NextResponse.json({error:'CASE_NOT_ALLOWED_FOR_STATUS'},{status:409,headers:PRIVATE_HEADERS});
+    if(message.includes('NOT_PARTICIPANT'))return NextResponse.json({error:'NOT_FOUND'},{status:404,headers:PRIVATE_HEADERS});
     throw error;
   }
   const c=data as unknown as BookingCaseResult;
@@ -89,5 +90,5 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
     });
   }
 
-  return NextResponse.json({ok:true,case:c,status:current.status});
+  return NextResponse.json({ok:true,case:c,status:current.status},{headers:PRIVATE_HEADERS});
 }
