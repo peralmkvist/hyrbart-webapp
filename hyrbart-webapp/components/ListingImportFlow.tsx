@@ -1,9 +1,10 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import ImportDraftReview from '@/components/ImportDraftReview';
 
 type Batch={id:string;source_platform:'hygglo'|'other'|'user_provided';source_profile_url:string|null;status:string;created_at:string};
-type Item={id:string;batch_id:string;source_reference:string|null;source_url:string|null;status:string;source_payload:Record<string,unknown>;normalized_data:Record<string,unknown>;created_at:string};
+type Item={id:string;batch_id:string;source_reference:string|null;source_url:string|null;status:string;source_payload:Record<string,unknown>;normalized_data:Record<string,unknown>;field_confidence?:Record<string,string>;created_at:string};
 
 export default function ListingImportFlow({locale}:{locale:string}){
   const en=locale==='en';
@@ -65,7 +66,7 @@ export default function ListingImportFlow({locale}:{locale:string}){
     try{
       const sourcePayload={title:title.trim(),description:description.trim(),price:price.trim(),category:category.trim()};
       const normalizedData={title:title.trim(),description:description.trim(),price:price.trim(),category:category.trim()};
-      const response=await fetch('/api/imports/assisted/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({batchId:activeBatchId,sourceReference:reference.trim()||undefined,sourceUrl:sourceUrl.trim()||undefined,sourcePayload,normalizedData,fieldConfidence:{title:'user_provided',description:'user_provided',price:'user_provided',category:category.trim()?'user_provided':'missing'}})});
+      const response=await fetch('/api/imports/assisted/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({batchId:activeBatchId,sourceReference:reference.trim()||undefined,sourceUrl:sourceUrl.trim()||undefined,sourcePayload,normalizedData,fieldConfidence:{title:'user_provided',description:'user_provided',price:price.trim()?'user_provided':'missing',category:category.trim()?'user_provided':'missing'}})});
       const data=await response.json() as {error?:string};
       if(!response.ok){
         const copy:Record<string,string>={DUPLICATE_IMPORT_ITEM:en?'This listing already exists in your import staging area.':'Den här annonsen finns redan i ditt importunderlag.',INVALID_SOURCE_URL:en?'Use a valid HTTPS listing URL or leave it blank.':'Använd en giltig HTTPS-annonslänk eller lämna fältet tomt.',SOURCE_DATA_REQUIRED:en?'Add at least some listing content.':'Lägg till åtminstone någon information om annonsen.'};
@@ -108,13 +109,9 @@ export default function ListingImportFlow({locale}:{locale:string}){
     </section>:null}
 
     {activeBatchId?<section className="profileIdentityCard" style={{display:'block'}}>
-      <h2 style={{marginTop:0}}>{en?'Staging drafts':'Staging-utkast'}</h2>
-      <p style={{marginTop:0}}>{en?'These are stored only in the import staging area. They are not live listings.':'Dessa ligger endast i importens staginglager. De är inte publicerade annonser.'}</p>
-      {items.length?<div style={{display:'grid',gap:4}}>{items.map(item=>{
-        const data=item.normalized_data||item.source_payload||{};
-        const itemTitle=String(data.title||item.source_reference||(en?'Untitled draft':'Namnlöst utkast'));
-        return <div key={item.id} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:10,padding:'13px 0',borderBottom:'1px solid var(--line)'}}><div style={{minWidth:0}}><strong>{itemTitle}</strong><small style={{display:'block',marginTop:3,color:'var(--muted)'}}>{String(data.category||'')} {data.price?`· ${String(data.price)}`:''}</small></div><b>{en?'Draft':'Utkast'}</b></div>;
-      })}</div>:<div style={{padding:'18px 0',color:'var(--muted)'}}>{en?'No staging drafts yet.':'Inga staging-utkast ännu.'}</div>}
+      <h2 style={{marginTop:0}}>{en?'Review staging drafts':'Granska staging-utkast'}</h2>
+      <p style={{marginTop:0}}>{en?'Edit the draft, mark how trustworthy each field is, and attach your own images or documents. Everything remains private staging data.':'Redigera utkastet, markera hur säkert varje fält är och bifoga egna bilder eller dokument. Allt ligger fortsatt privat i staging.'}</p>
+      {items.length?<div style={{display:'grid',gap:22}}>{items.map(item=><ImportDraftReview key={item.id} item={item} locale={locale} onSaved={()=>loadItems(activeBatchId)}/>)}</div>:<div style={{padding:'18px 0',color:'var(--muted)'}}>{en?'No staging drafts yet.':'Inga staging-utkast ännu.'}</div>}
     </section>:null}
 
     {message?<p role="status" style={{margin:0,fontWeight:750}}>{message}</p>:null}
