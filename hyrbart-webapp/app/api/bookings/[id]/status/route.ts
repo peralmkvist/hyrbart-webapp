@@ -7,12 +7,14 @@ import { recordBookingEvent } from '@/lib/booking-events';
 import { ensureScheduledPayout } from '@/lib/payment-ledger';
 import { ensureBookingAgreement } from '@/lib/booking-agreements';
 import { canBookingTransition, type BookingActor } from '@/lib/booking-state';
+import { correlationIdFromRequest, errorSummary, logOperationalEvent } from '@/lib/observability';
 
 const statusTitle: Record<string, string> = { accepted: 'Bokning godkänd', declined: 'Bokningsförfrågan nekad', completed: 'Bokning avslutad' };
 function formatDateRange(from: string, to: string) { const format = (value: string) => new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`)); return `${format(from)} – ${format(to)}`; }
 function paymentDeadline(pickupAt?: string | null) { const now = Date.now(); const twelveHours = now + 12 * 60 * 60 * 1000; const twoHoursBeforePickup = pickupAt ? new Date(pickupAt).getTime() - 2 * 60 * 60 * 1000 : Number.POSITIVE_INFINITY; const preferred = Math.min(twelveHours, twoHoursBeforePickup); const minimum = now + 30 * 60 * 1000; return new Date(Math.max(minimum, preferred)).toISOString(); }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const correlationId = correlationIdFromRequest(request);
   const { id } = await params;
   let body: { status?: string };
   try { body = await request.json(); } catch { return NextResponse.json({ error: 'Ogiltig förfrågan.' }, { status: 400 }); }
@@ -36,15 +38,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (requestedStatus === 'completed') { updates.auto_complete_at = null; updates.completed_at = now; }
     const { data: updated, error: updateError } = await admin.from('bookings').update(updates).eq('id', id).eq('status', previousStatus).select('id,status,payment_due_at,completed_at').single();
     if (updateError) throw updateError;
-    await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'booking_status_changed', metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor, payment_due_at: updated.payment_due_at || null, completed_at: updated.completed_at || null } });
+    await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'booking_status_changed', metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor, payment_due_at: updated.payment_due_at || null, completed_at: updated.completed_at || null, correlation_id: correlationId } });
     if (updated.status === 'completed') {
       const payout = await ensureScheduledPayout(booking);
-      await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'payout_scheduled', metadata: { payout_id: payout.id, amount: payout.amount, currency: payout.currency, provider: payout.provider, simulated: payout.provider === 'simulation' } });
-      try { await ensureBookingAgreement(id); } catch (agreementError) { console.error('Could not generate booking agreement', id, agreementError); }
+      await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'payout_scheduled', metadata: { payout_id: payout.id, amount: payout.amount, currency: payout.currency, provider: payout.provider, simulated: payout.provider === 'simulation', correlation_id: correlationId } });
+      try { await ensureBookingAgreement(id); } catch (agreementError) {
+        await logOperationalEvent({ correlationId, severity:'error', eventType:'booking_agreement_generation_failed', source:'api.booking.status', route:'/api/bookings/[id]/status', entityType:'booking', entityId:id, message:'Could not generate booking agreement after completion', metadata:{ error:errorSummary(agreementError) } });
+      }
     }
 
     const recipientId = isOwner ? booking.renter_id : booking.owner_id;
     if (recipientId) { const products = await getProducts(); const product = products.find(item => item.id === booking.product_id); const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt'; await notifyUser({ userId:recipientId, bookingId:id, type:`booking_${updated.status}`, title:statusTitle[updated.status] || 'Bokning uppdaterad', body:`${productName}\n${formatDateRange(booking.start_date, booking.end_date)}`, url:`/topsecret/sv/bokningar/${id}`, eventKey:`booking-status:${id}:${updated.status}` }); }
+    await logOperationalEvent({ correlationId, severity:'info', eventType:'booking_status_changed', source:'api.booking.status', route:'/api/bookings/[id]/status', entityType:'booking', entityId:id, message:'Booking status changed', metadata:{ previous_status:previousStatus, new_status:updated.status, actor_role:actor }, persist:false });
     return NextResponse.json({ ok: true, status: updated.status, paymentDueAt: updated.payment_due_at || null, completedAt: updated.completed_at || null });
-  } catch (error) { console.error('Booking status update failed', error); return NextResponse.json({ error: 'Kunde inte uppdatera bokningen.' }, { status: 500 }); }
+  } catch (error) {
+    await logOperationalEvent({ correlationId, severity:'error', eventType:'booking_status_update_failed', source:'api.booking.status', route:'/api/bookings/[id]/status', entityType:'booking', entityId:id, message:'Booking status update failed', metadata:{ requested_status:requestedStatus, error:errorSummary(error) } });
+    return NextResponse.json({ error: 'Kunde inte uppdatera bokningen.', correlationId }, { status: 500 });
+  }
 }
