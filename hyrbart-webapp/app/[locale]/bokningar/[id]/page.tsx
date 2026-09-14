@@ -11,6 +11,7 @@ import BookingReviewFlow from '@/components/BookingReviewFlow';
 import RenterReputationCard from '@/components/RenterReputationCard';
 import BookingIssueCenter from '@/components/BookingIssueCenter';
 import LateReturnCard from '@/components/LateReturnCard';
+import PickupDirectionsCard from '@/components/PickupDirectionsCard';
 import styles from '../demo/page.module.css';
 
 function formatDate(value:string,locale:string){return new Intl.DateTimeFormat(locale==='en'?'en-GB':'sv-SE',{day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));}
@@ -49,6 +50,7 @@ export default async function BookingPage({params}:{params:Promise<{locale:strin
     <section className={styles.ownerCard}>{counterpartImage?<img src={counterpartImage} alt={counterpartName} className={styles.ownerAvatarImage}/>:<div className={styles.ownerAvatar}>{counterpartName.slice(0,1)}</div>}<div><span>{isOwner?(en?'Renter':'Hyrare'):(en?'Owner':'Uthyrare')}</span><h2>{counterpartName}</h2>{counterpart?.city?<small>{counterpart.city}</small>:null}</div></section>
     {isOwner?<RenterReputationCard userId={booking.renter_id} name={counterpartName} verified={counterpartVerified} locale={locale}/>:null}
     {isOwner?<OwnerBookingActions bookingId={booking.id} status={booking.status} locale={locale}/>:<BookingPaymentActions bookingId={booking.id} status={booking.status} locale={locale}/>} 
+    {!isOwner?<PickupDirectionsCard status={booking.status} locale={locale} pickup_location_name={booking.pickup_location_name} pickup_location_address={booking.pickup_location_address} pickup_location_lat={booking.pickup_location_lat} pickup_location_lng={booking.pickup_location_lng}/>:null}
     <BookingCancellationFlow bookingId={booking.id} status={booking.status} isOwner={isOwner} totalPrice={Number(booking.total_price||0)} locale={locale}/>
     <LateReturnCard late={lateResult.data} locale={locale} isOwner={isOwner}/>
     <BookingConditionEvidence bookingId={booking.id} status={booking.status} locale={locale} isRenter={!isOwner}/>

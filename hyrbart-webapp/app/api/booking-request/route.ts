@@ -108,6 +108,17 @@ export async function POST(request:Request){
     if(owner.account_status&&owner.account_status!=='active')return NextResponse.json({error:'Annonsen kan inte bokas just nu.',code:'OWNER_ACCOUNT_RESTRICTED'},{status:409});
     if(owner.id===user.id)return NextResponse.json({error:'Du kan inte boka din egen annons.'},{status:400});
 
+    const {data:pickupLocation,error:pickupError}=await admin.from('host_pickup_locations')
+      .select('name,label,address,lat,lng')
+      .eq('user_id',owner.id)
+      .order('sort_order',{ascending:true})
+      .limit(1)
+      .maybeSingle();
+    if(pickupError)throw pickupError;
+    if(!pickupLocation||!Number.isFinite(Number(pickupLocation.lat))||!Number.isFinite(Number(pickupLocation.lng))){
+      return NextResponse.json({error:locale==='en'?'The host has no valid pickup location yet.':'Uthyraren saknar en giltig utlämningsplats.'},{status:409});
+    }
+
     const startAt=stockholmLocalDateTimeToIso(from,startTime);
     const returnAt=stockholmLocalDateTimeToIso(to,returnTime);
     if(new Date(returnAt).getTime()<=new Date(startAt).getTime())return NextResponse.json({error:'Återlämning måste vara efter utlämning.'},{status:400});
@@ -130,6 +141,7 @@ export async function POST(request:Request){
     const policy=product.cancellationPolicy||'moderate';
     const acceptedAt=new Date().toISOString();
     const createdAt=new Date(acceptedAt);
+    const pickupAddress=String(pickupLocation.address||pickupLocation.label||pickupLocation.name||'').trim()||null;
     const {data:booking,error}=await admin.from('bookings').insert({
       renter_id:user.id,
       owner_id:owner.id,
@@ -138,6 +150,10 @@ export async function POST(request:Request){
       end_date:to,
       pickup_time:startTime,
       return_time:returnTime,
+      pickup_location_name:String(pickupLocation.name||pickupLocation.label||'').trim()||null,
+      pickup_location_address:pickupAddress,
+      pickup_location_lat:Number(pickupLocation.lat),
+      pickup_location_lng:Number(pickupLocation.lng),
       rental_start_at:startAt,
       pickup_due_at:startAt,
       return_due_at:returnAt,
