@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       admin.from('profile_follows').select('follower_id', { count: 'exact', head: true }).eq('followed_id', target),
     ]);
     if (!targetProfile) return NextResponse.json({ error: 'PROFILE_NOT_FOUND' }, { status: 404 });
-    return NextResponse.json({ following: Boolean(relation), followerCount: count || 0, profile: publicProfile(targetProfile as PublicProfile) }, { headers: { 'cache-control': 'no-store' } });
+    return NextResponse.json({ self: target === user.id, following: Boolean(relation), followerCount: count || 0, profile: publicProfile(targetProfile as PublicProfile) }, { headers: { 'cache-control': 'no-store' } });
   }
 
   const relationQuery = mode === 'followers'
