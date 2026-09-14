@@ -7,7 +7,8 @@ export const dynamic='force-dynamic';
 const outcomes=new Set<ProviderResultStatus>(['pending','verified','failed','cancelled','review_required','revoked']);
 
 function mockAllowed(){
-  return process.env.VERCEL_ENV!=='production'&&process.env.NODE_ENV!=='production'&&configuredIdentityProvider()==='mock';
+  const nonProduction=process.env.VERCEL_ENV ? process.env.VERCEL_ENV!=='production' : process.env.NODE_ENV!=='production';
+  return nonProduction&&configuredIdentityProvider()==='mock';
 }
 
 export async function POST(request:Request){
