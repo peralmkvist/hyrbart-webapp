@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import '../profile-menu.css';
 
+const MAX_BIO_LENGTH = 500;
+
 export default async function AccountSettingsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ back?: string; section?: string; saved?: string; error?: string; required?: string }> }) {
   const { locale } = await params;
   const { back, section, saved, error, required } = await searchParams;
@@ -15,7 +17,7 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/profil/konto`)}`);
-  const { data: profile } = await supabase.from('profiles').select('display_name,city,avatar_url').eq('id', user.id).maybeSingle();
+  const { data: profile } = await supabase.from('profiles').select('display_name,city,avatar_url,bio').eq('id', user.id).maybeSingle();
 
   async function saveProfile(formData: FormData) {
     'use server';
@@ -25,9 +27,15 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
     const displayName = String(formData.get('display_name') || '').trim();
     const city = String(formData.get('city') || '').trim();
     const avatarUrl = String(formData.get('avatar_url') || '').trim();
+    const bio = String(formData.get('bio') || '').trim();
     const query = new URLSearchParams();
     if (back) query.set('back', back);
     if (section) query.set('section', section);
+
+    if (bio.length > MAX_BIO_LENGTH) {
+      query.set('error', 'bio-too-long');
+      redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`);
+    }
 
     if (avatarUrl) {
       try {
@@ -43,6 +51,7 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
       display_name: displayName || null,
       city: city || null,
       avatar_url: avatarUrl || null,
+      bio: bio || null,
       updated_at: new Date().toISOString(),
     }).eq('id', user.id);
     if (updateError) {
@@ -66,11 +75,13 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
       {required === 'photo' ? <p role="alert" className="profileSettingsError">{en ? 'Add a profile photo before you can create a listing.' : 'Lägg till en profilbild innan du kan skapa en annons.'}</p> : null}
       {saved === '1' ? <p role="status" className="profileSettingsSuccess">{en ? 'Your changes have been saved.' : 'Dina ändringar har sparats.'}</p> : null}
       {error === 'invalid-avatar-url' ? <p role="alert" className="profileSettingsError">{en ? 'Enter a valid profile photo URL beginning with http:// or https://.' : 'Ange en giltig profilbildsadress som börjar med http:// eller https://.'}</p> : null}
+      {error === 'bio-too-long' ? <p role="alert" className="profileSettingsError">{en ? `Your bio can be at most ${MAX_BIO_LENGTH} characters.` : `Din presentation får vara högst ${MAX_BIO_LENGTH} tecken.`}</p> : null}
       {error === 'save-failed' ? <p role="alert" className="profileSettingsError">{en ? 'The profile could not be saved. Please try again.' : 'Profilen kunde inte sparas. Försök igen.'}</p> : null}
       <form action={saveProfile} className="profileSettingsForm">
         <label><span>{en ? 'Name' : 'Namn'}</span><input name="display_name" defaultValue={profile?.display_name || ''} autoComplete="name" /></label>
         <label><span>{en ? 'City' : 'Ort'}</span><input name="city" defaultValue={profile?.city || ''} autoComplete="address-level2" /></label>
         <label><span>{en ? 'Profile photo URL' : 'Profilbildens webbadress'}</span><input name="avatar_url" type="url" inputMode="url" defaultValue={profile?.avatar_url || ''} placeholder="https://…" aria-describedby="avatar-help" /><small id="avatar-help">{en ? 'Required before you can book or create a listing. Use a direct http or https image URL.' : 'Krävs innan du kan boka eller skapa en annons. Använd en direkt http- eller https-adress till bilden.'}</small></label>
+        <label><span>{en ? 'About you' : 'Om dig'}</span><textarea name="bio" defaultValue={profile?.bio || ''} maxLength={MAX_BIO_LENGTH} rows={5} aria-describedby="bio-help" /><small id="bio-help">{en ? `Shown on your public profile. Maximum ${MAX_BIO_LENGTH} characters.` : `Visas på din offentliga profil. Högst ${MAX_BIO_LENGTH} tecken.`}</small></label>
         <label><span>{en ? 'Email' : 'E-post'}</span><input value={user.email || ''} readOnly /></label>
         <button type="submit" className="profilePrimaryAction">{en ? 'Save changes' : 'Spara ändringar'}</button>
       </form>
