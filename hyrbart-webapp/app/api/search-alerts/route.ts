@@ -48,6 +48,32 @@ function criteriaHash(criteria: ReturnType<typeof canonical>) {
   return createHash('sha256').update(JSON.stringify(criteria)).digest('hex');
 }
 
+function validCriteria(c: ReturnType<typeof canonical>) {
+  if (!c.from || !c.to || c.to < c.from) return 'INVALID_DATES';
+  if (!c.query && !c.category) return 'PRODUCT_CRITERIA_REQUIRED';
+  if (c.from < new Date().toISOString().slice(0, 10)) return 'PAST_PERIOD';
+  return null;
+}
+
+function dbCriteria(c: ReturnType<typeof canonical>, center: { lat: number; lng: number } | null) {
+  return {
+    query_text: c.query || null,
+    category: c.category || null,
+    place: c.place || null,
+    center_lat: center?.lat ?? null,
+    center_lng: center?.lng ?? null,
+    radius_km: c.radius,
+    start_date: c.from,
+    end_date: c.to,
+    max_total_price: c.maxPrice,
+    min_rating: c.minRating,
+    discount_only: c.discountOnly,
+    locale: c.locale,
+    notification_channel: c.notificationChannel,
+    criteria_hash: criteriaHash(c),
+  };
+}
+
 export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -63,33 +89,15 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED' }, { status: 401 });
   const body = await request.json().catch(() => ({})) as AlertInput;
   const c = canonical(body);
-  if (!c.from || !c.to || c.to < c.from) return NextResponse.json({ error: 'INVALID_DATES' }, { status: 400 });
-  if (!c.query && !c.category) return NextResponse.json({ error: 'PRODUCT_CRITERIA_REQUIRED' }, { status: 400 });
-  const today = new Date().toISOString().slice(0, 10);
-  if (c.from < today) return NextResponse.json({ error: 'PAST_PERIOD' }, { status: 400 });
+  const invalid = validCriteria(c);
+  if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
   const center = c.place ? await geocodeSwedishPlace(c.place) : null;
   if (c.place && !center) return NextResponse.json({ error: 'LOCATION_NOT_FOUND' }, { status: 400 });
-  const hash = criteriaHash(c);
+  const row = dbCriteria(c, center);
   const admin = createAdminClient();
-  const { data: existing } = await admin.from('search_alerts').select('*').eq('user_id', user.id).eq('criteria_hash', hash).maybeSingle();
+  const { data: existing } = await admin.from('search_alerts').select('*').eq('user_id', user.id).eq('criteria_hash', row.criteria_hash).maybeSingle();
   if (existing) return NextResponse.json({ alert: existing, duplicate: true });
-  const { data, error } = await admin.from('search_alerts').insert({
-    user_id: user.id,
-    query_text: c.query || null,
-    category: c.category || null,
-    place: c.place || null,
-    center_lat: center?.lat ?? null,
-    center_lng: center?.lng ?? null,
-    radius_km: c.radius,
-    start_date: c.from,
-    end_date: c.to,
-    max_total_price: c.maxPrice,
-    min_rating: c.minRating,
-    discount_only: c.discountOnly,
-    locale: c.locale,
-    notification_channel: c.notificationChannel,
-    criteria_hash: hash,
-  }).select('*').single();
+  const { data, error } = await admin.from('search_alerts').insert({ user_id: user.id, ...row }).select('*').single();
   if (error) return NextResponse.json({ error: 'SAVE_FAILED' }, { status: 500 });
   return NextResponse.json({ alert: data }, { status: 201 });
 }
@@ -98,16 +106,44 @@ export async function PATCH(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED' }, { status: 401 });
-  const body = await request.json().catch(() => ({})) as { id?: string; status?: string; maxPrice?: number | string; notificationChannel?: string };
+  const body = await request.json().catch(() => ({})) as AlertInput & { id?: string; status?: string };
   const id = String(body.id || '');
   if (!id) return NextResponse.json({ error: 'ID_REQUIRED' }, { status: 400 });
+  const { data: current, error: currentError } = await supabase.from('search_alerts').select('*').eq('id', id).eq('user_id', user.id).maybeSingle();
+  if (currentError) return NextResponse.json({ error: 'LOAD_FAILED' }, { status: 500 });
+  if (!current) return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
+
+  const criteriaFields = ['query','category','place','radius','from','to','maxPrice','minRating','discountOnly','locale','notificationChannel'] as const;
+  const changesCriteria = criteriaFields.some(key => Object.prototype.hasOwnProperty.call(body, key));
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+  if (changesCriteria) {
+    const merged = canonical({
+      query: body.query ?? current.query_text ?? '',
+      category: body.category ?? current.category ?? '',
+      place: body.place ?? current.place ?? '',
+      radius: body.radius ?? current.radius_km,
+      from: body.from ?? current.start_date,
+      to: body.to ?? current.end_date,
+      maxPrice: body.maxPrice !== undefined ? body.maxPrice : current.max_total_price ?? '',
+      minRating: body.minRating !== undefined ? body.minRating : current.min_rating ?? '',
+      discountOnly: body.discountOnly !== undefined ? body.discountOnly : current.discount_only,
+      locale: body.locale ?? current.locale,
+      notificationChannel: body.notificationChannel ?? current.notification_channel,
+    });
+    const invalid = validCriteria(merged);
+    if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
+    const center = merged.place ? await geocodeSwedishPlace(merged.place) : null;
+    if (merged.place && !center) return NextResponse.json({ error: 'LOCATION_NOT_FOUND' }, { status: 400 });
+    Object.assign(patch, dbCriteria(merged, center));
+  }
   if (body.status === 'active' || body.status === 'paused') patch.status = body.status;
-  if (body.maxPrice !== undefined) patch.max_total_price = Number(body.maxPrice || 0) > 0 ? Math.round(Number(body.maxPrice)) : null;
-  if (body.notificationChannel === 'in_app' || body.notificationChannel === 'in_app_push') patch.notification_channel = body.notificationChannel;
+
   const { data, error } = await supabase.from('search_alerts').update(patch).eq('id', id).eq('user_id', user.id).select('*').maybeSingle();
+  if (error?.code === '23505') return NextResponse.json({ error: 'DUPLICATE_ALERT' }, { status: 409 });
   if (error) return NextResponse.json({ error: 'SAVE_FAILED' }, { status: 500 });
   if (!data) return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
+  if (changesCriteria) await createAdminClient().from('search_alert_matches').delete().eq('alert_id', id);
   return NextResponse.json({ alert: data });
 }
 
