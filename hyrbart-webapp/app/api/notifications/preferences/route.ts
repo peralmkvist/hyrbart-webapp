@@ -1,26 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { MANDATORY_IN_APP, NOTIFICATION_POLICY, NOTIFICATION_TYPES, type NotificationCategory, type NotificationChannel } from '@/lib/notification-policy';
 
-const TYPES = ['follower','booking','booking_update','message','followed_host_listing','favorite_price_change','search_alert','pickup_return_reminder'] as const;
-type NotificationType = typeof TYPES[number];
-type Channel = 'in_app'|'push'|'email'|'sms';
-
-const OPTIONAL_DEFAULTS: Record<NotificationType,{in_app:boolean;push:boolean;email:boolean;sms:boolean}> = {
-  follower:{in_app:true,push:true,email:false,sms:false},
-  booking:{in_app:true,push:true,email:true,sms:false},
-  booking_update:{in_app:true,push:true,email:true,sms:false},
-  message:{in_app:true,push:true,email:false,sms:false},
-  followed_host_listing:{in_app:true,push:false,email:false,sms:false},
-  favorite_price_change:{in_app:true,push:false,email:false,sms:false},
-  search_alert:{in_app:true,push:true,email:false,sms:false},
-  pickup_return_reminder:{in_app:true,push:true,email:true,sms:false},
-};
-
-const MANDATORY_IN_APP = new Set<NotificationType>(['booking','booking_update','message','pickup_return_reminder']);
-
-function isType(value: unknown): value is NotificationType { return TYPES.includes(value as NotificationType); }
-function isChannel(value: unknown): value is Channel { return value === 'in_app' || value === 'push' || value === 'email' || value === 'sms'; }
+function isType(value: unknown): value is NotificationCategory { return NOTIFICATION_TYPES.includes(value as NotificationCategory); }
+function isChannel(value: unknown): value is NotificationChannel { return value === 'in_app' || value === 'push' || value === 'email' || value === 'sms'; }
 
 export async function GET() {
   const supabase = await createClient();
@@ -34,7 +18,18 @@ export async function GET() {
   if (error) return NextResponse.json({ error:'LOAD_FAILED' }, { status:500 });
 
   const saved = new Map((data || []).map(row => [row.notification_type, row]));
-  const preferences = TYPES.map(type => ({ type, ...OPTIONAL_DEFAULTS[type], ...(saved.get(type) || {}), mandatoryInApp: MANDATORY_IN_APP.has(type) }));
+  const preferences = NOTIFICATION_TYPES.map(type => ({
+    type,
+    ...NOTIFICATION_POLICY[type].defaults,
+    ...(saved.get(type) || {}),
+    mandatoryInApp: MANDATORY_IN_APP.has(type),
+    classification: NOTIFICATION_POLICY[type].classification,
+    priority: NOTIFICATION_POLICY[type].priority,
+    slaMinutes: NOTIFICATION_POLICY[type].slaMinutes,
+    recipient: NOTIFICATION_POLICY[type].recipient,
+    maxExternalPer24h: NOTIFICATION_POLICY[type].maxExternalPer24h,
+    digest: NOTIFICATION_POLICY[type].digest,
+  }));
   const admin = createAdminClient();
   const { count: pushSubscriptions } = await admin.from('push_subscriptions').select('endpoint',{count:'exact',head:true}).eq('user_id',user.id);
 
@@ -65,7 +60,7 @@ export async function PATCH(request:Request) {
   const admin = createAdminClient();
   const { data: existing } = await admin.from('notification_channel_preferences')
     .select('in_app,push,email,sms').eq('user_id',user.id).eq('notification_type',type).maybeSingle();
-  const next = { ...OPTIONAL_DEFAULTS[type], ...(existing || {}), [channel]: body.enabled };
+  const next = { ...NOTIFICATION_POLICY[type].defaults, ...(existing || {}), [channel]: body.enabled };
   const { data, error } = await admin.from('notification_channel_preferences').upsert({
     user_id:user.id,
     notification_type:type,
@@ -75,12 +70,6 @@ export async function PATCH(request:Request) {
   if (error) return NextResponse.json({ error:'SAVE_FAILED' }, { status:500 });
 
   await admin.from('notification_preference_audit').insert({user_id:user.id,notification_type:type,channel,enabled:body.enabled});
-
-  // Keep legacy delivery switches compatible while old senders are still in use.
-  if (channel === 'push' || channel === 'email') {
-    const key = channel === 'push' ? 'push_enabled' : 'email_enabled';
-    await admin.from('notification_preferences').upsert({user_id:user.id,[key]:body.enabled,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  }
 
   return NextResponse.json({ ok:true, preference:data });
 }
