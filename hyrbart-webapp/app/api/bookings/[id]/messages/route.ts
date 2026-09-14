@@ -26,15 +26,10 @@ async function notifyCounterpart(booking: { renter_id: string; owner_id: string;
   const recipientId = booking.renter_id === senderId ? booking.owner_id : booking.renter_id;
   if (!recipientId) return;
 
-  const admin = createAdminClient();
-  const { data: senderProfile } = await admin.from('profiles').select('display_name').eq('id', senderId).maybeSingle();
-  const senderName = senderProfile?.display_name?.trim() || 'Hyrbart-användare';
-
-  // Never put user-authored message text, attachment names, phone numbers, email addresses,
-  // addresses or other potentially sensitive content on the device lock screen. The full
-  // message is only available after opening the authenticated booking thread.
+  // Lock-screen copy must not reveal sender identity, free-form message text,
+  // attachment names, phone numbers, email addresses, addresses or similar data.
   await sendPushToUser(recipientId, {
-    title: `Nytt meddelande från ${senderName}`,
+    title: 'Nytt meddelande på Hyrbart',
     body: 'Öppna Hyrbart för att läsa meddelandet.',
     url: `/topsecret/sv/bokningar/${bookingId}`,
     tag: `booking-message-${bookingId}`,
@@ -104,7 +99,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     await notifyCounterpart(booking, user.id, id);
     const [enriched] = await enrichMessages([message]);
-    return NextResponse.json({ ok: true, message: enriched });
+    return NextResponse.json({ ok: true, message: enriched }, { headers: { 'cache-control': 'private, no-store' } });
   }
 
   let body: { body?: string };
@@ -117,5 +112,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .select('id,sender_id,body,created_at,read_at,attachment_path,attachment_name,attachment_type,attachment_size').single();
   if (error) return NextResponse.json({ error: 'Kunde inte skicka meddelandet.' }, { status: 500 });
   await notifyCounterpart(booking, user.id, id);
-  return NextResponse.json({ ok: true, message: { ...message, attachment_url: null } });
+  return NextResponse.json({ ok: true, message: { ...message, attachment_url: null } }, { headers: { 'cache-control': 'private, no-store' } });
 }
