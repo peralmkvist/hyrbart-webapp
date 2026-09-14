@@ -5,6 +5,7 @@ import { getProducts } from '@/lib/sanity-products';
 import { notifyUser } from '@/lib/notifications';
 import { recordBookingEvent } from '@/lib/booking-events';
 import { ensureScheduledPayout } from '@/lib/payment-ledger';
+import { ensureBookingAgreement } from '@/lib/booking-agreements';
 import { canBookingTransition, type BookingActor } from '@/lib/booking-state';
 
 const statusTitle: Record<string, string> = { accepted: 'Bokning godkänd', declined: 'Bokningsförfrågan nekad', completed: 'Bokning avslutad' };
@@ -36,7 +37,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { data: updated, error: updateError } = await admin.from('bookings').update(updates).eq('id', id).eq('status', previousStatus).select('id,status,payment_due_at,completed_at').single();
     if (updateError) throw updateError;
     await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'booking_status_changed', metadata: { previous_status: previousStatus, new_status: updated.status, actor_role: actor, payment_due_at: updated.payment_due_at || null, completed_at: updated.completed_at || null } });
-    if (updated.status === 'completed') { const payout = await ensureScheduledPayout(booking); await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'payout_scheduled', metadata: { payout_id: payout.id, amount: payout.amount, currency: payout.currency, provider: payout.provider, simulated: payout.provider === 'simulation' } }); }
+    if (updated.status === 'completed') {
+      const payout = await ensureScheduledPayout(booking);
+      await recordBookingEvent({ bookingId: id, actorId: user.id, eventType: 'payout_scheduled', metadata: { payout_id: payout.id, amount: payout.amount, currency: payout.currency, provider: payout.provider, simulated: payout.provider === 'simulation' } });
+      try { await ensureBookingAgreement(id); } catch (agreementError) { console.error('Could not generate booking agreement', id, agreementError); }
+    }
 
     const recipientId = isOwner ? booking.renter_id : booking.owner_id;
     if (recipientId) { const products = await getProducts(); const product = products.find(item => item.id === booking.product_id); const productName = product ? [product.brand, product.name].filter(Boolean).join(' ') : 'Produkt'; await notifyUser({ userId:recipientId, bookingId:id, type:`booking_${updated.status}`, title:statusTitle[updated.status] || 'Bokning uppdaterad', body:`${productName}\n${formatDateRange(booking.start_date, booking.end_date)}`, url:`/topsecret/sv/bokningar/${id}`, eventKey:`booking-status:${id}:${updated.status}` }); }
