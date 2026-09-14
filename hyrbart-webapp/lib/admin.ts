@@ -1,6 +1,6 @@
 import 'server-only';
-import {createClient} from '@/lib/supabase/server';
 import {createAdminClient} from '@/lib/supabase/admin';
+import {hashAdminSessionToken,readAdminSessionToken} from '@/lib/admin-auth';
 
 export type AdminRole='super_admin'|'support'|'trust_safety'|'finance'|'operations'|'read_only';
 export type AdminPermission=
@@ -16,30 +16,37 @@ const ROLE_PERMISSIONS:Record<AdminRole,ReadonlySet<AdminPermission>>={
   read_only:new Set<AdminPermission>(['admin.access','users.read','bookings.read','audit.read']),
 };
 
-function bootstrapEmails(){return(process.env.HYRBART_ADMIN_EMAILS||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean)}
-
 export function roleHasPermission(role:AdminRole,permission:AdminPermission){return ROLE_PERMISSIONS[role]?.has(permission)??false}
 export function permissionsForRole(role:AdminRole){return Array.from(ROLE_PERMISSIONS[role]||[])}
 
 export async function getAdminAccess(permission:AdminPermission='admin.access'){
-  const s=await createClient();
-  const {data:{user}}=await s.auth.getUser();
-  if(!user)return null;
+  const token=await readAdminSessionToken();
+  if(!token)return null;
   const admin=createAdminClient();
-  let {data:membership}=await admin.from('admin_memberships').select('role,active').eq('user_id',user.id).maybeSingle();
+  const tokenHash=hashAdminSessionToken(token);
+  const {data:session,error:sessionError}=await admin.from('admin_sessions').select('id,admin_account_id,expires_at,last_seen_at,revoked_at').eq('token_hash',tokenHash).maybeSingle();
+  if(sessionError)throw sessionError;
+  if(!session||session.revoked_at||new Date(session.expires_at).getTime()<=Date.now())return null;
 
-  // Backwards-compatible one-way bootstrap: configured legacy admin e-mails become super_admin.
-  // After that, authorization is driven by the server-only membership table.
-  if(!membership&&user.email&&bootstrapEmails().includes(user.email.toLowerCase())){
-    const {data,error}=await admin.from('admin_memberships').upsert({user_id:user.id,role:'super_admin',active:true,granted_by:user.id,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select('role,active').single();
-    if(error)throw error;
-    membership=data;
-  }
+  const {data:account,error:accountError}=await admin.from('admin_accounts').select('id,user_id,active,locked_until').eq('id',session.admin_account_id).maybeSingle();
+  if(accountError)throw accountError;
+  if(!account?.active||(account.locked_until&&new Date(account.locked_until).getTime()>Date.now()))return null;
 
+  const {data:membership,error:membershipError}=await admin.from('admin_memberships').select('role,active').eq('user_id',account.user_id).maybeSingle();
+  if(membershipError)throw membershipError;
   if(!membership?.active)return null;
   const role=membership.role as AdminRole;
   if(!roleHasPermission(role,permission))return null;
-  return{user,role,permissions:permissionsForRole(role)};
+
+  const {data:userResult,error:userError}=await admin.auth.admin.getUserById(account.user_id);
+  if(userError||!userResult.user)return null;
+
+  const lastSeen=new Date(session.last_seen_at).getTime();
+  if(Date.now()-lastSeen>5*60*1000){
+    void admin.from('admin_sessions').update({last_seen_at:new Date().toISOString()}).eq('id',session.id);
+  }
+
+  return{user:userResult.user,role,permissions:permissionsForRole(role),sessionId:session.id,adminAccountId:account.id};
 }
 
 export async function requireAdmin(permission:AdminPermission='admin.access'){
