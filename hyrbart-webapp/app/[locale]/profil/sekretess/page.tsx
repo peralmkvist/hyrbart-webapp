@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import PrivacyConsentSettings from '@/components/PrivacyConsentSettings';
+import { createClient } from '@/lib/supabase/server';
 import '../profile-menu.css';
 
 export default async function PrivacyPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ back?: string }> }) {
@@ -6,29 +9,43 @@ export default async function PrivacyPage({ params, searchParams }: { params: Pr
   const { back } = await searchParams;
   const en = locale === 'en';
   const backHref = back === 'vard' ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`;
+  const supabase=await createClient();
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/profil/sekretess`)}`);
 
   return <section className="ds2Page profileSettingsPage">
     <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{en ? 'Privacy' : 'Sekretess'}</h1></header>
-    <p className="profileSettingsIntro">{en ? 'An overview of information currently used by Hyrbart features. This is product information, not a final legal privacy policy.' : 'En översikt över information som Hyrbarts nuvarande funktioner använder. Detta är produktinformation, inte en slutlig juridisk integritetspolicy.'}</p>
+    <p className="profileSettingsIntro">{en ? 'Control optional data use and find the tools for your personal data. Processing required for bookings, payments, security or legal obligations is kept separate from consent.' : 'Styr valfri användning av data och hitta verktygen för dina personuppgifter. Behandling som krävs för bokningar, betalningar, säkerhet eller rättsliga skyldigheter hålls separat från samtycken.'}</p>
 
     <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'YOUR ACCOUNT' : 'DITT KONTO'}</span><h2>{en ? 'Profile and account details' : 'Profil- och kontouppgifter'}</h2></div>
-      <p>{en ? 'Hyrbart uses account and profile details such as your email address, display name, city and profile image to provide your account and profile.' : 'Hyrbart använder konto- och profiluppgifter som e-postadress, visningsnamn, ort och profilbild för att tillhandahålla ditt konto och din profil.'}</p>
+      <div className="profileSettingsCardHeading"><span>{en ? 'YOUR CHOICES' : 'DINA VAL'}</span><h2>{en ? 'Optional consent' : 'Valfria samtycken'}</h2></div>
+      <PrivacyConsentSettings locale={locale}/>
     </section>
 
     <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'USING HYRBART' : 'NÄR DU ANVÄNDER HYRBART'}</span><h2>{en ? 'Bookings, messages and activity' : 'Bokningar, meddelanden och aktivitet'}</h2></div>
-      <p>{en ? 'Features for bookings, payments, messages, reviews and issue handling use the information connected to those actions so the rental flow can work.' : 'Funktioner för bokningar, betalningar, meddelanden, omdömen och ärendehantering använder de uppgifter som hör till respektive aktivitet för att hyresflödet ska fungera.'}</p>
+      <div className="profileSettingsCardHeading"><span>{en ? 'COOKIES' : 'COOKIES'}</span><h2>{en ? 'Cookie settings' : 'Cookieinställningar'}</h2></div>
+      <p>{en ? 'See which cookies are necessary for sign-in and security and how optional browser storage will be handled.' : 'Se vilka cookies som krävs för inloggning och säkerhet och hur valfri lagring i webbläsaren ska hanteras.'}</p>
+      <Link className="profilePrimaryAction" href={`/topsecret/${locale}/profil/sekretess/cookies`}>{en?'Open cookie settings':'Öppna cookieinställningar'}</Link>
     </section>
 
     <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'OPTIONAL FEATURES' : 'VALFRIA FUNKTIONER'}</span><h2>{en ? 'Location, push and external history' : 'Plats, push och extern historik'}</h2></div>
-      <p>{en ? 'Location search can use location information when you choose that feature. Push notifications require a browser push subscription. If you submit history from another platform, the public profile URL and the information submitted for verification are stored with that request.' : 'Platssökning kan använda platsinformation när du väljer den funktionen. Pushnotiser kräver en pushprenumeration i webbläsaren. Om du skickar in historik från en annan plattform sparas den offentliga profillänken och de uppgifter som skickas in för verifiering tillsammans med begäran.'}</p>
+      <div className="profileSettingsCardHeading"><span>{en ? 'PERSONAL DATA' : 'PERSONUPPGIFTER'}</span><h2>{en ? 'How Hyrbart uses your information' : 'Så använder Hyrbart dina uppgifter'}</h2></div>
+      <p>{en ? 'Read about categories of data, purposes, rights and the contact path for privacy questions.' : 'Läs om datakategorier, ändamål, rättigheter och kontaktväg för frågor om personuppgifter.'}</p>
+      <Link className="profilePrimaryAction" href={`/topsecret/${locale}/profil/sekretess/personuppgifter`}>{en?'Personal data information':'Personuppgiftshantering'}</Link>
+    </section>
+
+    <section className="profileSettingsCard">
+      <div className="profileSettingsCardHeading"><span>{en ? 'YOUR DATA' : 'DINA DATA'}</span><h2>{en ? 'Export and account deletion' : 'Export och kontoradering'}</h2></div>
+      <p>{en ? 'Secure data export and account deletion require a fresh authentication step and are implemented in SCRUM-22. They are shown here now so this remains their single home.' : 'Säker dataexport och kontoradering kräver aktuell återautentisering och implementeras i SCRUM-22. De visas redan här så att Sekretess förblir deras enda hem.'}</p>
+      <div style={{display:'grid',gap:10}}>
+        <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en?'Download your data — coming next':'Ladda ner dina data — kommer härnäst'}</button>
+        <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en?'Delete my account — coming next':'Ta bort mig som användare — kommer härnäst'}</button>
+      </div>
     </section>
 
     <section className="profileSettingsCard profilePrivacyNotice">
-      <strong>{en ? 'Before public launch' : 'Inför publik lansering'}</strong>
-      <p>{en ? 'A complete privacy policy should be legally reviewed and specify purposes, legal bases, recipients, retention periods and user rights before Hyrbart is launched publicly.' : 'En fullständig integritetspolicy bör juridiskt granskas och ange ändamål, rättsliga grunder, mottagare, lagringstider och användarrättigheter innan Hyrbart lanseras publikt.'}</p>
+      <strong>{en ? 'Necessary processing is not consent' : 'Nödvändig behandling är inte samtycke'}</strong>
+      <p>{en ? 'Hyrbart must still process information needed to provide a rental, secure the service, handle payments and comply with legal obligations even if every optional choice above is off.' : 'Hyrbart behöver fortfarande behandla uppgifter som krävs för att genomföra en uthyrning, skydda tjänsten, hantera betalningar och följa rättsliga skyldigheter även om alla valfria val ovan är avstängda.'}</p>
     </section>
   </section>;
 }
