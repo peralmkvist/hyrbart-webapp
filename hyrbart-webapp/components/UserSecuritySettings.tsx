@@ -91,7 +91,7 @@ export default function UserSecuritySettings({ locale }: { locale:string }) {
       <p><strong>{en?'Current session:':'Aktuell session:'}</strong> {aal==='aal2'?'AAL2':'AAL1'}</p>
       {!verified.length&&!enroll?<button className="profilePrimaryAction" type="button" onClick={beginEnroll} disabled={busy}>{en?'Enable authenticator app':'Aktivera autentiseringsapp'}</button>:null}
       {enroll?<form className="profileSettingsForm" onSubmit={verifyEnroll}>
-        <div style={{display:'grid',placeItems:'center',background:'#fff',padding:12,borderRadius:16}}><img alt={en?'Authenticator QR code':'QR-kod för autentiseringsapp'} style={{width:220,maxWidth:'100%'}} src={`data:image/svg+xml;utf8,${encodeURIComponent(enroll.qr)}`}/></div>
+        <div style={{display:'grid',placeItems:'center',background:'#fff',padding:12,borderRadius:16}}><img alt={en?'Authenticator QR code':'QR-kod för autentiseringsapp'} style={{width:220,maxWidth:'100%'}} src={enroll.qr}/></div>
         <label>{en?'Manual setup key':'Manuell nyckel'}<input readOnly value={enroll.secret}/></label>
         <label>{en?'6-digit code':'6-siffrig kod'}<input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,''))}/></label>
         <button className="profilePrimaryAction" disabled={busy||code.length!==6}>{en?'Verify and enable':'Verifiera och aktivera'}</button>
