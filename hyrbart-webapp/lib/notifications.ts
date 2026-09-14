@@ -58,6 +58,29 @@ function isReviewNotification(type: string) {
   return type.startsWith('review_');
 }
 
+function externalNotificationCopy(notification: any, context: DeliveryContext) {
+  const en = context.locale === 'en';
+  const type = String(notification.notification_type || '').toLowerCase();
+
+  // Free-form messages and case descriptions can contain phone numbers, email addresses,
+  // physical addresses, filenames or other personal data. Keep the detailed copy inside
+  // the authenticated notification center/thread, but never expose it on a lock screen or
+  // in an external delivery channel.
+  if (context.category === 'message' || type.includes('message') || type.includes('chat')) {
+    return {
+      title: en ? 'New message on Hyrbart' : 'Nytt meddelande på Hyrbart',
+      body: en ? 'Open Hyrbart to read the message.' : 'Öppna Hyrbart för att läsa meddelandet.',
+    };
+  }
+  if (type.startsWith('case_') || type.includes('dispute') || type.includes('damage_case')) {
+    return {
+      title: en ? 'Update to a rental case' : 'Uppdatering i ett uthyrningsärende',
+      body: en ? 'Open Hyrbart to view the case securely.' : 'Öppna Hyrbart för att läsa ärendet säkert.',
+    };
+  }
+  return { title: notification.title, body: notification.body };
+}
+
 async function getLegacyPreferences(userId: string): Promise<NotificationPreferences> {
   const admin = createAdminClient();
   const { data, error } = await admin
@@ -118,7 +141,7 @@ async function externalFrequencyLimited(userId: string, category: NotificationCa
     .gte('created_at', since)
     .or('push_status.eq.sent,email_status.eq.sent');
   if (error) {
-    console.error('Notification frequency check failed', error);
+    console.error('Notification frequency check failed');
     return false;
   }
   return Number(count || 0) >= limit;
@@ -172,11 +195,12 @@ async function deliverChannel(notification: any, context: DeliveryContext, chann
     return;
   }
 
+  const external = externalNotificationCopy(notification, context);
   try {
     if (channel === 'push') {
       const push = await sendPushToUser(notification.user_id, {
-        title: notification.title,
-        body: notification.body,
+        title: external.title,
+        body: external.body,
         url: notification.url || undefined,
         tag: notification.event_key || `${notification.notification_type}-${notification.id}`,
       });
@@ -188,7 +212,7 @@ async function deliverChannel(notification: any, context: DeliveryContext, chann
         last_delivery_attempt_at: now,
       }).eq('id', notification.id);
     } else {
-      const email = await sendEmail(notification.user_id, notification.title, notification.body, notification.url);
+      const email = await sendEmail(notification.user_id, external.title, external.body, notification.url);
       await admin.from('user_notifications').update({
         [statusField]: email.status,
         [attemptsField]: attempts,
@@ -204,7 +228,7 @@ async function deliverChannel(notification: any, context: DeliveryContext, chann
       [errorField]: errorMessage(error),
       last_delivery_attempt_at: now,
     }).eq('id', notification.id);
-    console.error(`Notification ${channel} failed`, error);
+    console.error(`Notification ${channel} failed`);
   }
 }
 
