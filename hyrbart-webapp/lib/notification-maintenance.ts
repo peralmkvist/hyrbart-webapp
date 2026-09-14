@@ -1,6 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { notifyUser, reconcileEmailDeliveryStatuses, retryFailedNotificationDeliveries } from '@/lib/notifications';
+import { notifyUser, retryFailedNotificationDeliveries } from '@/lib/notifications';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -43,7 +43,10 @@ export async function processNotificationMaintenance() {
     }
   }
 
-  const emailDelivery = await reconcileEmailDeliveryStatuses(50);
+  // Delivery attempts that fail before Resend accepts the request are retried here.
+  // The production Resend API key is intentionally scoped for sending and cannot read
+  // provider delivery status. Final delivered/bounced outcomes remain available in Resend
+  // and can later be ingested through a signed webhook without broadening the send key.
   const retriedDeliveries = await retryFailedNotificationDeliveries(50);
-  return { reviewReminders, emailDelivery, retriedDeliveries };
+  return { reviewReminders, retriedDeliveries };
 }
