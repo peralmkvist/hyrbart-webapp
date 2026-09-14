@@ -45,7 +45,7 @@ function hasDiscount(product: { discounts?: { multiDayPercent?: number; weeklyPe
   return Boolean((product.discounts?.multiDayPercent || 0) > 0 || (product.discounts?.weeklyPercent || 0) > 0 || (product.discounts?.repeatCustomerPercent || 0) > 0);
 }
 
-function searchUrl(alert: SearchAlertRow) {
+export function searchAlertUrl(alert: SearchAlertRow) {
   const p = new URLSearchParams();
   if (alert.query_text) p.set('q', alert.query_text);
   if (alert.category) p.set('category', alert.category);
@@ -61,6 +61,30 @@ function searchUrl(alert: SearchAlertRow) {
 
 function dateToday() {
   return new Date().toISOString().slice(0, 10);
+}
+
+async function sendSearchAlertNotification(alert: SearchAlertRow, input: { title: string; body: string; url: string; eventKey: string; metadata: Record<string, unknown> }) {
+  if (alert.notification_channel === 'in_app_push') {
+    return notifyUser({ userId: alert.user_id, type: 'search_alert_match', ...input, sendEmail: false });
+  }
+  const admin = createAdminClient();
+  const { error } = await admin.from('user_notifications').insert({
+    user_id: alert.user_id,
+    booking_id: null,
+    notification_type: 'search_alert_match',
+    title: input.title,
+    body: input.body,
+    url: input.url,
+    event_key: input.eventKey,
+    metadata: { ...input.metadata, preference_category: 'search_alert' },
+    in_app_visible: true,
+    push_status: 'skipped',
+    push_last_error: 'disabled_for_saved_search',
+    email_status: 'skipped',
+    email_last_error: 'email_disabled_for_event',
+  });
+  if (error && error.code !== '23505') throw error;
+  return null;
 }
 
 export async function evaluateSearchAlert(alert: SearchAlertRow) {
@@ -127,18 +151,16 @@ export async function evaluateSearchAlert(alert: SearchAlertRow) {
 
     if (shouldNotify) {
       const en = alert.locale === 'en';
-      await notifyUser({
-        userId: alert.user_id,
-        type: 'search_alert_match',
-        title: en ? 'A watched rental is available' : 'En bevakad uthyrning är ledig',
-        body: en
-          ? `${product.brand} ${product.name} now matches your dates and price limit. Availability and price are checked again when you open the result; this is not a reservation.`
-          : `${product.brand} ${product.name} matchar nu dina datum och ditt maxpris. Tillgänglighet och pris kontrolleras igen när du öppnar resultatet; detta är ingen reservation.`,
-        url: searchUrl(alert),
+      const title = en ? 'A watched rental is available' : 'En bevakad uthyrning är ledig';
+      const body = en
+        ? `${product.brand} ${product.name} now matches your dates and price limit. Availability and price are checked again when you open the result; this is not a reservation.`
+        : `${product.brand} ${product.name} matchar nu dina datum och ditt maxpris. Tillgänglighet och pris kontrolleras igen när du öppnar resultatet; detta är ingen reservation.`;
+      await sendSearchAlertNotification(alert, {
+        title,
+        body,
+        url: searchAlertUrl(alert),
         eventKey: `search-alert:${alert.id}:${product.slug}:${signature}:${stored.id}:${now}`,
         metadata: { search_alert_id: alert.id, product_slug: product.slug, total_price: pricing.total },
-        sendEmail: false,
-        sendPush: alert.notification_channel === 'in_app_push',
       });
       await admin.from('search_alert_matches').update({ last_notified_at: now }).eq('id', stored.id);
       notifications += 1;
