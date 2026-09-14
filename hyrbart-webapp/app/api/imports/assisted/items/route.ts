@@ -23,6 +23,17 @@ function parseOptionalHttpsUrl(value: unknown) {
   }
 }
 
+const allowedConfidence = new Set(['verified', 'user_provided', 'suggested', 'missing']);
+function sanitizeConfidence(value: unknown) {
+  if (!value || typeof value !== 'object') return {};
+  const result: Record<string, string> = {};
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    const next = String(raw ?? '');
+    if (allowedConfidence.has(next)) result[key] = next;
+  }
+  return result;
+}
+
 export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -84,7 +95,7 @@ export async function POST(request: Request) {
       fingerprint,
       source_payload: sourcePayload,
       normalized_data: normalizedData,
-      field_confidence: body.fieldConfidence && typeof body.fieldConfidence === 'object' ? body.fieldConfidence : {},
+      field_confidence: sanitizeConfidence(body.fieldConfidence),
       status: 'draft',
     })
     .select('id,batch_id,source_reference,source_url,fingerprint,status,source_payload,normalized_data,field_confidence,created_at')
@@ -102,4 +113,43 @@ export async function POST(request: Request) {
   if (error || !data) return NextResponse.json({ error: 'ITEM_CREATE_FAILED' }, { status: 500 });
 
   return NextResponse.json({ item: data }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED' }, { status: 401 });
+
+  let body: any;
+  try { body = await request.json(); }
+  catch { return NextResponse.json({ error: 'INVALID_REQUEST' }, { status: 400 }); }
+
+  const itemId = String(body.itemId ?? '').trim();
+  if (!itemId) return NextResponse.json({ error: 'ITEM_REQUIRED' }, { status: 400 });
+
+  const sourceUrl = parseOptionalHttpsUrl(body.sourceUrl);
+  if (body.sourceUrl && !sourceUrl) return NextResponse.json({ error: 'INVALID_SOURCE_URL' }, { status: 400 });
+
+  const normalizedData = body.normalizedData && typeof body.normalizedData === 'object' ? body.normalizedData : {};
+  const sourceReference = String(body.sourceReference ?? '').trim() || null;
+  const fieldConfidence = sanitizeConfidence(body.fieldConfidence);
+
+  const { data, error } = await supabase
+    .from('listing_import_items')
+    .update({
+      normalized_data: normalizedData,
+      source_reference: sourceReference,
+      source_url: sourceUrl,
+      field_confidence: fieldConfidence,
+      status: 'draft',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', itemId)
+    .eq('user_id', user.id)
+    .select('id,batch_id,source_reference,source_url,status,source_payload,normalized_data,field_confidence,created_at,updated_at')
+    .maybeSingle();
+
+  if (error) return NextResponse.json({ error: 'ITEM_UPDATE_FAILED' }, { status: 500 });
+  if (!data) return NextResponse.json({ error: 'ITEM_NOT_FOUND' }, { status: 404 });
+  return NextResponse.json({ item: data });
 }
