@@ -8,6 +8,7 @@ import { ensureScheduledPayout } from '@/lib/payment-ledger';
 import { ensureBookingAgreement } from '@/lib/booking-agreements';
 import { canBookingTransition, type BookingActor } from '@/lib/booking-state';
 import { correlationIdFromRequest, errorSummary, logOperationalEvent } from '@/lib/observability';
+import { hasRequiredProfilePhoto, PROFILE_PHOTO_REQUIRED_CODE } from '@/lib/profile-requirements';
 
 const statusTitle: Record<string, string> = { accepted: 'Bokning godkänd', declined: 'Bokningsförfrågan nekad', completed: 'Bokning avslutad' };
 function formatDateRange(from: string, to: string) { const format = (value: string) => new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`)); return `${format(from)} – ${format(to)}`; }
@@ -32,6 +33,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const actor: BookingActor = isOwner ? 'owner' : 'renter';
     if (!canBookingTransition(booking.status, requestedStatus, actor)) return NextResponse.json({ error: 'Den statusändringen är inte tillåten.' }, { status: 409 });
     if (!isOwner || !['accepted', 'declined', 'completed'].includes(requestedStatus)) return NextResponse.json({ error: 'Använd det specifika flödet för den här statusändringen.' }, { status: 409 });
+    if (requestedStatus === 'accepted') {
+      const { data: profile } = await admin.from('profiles').select('avatar_url').eq('id', user.id).maybeSingle();
+      if (!hasRequiredProfilePhoto(profile?.avatar_url)) return NextResponse.json({ error: 'Lägg till en profilbild innan du kan godkänna nya bokningar.', code: PROFILE_PHOTO_REQUIRED_CODE }, { status: 409 });
+    }
 
     const previousStatus = booking.status; const now = new Date().toISOString(); const updates: Record<string, unknown> = { status: requestedStatus, updated_at: now };
     if (requestedStatus === 'accepted') { updates.payment_due_at = paymentDeadline(booking.pickup_due_at || booking.rental_start_at); updates.request_expires_at = null; updates.reservation_expires_at = null; }
