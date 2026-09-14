@@ -40,7 +40,8 @@ export async function POST(request:Request){
 
   if(action==='confirm'){
     const code=String(body.code||'');
-    const {data:fresh}=await ctx.admin.from('admin_accounts').select('mfa_secret_encrypted,mfa_enabled').eq('id',ctx.account.id).single();
+    const {data:fresh,error:freshError}=await ctx.admin.from('admin_accounts').select('mfa_secret_encrypted,mfa_enabled').eq('id',ctx.account.id).single();
+    if(freshError||!fresh)return NextResponse.json({error:'ACCOUNT_NOT_FOUND'},{status:404});
     if(fresh.mfa_enabled)return NextResponse.json({error:'ALREADY_ENABLED'},{status:409});
     if(!fresh.mfa_secret_encrypted)return NextResponse.json({error:'ENROLLMENT_NOT_STARTED'},{status:409});
     const secret=decryptMfaSecret(fresh.mfa_secret_encrypted);
