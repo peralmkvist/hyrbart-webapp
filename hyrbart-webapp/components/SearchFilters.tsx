@@ -19,6 +19,9 @@ type Props = {
   discountOnly?: boolean;
   categories: CategoryOption[];
   resultCount: number;
+  lat?: string;
+  lng?: string;
+  geo?: string;
 };
 
 export default function SearchFilters({
@@ -35,6 +38,9 @@ export default function SearchFilters({
   discountOnly = false,
   categories,
   resultCount,
+  lat = '',
+  lng = '',
+  geo = '',
 }: Props) {
   const router = useRouter();
   const en = locale === 'en';
@@ -62,6 +68,8 @@ export default function SearchFilters({
     if (to) params.set('to', to);
     if (place.trim()) params.set('place', place.trim());
     if (nearby) params.set('nearby', '1');
+    if (lat && lng) { params.set('lat', lat); params.set('lng', lng); }
+    if (geo) params.set('geo', geo);
     return params;
   }
 
