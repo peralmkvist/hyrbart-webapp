@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 type Channel='in_app'|'push'|'email'|'sms';
-type Row={type:string;in_app:boolean;push:boolean;email:boolean;sms:boolean;mandatoryInApp:boolean};
+type Row={type:string;in_app:boolean;push:boolean;email:boolean;sms:boolean;mandatoryInApp:boolean;classification:'transactional'|'optional_product';priority:string;slaMinutes:number;recipient:string;maxExternalPer24h:number|null;digest:'none'|'eligible'};
 type Channels={push:{available:boolean;active:boolean};email:{available:boolean;active:boolean};sms:{available:boolean;active:boolean}};
 
 const labels:Record<string,{sv:string;en:string}>={
@@ -51,18 +51,18 @@ export default function NotificationPreferences({locale}:{locale:string}){
       <div style={{display:'grid',gap:6,marginTop:8,fontSize:13,color:'var(--muted)'}}>
         <span>Push: {channels?.push.active?(en?'active on this account':'aktiv på kontot'):(en?'not activated on a device yet':'inte aktiverad på någon enhet ännu')}</span>
         <span>{en?'Email':'E-post'}: {channels?.email.active?(en?'available':'tillgänglig'):(en?'requires a verified email and configured delivery provider':'kräver verifierad e-post och konfigurerad leverans')}</span>
-        <span>SMS: {channels?.sms.available?(en?'phone exists, delivery is not enabled yet':'telefonnummer finns, leverans är ännu inte aktiverad'):(en?'add a verified phone number first':'lägg först till ett verifierat telefonnummer')}</span>
+        <span>SMS: {channels?.sms.active?(en?'active':'aktiv'):(en?'preference can be saved now; delivery provider is not active yet':'inställningen kan sparas nu; leveransleverantör är ännu inte aktiv')}</span>
       </div>
     </section>
     <section style={{border:'1px solid var(--line)',borderRadius:18,background:'#fff',overflow:'hidden'}}>
-      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:650}}><thead><tr><th style={{textAlign:'left',padding:'14px 16px'}}>{en?'Notification':'Notistyp'}</th>{(['in_app','push','email','sms'] as Channel[]).map(channel=><th key={channel} style={{padding:'14px 10px',textAlign:'center'}}>{channelHead(channel)}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.type} style={{borderTop:'1px solid var(--line)'}}><td style={{padding:'14px 16px',fontWeight:700}}>{labels[row.type]?.[en?'en':'sv']||row.type}{row.mandatoryInApp?<div style={{fontSize:11,color:'var(--muted)',fontWeight:500,marginTop:3}}>{en?'Required in app':'Obligatorisk i appen'}</div>:null}</td>{(['in_app','push','email','sms'] as Channel[]).map(channel=>{
-        const disabled=(channel==='in_app'&&row.mandatoryInApp)||(channel==='sms'&&!channels?.sms.active)||(channel==='email'&&!channels?.email.available);
+      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:760}}><thead><tr><th style={{textAlign:'left',padding:'14px 16px'}}>{en?'Notification':'Notistyp'}</th>{(['in_app','push','email','sms'] as Channel[]).map(channel=><th key={channel} style={{padding:'14px 10px',textAlign:'center'}}>{channelHead(channel)}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.type} style={{borderTop:'1px solid var(--line)'}}><td style={{padding:'14px 16px',fontWeight:700}}>{labels[row.type]?.[en?'en':'sv']||row.type}<div style={{fontSize:11,color:'var(--muted)',fontWeight:500,marginTop:3}}>{row.classification==='transactional'?(en?'Transactional':'Transaktionell'):(en?'Optional':'Valbar')} · SLA {row.slaMinutes<60?`${row.slaMinutes} min`:`${Math.round(row.slaMinutes/60)} h`}{row.maxExternalPer24h?` · max ${row.maxExternalPer24h}/24h`:''}</div>{row.mandatoryInApp?<div style={{fontSize:11,color:'var(--muted)',fontWeight:500,marginTop:2}}>{en?'Required in app':'Obligatorisk i appen'}</div>:null}</td>{(['in_app','push','email','sms'] as Channel[]).map(channel=>{
+        const disabled=(channel==='in_app'&&row.mandatoryInApp);
         const checked=Boolean(row[channel]);
         const key=`${row.type}:${channel}`;
         return <td key={channel} style={{padding:'12px 10px',textAlign:'center'}}><input type="checkbox" checked={checked} disabled={disabled||saving===key} onChange={e=>void toggle(row.type,channel,e.target.checked)} aria-label={`${labels[row.type]?.[en?'en':'sv']||row.type} ${channelHead(channel)}`}/></td>;
       })}</tr>)}</tbody></table></div>
     </section>
     <p role="status" style={{margin:0,minHeight:20,color:'var(--muted)',fontWeight:700}}>{message}</p>
-    <p style={{margin:0,fontSize:13,color:'var(--muted)'}}>{en?'Required transaction and safety messages may still be delivered when needed for an active rental or account security. Marketing-style notifications always follow your choices above.':'Obligatoriska transaktions- och säkerhetsmeddelanden kan fortfarande skickas när de krävs för en aktiv uthyrning eller kontosäkerhet. Produkt- och marknadsnotiser följer alltid dina val ovan.'}</p>
+    <p style={{margin:0,fontSize:13,color:'var(--muted)'}}>{en?'Required transaction messages remain visible in the app. Optional product notifications follow your choices. Duplicate event keys are suppressed, and optional external notifications are frequency-limited. SMS preferences are stored now but delivery remains inactive until an SMS provider is connected.':'Obligatoriska transaktionsmeddelanden är alltid synliga i appen. Valbara produktnotiser följer dina val. Dubbletter med samma eventnyckel stoppas och valbara externa notiser frekvensbegränsas. SMS-inställningar sparas redan nu men leverans är inaktiv tills en SMS-leverantör kopplats in.'}</p>
   </div>;
 }
