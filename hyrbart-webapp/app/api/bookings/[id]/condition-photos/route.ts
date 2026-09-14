@@ -9,6 +9,7 @@ import { resolveLateReturn } from '@/lib/late-returns';
 const BUCKET = 'booking-condition-photos';
 const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg','image/png','image/webp','image/heic','image/heif']);
+const PRIVATE_HEADERS = { 'cache-control': 'private, no-store' };
 
 type Stage = 'pickup'|'return';
 
@@ -27,11 +28,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401 });
+    if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401, headers: PRIVATE_HEADERS });
 
     const { data: booking } = await supabase.from('bookings').select('id,renter_id,owner_id').eq('id', id).maybeSingle();
     if (!booking || ![booking.renter_id, booking.owner_id].includes(user.id)) {
-      return NextResponse.json({ error: 'Bokningen hittades inte.' }, { status: 404 });
+      return NextResponse.json({ error: 'Bokningen hittades inte.' }, { status: 404, headers: PRIVATE_HEADERS });
     }
 
     const admin = createAdminClient();
@@ -46,10 +47,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       const { data } = await admin.storage.from(BUCKET).createSignedUrl(photo.storage_path, 60 * 60);
       return { ...photo, url: data?.signedUrl ?? null };
     }));
-    return NextResponse.json({ photos: items });
+    return NextResponse.json({ photos: items }, { headers: PRIVATE_HEADERS });
   } catch (error) {
-    console.error('Condition photos GET failed', error);
-    return NextResponse.json({ error: 'Kunde inte läsa skickbilder.' }, { status: 500 });
+    console.error('Condition photos GET failed');
+    return NextResponse.json({ error: 'Kunde inte läsa skickbilder.' }, { status: 500, headers: PRIVATE_HEADERS });
   }
 }
 
@@ -58,7 +59,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401 });
+    if (!user) return NextResponse.json({ error: 'Inte inloggad.' }, { status: 401, headers: PRIVATE_HEADERS });
 
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
@@ -67,21 +68,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .maybeSingle();
     if (bookingError) throw bookingError;
     if (!booking || booking.renter_id !== user.id) {
-      return NextResponse.json({ error: 'Endast hyrestagaren kan dokumentera skicket.' }, { status: 403 });
+      return NextResponse.json({ error: 'Endast hyrestagaren kan dokumentera skicket.' }, { status: 403, headers: PRIVATE_HEADERS });
     }
 
     const form = await request.formData();
     const stage = form.get('stage') as Stage | null;
     const file = form.get('file');
-    if (stage !== 'pickup' && stage !== 'return') return NextResponse.json({ error: 'Ogiltigt steg.' }, { status: 400 });
-    if (!(file instanceof File) || file.size === 0) return NextResponse.json({ error: 'Minst en bild krävs.' }, { status: 400 });
-    if (!ALLOWED_TYPES.has(file.type)) return NextResponse.json({ error: 'Bilden måste vara JPEG, PNG, WebP, HEIC eller HEIF.' }, { status: 415 });
-    if (file.size > MAX_BYTES) return NextResponse.json({ error: 'Bilden får vara högst 10 MB.' }, { status: 413 });
+    if (stage !== 'pickup' && stage !== 'return') return NextResponse.json({ error: 'Ogiltigt steg.' }, { status: 400, headers: PRIVATE_HEADERS });
+    if (!(file instanceof File) || file.size === 0) return NextResponse.json({ error: 'Minst en bild krävs.' }, { status: 400, headers: PRIVATE_HEADERS });
+    if (!ALLOWED_TYPES.has(file.type)) return NextResponse.json({ error: 'Bilden måste vara JPEG, PNG, WebP, HEIC eller HEIF.' }, { status: 415, headers: PRIVATE_HEADERS });
+    if (file.size > MAX_BYTES) return NextResponse.json({ error: 'Bilden får vara högst 10 MB.' }, { status: 413, headers: PRIVATE_HEADERS });
 
     const expectedStatus = stage === 'pickup' ? 'paid' : 'active';
     const nextStatus = stage === 'pickup' ? 'active' : 'returned';
     if (booking.status !== expectedStatus || !canBookingTransition(booking.status, nextStatus, 'renter')) {
-      return NextResponse.json({ error: stage === 'pickup' ? 'Bokningen måste vara betald innan utlämning.' : 'Bokningen är inte redo för återlämning.' }, { status: 409 });
+      return NextResponse.json({ error: stage === 'pickup' ? 'Bokningen måste vara betald innan utlämning.' : 'Bokningen är inte redo för återlämning.' }, { status: 409, headers: PRIVATE_HEADERS });
     }
 
     const admin = createAdminClient();
@@ -119,7 +120,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!transitioned) {
       await admin.from('booking_condition_photos').delete().eq('id', inserted.id);
       await admin.storage.from(BUCKET).remove([path]);
-      return NextResponse.json({ error: 'Bokningen ändrades samtidigt. Ladda om och försök igen.' }, { status: 409 });
+      return NextResponse.json({ error: 'Bokningen ändrades samtidigt. Ladda om och försök igen.' }, { status: 409, headers: PRIVATE_HEADERS });
     }
 
     await recordBookingEvent({
@@ -133,7 +134,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       try{
         const late=await resolveLateReturn(id,now.toISOString());
         if(late){await recordBookingEvent({bookingId:id,actorId:user.id,eventType:'late_return_resolved',metadata:{returned_at:late.returned_at,overdue_minutes:late.overdue_minutes,estimated_extension_amount:late.estimated_extension_amount,currency:late.currency,fee_status:late.fee_status,calculation_version:late.calculation_version}});}
-      }catch(lateError){console.error('Could not resolve late return',id,lateError);}
+      }catch{console.error('Could not resolve late return');}
     }
 
     await notifyUser({
@@ -147,9 +148,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     });
 
     const { data: signed } = await admin.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
-    return NextResponse.json({ ok: true, status: nextStatus, photo: { ...inserted, url: signed?.signedUrl ?? null } });
-  } catch (error) {
-    console.error('Condition photos POST failed', error);
-    return NextResponse.json({ error: 'Kunde inte spara skickbilden.' }, { status: 500 });
+    return NextResponse.json({ ok: true, status: nextStatus, photo: { ...inserted, url: signed?.signedUrl ?? null } }, { headers: PRIVATE_HEADERS });
+  } catch {
+    console.error('Condition photos POST failed');
+    return NextResponse.json({ error: 'Kunde inte spara skickbilden.' }, { status: 500, headers: PRIVATE_HEADERS });
   }
 }
