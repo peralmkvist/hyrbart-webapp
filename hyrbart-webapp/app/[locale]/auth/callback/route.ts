@@ -10,7 +10,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ loca
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(`${origin}/topsecret/${locale}/profil`);
+    if (!error) {
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal?.currentLevel === 'aal1' && aal?.nextLevel === 'aal2') {
+        return NextResponse.redirect(`${origin}/topsecret/${locale}/mfa`);
+      }
+      return NextResponse.redirect(`${origin}/topsecret/${locale}/profil`);
+    }
   }
 
   return NextResponse.redirect(`${origin}/topsecret/${locale}/logga-in?error=auth`);
