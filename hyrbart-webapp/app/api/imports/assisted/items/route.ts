@@ -24,6 +24,8 @@ function parseOptionalHttpsUrl(value: unknown) {
 }
 
 const allowedConfidence = new Set(['verified', 'user_provided', 'suggested', 'missing']);
+const requiredFields = ['title', 'description', 'price', 'category'] as const;
+
 function sanitizeConfidence(value: unknown) {
   if (!value || typeof value !== 'object') return {};
   const result: Record<string, string> = {};
@@ -32,6 +34,16 @@ function sanitizeConfidence(value: unknown) {
     if (allowedConfidence.has(next)) result[key] = next;
   }
   return result;
+}
+
+function validateReady(normalizedData: Record<string, unknown>, fieldConfidence: Record<string, string>, imageCount: number) {
+  const missing: string[] = [];
+  for (const field of requiredFields) {
+    if (!String(normalizedData[field] ?? '').trim()) missing.push(field);
+    else if ((fieldConfidence[field] ?? 'missing') === 'missing') missing.push(`${field}_quality`);
+  }
+  if (imageCount < 1) missing.push('image');
+  return { ready: missing.length === 0, missing };
 }
 
 export async function GET(request: Request) {
@@ -133,6 +145,22 @@ export async function PATCH(request: Request) {
   const normalizedData = body.normalizedData && typeof body.normalizedData === 'object' ? body.normalizedData : {};
   const sourceReference = String(body.sourceReference ?? '').trim() || null;
   const fieldConfidence = sanitizeConfidence(body.fieldConfidence);
+  const wantsReady = body.status === 'ready';
+
+  let readiness: { ready: boolean; missing: string[] } | null = null;
+  if (wantsReady) {
+    const { count, error: assetError } = await supabase
+      .from('listing_import_assets')
+      .select('id', { count: 'exact', head: true })
+      .eq('item_id', itemId)
+      .eq('user_id', user.id)
+      .eq('asset_kind', 'image');
+    if (assetError) return NextResponse.json({ error: 'READINESS_CHECK_FAILED' }, { status: 500 });
+    readiness = validateReady(normalizedData, fieldConfidence, count ?? 0);
+    if (!readiness.ready) {
+      return NextResponse.json({ error: 'ITEM_NOT_READY', readiness }, { status: 409 });
+    }
+  }
 
   const { data, error } = await supabase
     .from('listing_import_items')
@@ -141,7 +169,8 @@ export async function PATCH(request: Request) {
       source_reference: sourceReference,
       source_url: sourceUrl,
       field_confidence: fieldConfidence,
-      status: 'draft',
+      status: wantsReady ? 'ready' : 'draft',
+      error_message: null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', itemId)
@@ -151,5 +180,5 @@ export async function PATCH(request: Request) {
 
   if (error) return NextResponse.json({ error: 'ITEM_UPDATE_FAILED' }, { status: 500 });
   if (!data) return NextResponse.json({ error: 'ITEM_NOT_FOUND' }, { status: 404 });
-  return NextResponse.json({ item: data });
+  return NextResponse.json({ item: data, readiness: readiness ?? undefined });
 }
