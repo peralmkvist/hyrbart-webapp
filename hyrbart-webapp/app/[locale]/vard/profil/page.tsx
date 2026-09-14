@@ -26,123 +26,44 @@ const MenuIcon = ({ name }: { name: MenuIconName }) => {
   return <svg {...common}><path d="M10 5H5v14h5"/><path d="M13 8l4 4-4 4"/><path d="M17 12H9"/></svg>;
 };
 
-type Profile = {
-  display_name: string | null;
-  city: string | null;
-  avatar_url: string | null;
-  sanity_profile_id: string | null;
-};
+type Profile = { display_name:string|null; city:string|null; avatar_url:string|null; sanity_profile_id:string|null };
 
-function monthBounds(now = new Date()) {
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth();
-  const first = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-  const lastDate = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  const last = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDate).padStart(2, '0')}`;
-  return { first, last };
+function monthBounds(now = new Date()) { const year=now.getUTCFullYear(); const month=now.getUTCMonth(); const first=`${year}-${String(month+1).padStart(2,'0')}-01`; const lastDate=new Date(Date.UTC(year,month+1,0)).getUTCDate(); return {first,last:`${year}-${String(month+1).padStart(2,'0')}-${String(lastDate).padStart(2,'0')}`}; }
+
+async function getFirstPublishedListingDate(sanityProfileId?:string|null){
+  if(!sanityProfileId)return null;
+  const projectId='djps09z6',dataset='production',apiVersion='2026-09-08',owner=JSON.stringify(sanityProfileId);
+  const query=`*[_type=="product"&&owner._ref==${owner}&&(coalesce(listingStatus,"active") in ["active","paused","deleted"]) ]|order(_createdAt asc)[0]._createdAt`;
+  try{const response=await fetch(`https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`,{cache:'no-store'});if(!response.ok)return null;const data=await response.json() as {result?:string|null};return data.result||null;}catch{return null;}
 }
 
-async function getFirstPublishedListingDate(sanityProfileId?: string | null) {
-  if (!sanityProfileId) return null;
-  const projectId = 'djps09z6';
-  const dataset = 'production';
-  const apiVersion = '2026-09-08';
-  const owner = JSON.stringify(sanityProfileId);
-  const query = `*[_type=="product"&&owner._ref==${owner}&&(coalesce(listingStatus,"active") in ["active","paused","deleted"]) ]|order(_createdAt asc)[0]._createdAt`;
-  const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
-  try {
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) return null;
-    const data = await response.json() as { result?: string | null };
-    return data.result || null;
-  } catch {
-    return null;
-  }
-}
-
-export default async function HostProfilePage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const en = locale === 'en';
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/vard/profil`)}`);
-
-  const { first, last } = monthBounds();
-  const [{ data: profile }, ownerSummary, { data: monthlyBookings }, notificationCount] = await Promise.all([
-    supabase.from('profiles').select('display_name, city, avatar_url, sanity_profile_id').eq('id', user.id).maybeSingle() as unknown as Promise<{ data: Profile | null }>,
-    getUserReviewSummary(user.id, 'owner'),
-    supabase.from('bookings').select('rental_price,start_date,status').eq('owner_id', user.id).gte('start_date', first).lte('start_date', last).in('status', ['paid','active','returned','completed']),
-    supabase.from('user_notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).is('read_at', null),
-  ]) as [
-    { data: Profile | null },
-    Awaited<ReturnType<typeof getUserReviewSummary>>,
-    { data: { rental_price:number|null; start_date:string; status:string }[] | null },
-    { count:number|null }
-  ];
-
-  async function signOut() {
-    'use server';
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-    redirect(`/topsecret/${locale}/logga-in`);
-  }
-
-  const firstPublishedAt = await getFirstPublishedListingDate(profile?.sanity_profile_id);
-  const hostTenure = formatProfileTenure(firstPublishedAt, locale);
-  const displayName = profile?.display_name || (en ? 'Hyrbart user' : 'Hyrbart-användare');
-  const city = profile?.city;
-  const initial = displayName.trim().charAt(0).toUpperCase() || 'H';
-  const publicProfileHref = `/${locale}/profil/${user.id}`;
-  const insightsHref = `/topsecret/${locale}/vard/profil/omdomen?role=owner&back=vard`;
-  const reviewCount = ownerSummary.count;
-  const ratingLabel = ownerSummary.overall == null ? '–' : ownerSummary.overall.toFixed(2).replace('.', ',');
-  const monthlyRevenue = (monthlyBookings || []).reduce((sum, row) => sum + Number(row.rental_price || 0), 0);
-  const unread = notificationCount.count || 0;
-  const row = (label:string, icon:MenuIconName, suffix?:string) => <><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span>{suffix?<strong style={{marginLeft:'auto',fontSize:13}}>{suffix}</strong>:null}<MenuChevron /></>;
-
-  return (
-    <section className="ds2Page profileDashboard">
-      <header className="ds2Header"><h1>{en ? 'Profile' : 'Profil'}</h1></header>
-      <div className="profileIdentityCard">
-        <Link href={publicProfileHref} className="profileIdentityMain" aria-label={en ? 'View your public profile' : 'Visa din profil'} style={{ color:'inherit', textDecoration:'none' }}>
-          {profile?.avatar_url
-            ? <img className="profileAvatar" src={profile.avatar_url} alt={displayName} style={{ objectFit:'cover' }}/>
-            : <div className="profileAvatar">{initial}</div>}
-          <div><h2>{displayName}</h2>{city ? <p>{city}, Sverige</p> : null}</div>
-        </Link>
-        <div className="profileStats"><div><strong>{hostTenure}</strong><span>{en ? 'Time as host' : 'Tid som uthyrare'}</span></div><div><strong>{reviewCount}</strong><span>{en ? 'reviews' : 'omdömen'}</span></div><div><strong>{ratingLabel}</strong><span>{en ? 'average rating' : 'snittbetyg'}</span></div></div>
-      </div>
-      <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en ? 'Revenue' : 'Intäkter'}</h2><p>{en ? `SEK ${monthlyRevenue.toLocaleString('en-GB')} this month` : `${monthlyRevenue.toLocaleString('sv-SE')} kr den här månaden`}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><Link href={insightsHref} className="profileInsightCard profileInsightLink"><h2>{en ? 'Insights' : 'Insikter'}</h2><p>{reviewCount} {en ? 'reviews' : 'omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></Link></div>
-      <HostRevenueGoal locale={locale}/>
-      <Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}`}>{en ? 'Switch to renter mode' : 'Växla till hyrarläge'}</Link>
-
-      <div className="profileMenuSection">
-        <span className="profileMenuSectionLabel">{en ? 'SETTINGS' : 'INSTÄLLNINGAR'}</span>
-        <div className="profileMenuList">
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/konto?back=vard`}>{row(en ? 'Account settings' : 'Kontoinställningar','account')}</Link>
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/installningar`}>{row(en ? 'Host settings' : 'Uthyrarinställningar','host')}</Link>
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/notiser?back=vard`}>{row(en ? 'Notifications' : 'Notiser','notifications',unread?String(unread):undefined)}</Link>
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/foljare`}>{row(en ? 'My followers' : 'Mina följare','profile')}</Link>
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/varva`}>{row(en ? 'Refer a host' : 'Värva en uthyrare','referral')}</Link>
-          <ExternalHistoryModalSetting locale={locale}/>
-          <PushNotificationsSetting locale={locale}/>
-          <ProfileLanguageSetting locale={locale}/>
-        </div>
-      </div>
-
-      <div className="profileMenuSection">
-        <span className="profileMenuSectionLabel">{en ? 'HELP & LEGAL' : 'HJÄLP & JURIDIK'}</span>
-        <div className="profileMenuList">
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/hjalp?back=vard`}>{row(en ? 'Get help' : 'Få hjälp','help')}</Link>
-          <Link className="profileMenuRow" href={publicProfileHref}>{row(en ? 'View profile' : 'Visa profil','profile')}</Link>
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/villkor`}>{row(en ? 'Terms' : 'Allmänna villkor','terms')}</Link>
-          <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/sekretess?back=vard`}>{row(en ? 'Privacy' : 'Sekretess','privacy')}</Link>
-        </div>
-      </div>
-
-      <div className="profileMenuSection profileLogoutSection">
-        <form action={signOut} style={{ margin: 0 }}><button type="submit" className="profileMenuRow profileMenuButton logout">{row(en ? 'Log out' : 'Logga ut','logout')}</button></form>
-      </div>
-    </section>
-  );
+export default async function HostProfilePage({params}:{params:Promise<{locale:string}>}){
+  const {locale}=await params; const en=locale==='en'; const supabase=await createClient(); const {data:{user}}=await supabase.auth.getUser();
+  if(!user)redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/vard/profil`)}`);
+  const {first,last}=monthBounds();
+  const [{data:profile},ownerSummary,{data:monthlyBookings},notificationCount]=await Promise.all([
+    supabase.from('profiles').select('display_name, city, avatar_url, sanity_profile_id').eq('id',user.id).maybeSingle() as unknown as Promise<{data:Profile|null}>,
+    getUserReviewSummary(user.id,'owner'),
+    supabase.from('bookings').select('rental_price,start_date,status').eq('owner_id',user.id).gte('start_date',first).lte('start_date',last).in('status',['paid','active','returned','completed']),
+    supabase.from('user_notifications').select('id',{count:'exact',head:true}).eq('user_id',user.id).is('read_at',null),
+  ]) as [{data:Profile|null},Awaited<ReturnType<typeof getUserReviewSummary>>,{data:{rental_price:number|null;start_date:string;status:string}[]|null},{count:number|null}];
+  async function signOut(){'use server';const supabase=await createClient();await supabase.auth.signOut();redirect(`/topsecret/${locale}/logga-in`);}
+  const firstPublishedAt=await getFirstPublishedListingDate(profile?.sanity_profile_id); const hostTenure=formatProfileTenure(firstPublishedAt,locale); const displayName=profile?.display_name||(en?'Hyrbart user':'Hyrbart-användare'); const city=profile?.city; const initial=displayName.trim().charAt(0).toUpperCase()||'H'; const publicProfileHref=`/${locale}/profil/${user.id}`; const insightsHref=`/topsecret/${locale}/vard/profil/omdomen?role=owner&back=vard`; const reviewCount=ownerSummary.count; const ratingLabel=ownerSummary.overall==null?'–':ownerSummary.overall.toFixed(2).replace('.',','); const monthlyRevenue=(monthlyBookings||[]).reduce((sum,row)=>sum+Number(row.rental_price||0),0); const unread=notificationCount.count||0;
+  const row=(label:string,icon:MenuIconName,suffix?:string)=><><span className="profileMenuIcon"><MenuIcon name={icon}/></span><span className="profileMenuLabel">{label}</span>{suffix?<strong style={{marginLeft:'auto',fontSize:13}}>{suffix}</strong>:null}<MenuChevron/></>;
+  return <section className="ds2Page profileDashboard">
+    <header className="ds2Header"><h1>{en?'Profile':'Profil'}</h1></header>
+    <div className="profileIdentityCard"><Link href={publicProfileHref} className="profileIdentityMain" aria-label={en?'View your public profile':'Visa din profil'} style={{color:'inherit',textDecoration:'none'}}>{profile?.avatar_url?<img className="profileAvatar" src={profile.avatar_url} alt={displayName} style={{objectFit:'cover'}}/>:<div className="profileAvatar">{initial}</div>}<div><h2>{displayName}</h2>{city?<p>{city}, Sverige</p>:null}</div></Link><div className="profileStats"><div><strong>{hostTenure}</strong><span>{en?'Time as host':'Tid som uthyrare'}</span></div><div><strong>{reviewCount}</strong><span>{en?'reviews':'omdömen'}</span></div><div><strong>{ratingLabel}</strong><span>{en?'average rating':'snittbetyg'}</span></div></div></div>
+    <div className="profileInsightGrid"><div className="profileInsightCard"><h2>{en?'Revenue':'Intäkter'}</h2><p>{en?`SEK ${monthlyRevenue.toLocaleString('en-GB')} this month`:`${monthlyRevenue.toLocaleString('sv-SE')} kr den här månaden`}</p><div className="profileBars" aria-hidden="true"><i/><i/><i/><i/><i/></div></div><Link href={insightsHref} className="profileInsightCard profileInsightLink"><h2>{en?'Insights':'Insikter'}</h2><p>{reviewCount} {en?'reviews':'omdömen'}</p><div className="profileRating"><span>★</span><strong>{ratingLabel}</strong></div></Link></div>
+    <HostRevenueGoal locale={locale}/><Link className="modeSwitchButton profileModeSwitch" href={`/topsecret/${locale}`}>{en?'Switch to renter mode':'Växla till hyrarläge'}</Link>
+    <div className="profileMenuSection"><span className="profileMenuSectionLabel">{en?'SETTINGS':'INSTÄLLNINGAR'}</span><div className="profileMenuList">
+      <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/konto?back=vard`}>{row(en?'Account settings':'Kontoinställningar','account')}</Link>
+      <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/sakerhet`}>{row(en?'Security':'Säkerhet','privacy')}</Link>
+      <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/installningar`}>{row(en?'Host settings':'Uthyrarinställningar','host')}</Link>
+      <Link className="profileMenuRow" href={`/topsecret/${locale}/profil/notiser?back=vard`}>{row(en?'Notifications':'Notiser','notifications',unread?String(unread):undefined)}</Link>
+      <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/foljare`}>{row(en?'My followers':'Mina följare','profile')}</Link>
+      <Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/varva`}>{row(en?'Refer a host':'Värva en uthyrare','referral')}</Link><ExternalHistoryModalSetting locale={locale}/><PushNotificationsSetting locale={locale}/><ProfileLanguageSetting locale={locale}/>
+    </div></div>
+    <div className="profileMenuSection"><span className="profileMenuSectionLabel">{en?'HELP & LEGAL':'HJÄLP & JURIDIK'}</span><div className="profileMenuList"><Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/hjalp?back=vard`}>{row(en?'Get help':'Få hjälp','help')}</Link><Link className="profileMenuRow" href={publicProfileHref}>{row(en?'View profile':'Visa profil','profile')}</Link><Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/villkor`}>{row(en?'Terms':'Allmänna villkor','terms')}</Link><Link className="profileMenuRow" href={`/topsecret/${locale}/vard/profil/sekretess?back=vard`}>{row(en?'Privacy':'Sekretess','privacy')}</Link></div></div>
+    <div className="profileMenuSection profileLogoutSection"><form action={signOut} style={{margin:0}}><button type="submit" className="profileMenuRow profileMenuButton logout">{row(en?'Log out':'Logga ut','logout')}</button></form></div>
+  </section>;
 }
