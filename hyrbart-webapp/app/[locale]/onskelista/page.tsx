@@ -1,5 +1,5 @@
 import { getProducts } from '@/lib/sanity-products';
-import FavoritesGrid from '@/components/FavoritesGrid';
+import FavoritesHub from '@/components/FavoritesHub';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,5 +17,5 @@ export default async function WishlistPage({ params }: { params: Promise<{ local
     accent: product.accent,
     badge: product.badge,
   }));
-  return <section className="ds2Page favoritesPage2"><FavoritesGrid locale={locale} products={cards}/></section>;
+  return <section className="ds2Page favoritesPage2"><FavoritesHub locale={locale} products={cards}/></section>;
 }
