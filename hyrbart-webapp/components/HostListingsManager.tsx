@@ -15,6 +15,7 @@ export default function HostListingsManager({locale}:{locale:string}){
   const [busy,setBusy]=useState<string|null>(null);
   const [error,setError]=useState('');
   const [payoutReady,setPayoutReady]=useState(false);
+  const [profilePhotoReady,setProfilePhotoReady]=useState(true);
   const [hostProfileReady,setHostProfileReady]=useState(true);
 
   async function load(){
@@ -25,6 +26,7 @@ export default function HostListingsManager({locale}:{locale:string}){
       if(!r.ok)throw new Error(d.error||'Kunde inte läsa annonser.');
       setListings(d.listings||[]);
       setPayoutReady(Boolean(d.payoutReady));
+      setProfilePhotoReady(d.profilePhotoReady!==false);
       setHostProfileReady(d.hostProfileReady!==false);
     }catch(e){setError(e instanceof Error?e.message:'Något gick fel.');}
     finally{setLoading(false)}
@@ -45,7 +47,7 @@ export default function HostListingsManager({locale}:{locale:string}){
     try{
       const r=await fetch('/api/host-listings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:item.id,action})});
       const d=await r.json();
-      if(!r.ok)throw new Error(d.error||'Kunde inte uppdatera annonsen.');
+      if(!r.ok){if(d.code==='PROFILE_PHOTO_REQUIRED')setProfilePhotoReady(false);throw new Error(d.error||'Kunde inte uppdatera annonsen.');}
       await load();
     }catch(e){setError(e instanceof Error?e.message:'Något gick fel.');}
     finally{setBusy(null)}
@@ -86,11 +88,12 @@ export default function HostListingsManager({locale}:{locale:string}){
         </div>
       </section>
     :<>
+      {!profilePhotoReady?<Link href={`/topsecret/${locale}/profil/konto?back=vard&section=profile`} className="hostListingsPayoutWarning"><strong>{en?'Add a profile photo':'Lägg till en profilbild'}</strong><span>{en?'A profile photo is required before a listing can go live or a new booking can be accepted.':'Profilbild krävs innan en annons kan aktiveras eller en ny bokning godkännas.'} ›</span></Link>:null}
       {!payoutReady?<Link href={`/${locale}/vard/onboarding`} className="hostListingsPayoutWarning"><strong>{en?'Finish host setup':'Slutför uthyrarstart'}</strong><span>{en?'A payout account is required before a listing can go live.':'Utbetalningskonto krävs innan en annons kan aktiveras.'} ›</span></Link>:null}
 
       {hasListings?<div className="hostListingsFilters">{labels.map(x=><button key={x.key} className={filter===x.key?'active':''} onClick={()=>setFilter(x.key)}>{en?x.en:x.sv}<b>{counts[x.key]}</b></button>)}</div>:null}
 
-      {error?<p className="hostListingsError">{error}</p>:null}
+      {error?<p className="hostListingsError">{error}{!profilePhotoReady ? <> <Link href={`/topsecret/${locale}/profil/konto?back=vard&section=profile`}>{en?'Add profile photo':'Lägg till profilbild'}</Link>.</> : null}</p>:null}
 
       {loading?<div className="hostListingsEmpty hostListingsLoading">{en?'Loading…':'Laddar…'}</div>
       :shown.length===0?
@@ -117,5 +120,5 @@ export default function HostListingsManager({locale}:{locale:string}){
           </div>
         </article>})}</div>}
     </>}
-  </section>
+  </section>;
 }
