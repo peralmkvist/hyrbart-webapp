@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import UserSecuritySettings from '@/components/UserSecuritySettings';
 import { createClient } from '@/lib/supabase/server';
-import '../../../../profil/profile-menu.css';
+import '../../../profil/profile-menu.css';
 
 export default async function SecurityPage({params}:{params:Promise<{locale:string}>}){
   const {locale}=await params;
