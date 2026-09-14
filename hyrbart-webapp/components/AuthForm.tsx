@@ -18,6 +18,9 @@ export default function AuthForm({ locale }: { locale: string }) {
     try {
       const supabase = createClient();
       const origin = window.location.origin;
+      // Public locale URLs are redirected to /topsecret by middleware. Using the
+      // public callback here keeps the URL compatible with Supabase's redirect
+      // allow-list while middleware still routes the request to the app.
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
