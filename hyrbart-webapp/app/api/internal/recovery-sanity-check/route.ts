@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+// Recovery-only token verification route. Remove before merge.
 const SANITY_PROJECT_ID = 'ew1i5o0v';
 const SANITY_DATASET = 'production';
 const SANITY_API_VERSION = '2026-09-08';
