@@ -1,5 +1,4 @@
 import { expect, test, type Browser, type BrowserContext } from '@playwright/test';
-import { CATEGORY_TAXONOMY, type CategoryNode } from '../../lib/category-taxonomy-complete';
 import { loadAuthenticatedFixture, type FixtureSession } from './auth-fixture';
 
 const fixture = loadAuthenticatedFixture();
@@ -22,29 +21,23 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
   return context;
 }
 
-function firstLeafPath(nodes: readonly CategoryNode[]): string[] {
-  const first = nodes[0];
-  if (!first) throw new Error('Category taxonomy is empty.');
-  if (!first.children?.length) return [first.name];
-  return [first.name, ...firstLeafPath(first.children)];
-}
+async function selectStableLeafCategory(page: import('@playwright/test').Page) {
+  const path = [
+    { label: 'Huvudkategori', value: 'Verktyg' },
+    { label: 'Underkategori', value: 'Elverktyg' },
+    { label: 'Detaljkategori', value: 'Borrmaskin' },
+  ] as const;
 
-async function selectFirstLeafCategory(page: import('@playwright/test').Page) {
-  const selects = page.locator('.newListingCategoryPicker select');
-  const continueButton = page.getByRole('button', { name: /Fortsätt/ });
-  const path = firstLeafPath(CATEGORY_TAXONOMY);
-
-  for (let depth = 0; depth < path.length; depth += 1) {
-    const current = selects.nth(depth);
-    await expect(current).toBeVisible({ timeout: 10_000 });
-    await current.selectOption({ label: path[depth] });
-
-    if (depth < path.length - 1) {
-      await expect(selects.nth(depth + 1)).toBeVisible({ timeout: 10_000 });
-    }
+  for (const { label, value } of path) {
+    const select = page.getByLabel(label, { exact: true });
+    await expect(select).toBeVisible({ timeout: 10_000 });
+    await expect(select.locator(`option[value="${value}"]`)).toHaveCount(1, { timeout: 10_000 });
+    await select.selectOption(value);
+    await expect(select).toHaveValue(value);
   }
 
-  await expect(continueButton).toBeEnabled({ timeout: 10_000 });
+  await expect(page.getByText('Verktyg › Elverktyg › Borrmaskin', { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole('button', { name: /Fortsätt/ })).toBeEnabled({ timeout: 10_000 });
 }
 
 async function continueListing(page: import('@playwright/test').Page) {
@@ -54,9 +47,9 @@ async function continueListing(page: import('@playwright/test').Page) {
 }
 
 test.describe('production full marketplace funnel', () => {
-  // A newly published Sanity listing can legitimately sit behind the 60 s
-  // product cache before it appears in search. Keep assertions strict while
-  // allowing the complete publish → discovery → booking path enough wall time.
+  // Successful listing mutations invalidate the shared Sanity product cache.
+  // Keep a short poll window only for normal request/render propagation; a stale
+  // 60-second cache must no longer be able to make this test pass eventually.
   test.describe.configure({ mode: 'serial', retries: 0, timeout: 210_000 });
 
   let owner: BrowserContext;
@@ -84,7 +77,7 @@ test.describe('production full marketplace funnel', () => {
     await hostPage.getByLabel('Produkttyp').fill('E2E testprodukt');
     await hostPage.getByLabel('Varumärke').fill('Hyrbart');
     await hostPage.getByLabel('Modell / produktnamn').fill(uniqueName);
-    await selectFirstLeafCategory(hostPage);
+    await selectStableLeafCategory(hostPage);
     await continueListing(hostPage);
 
     await expect(hostPage.getByRole('heading', { name: 'Lägg till bilder' })).toBeVisible();
@@ -129,9 +122,9 @@ test.describe('production full marketplace funnel', () => {
       await renterPage.goto(searchUrl, { waitUntil: 'domcontentloaded' });
       return result.count();
     }, {
-      timeout: 75_000,
-      intervals: [2_000, 4_000, 8_000, 12_000, 15_000],
-      message: 'Published E2E listing should become visible through the Sanity-backed product search cache.',
+      timeout: 30_000,
+      intervals: [1_000, 2_000, 3_000, 5_000],
+      message: 'Published E2E listing should become visible promptly after the Sanity product cache is invalidated.',
     }).toBeGreaterThan(0);
 
     await expect(result).toBeVisible();
