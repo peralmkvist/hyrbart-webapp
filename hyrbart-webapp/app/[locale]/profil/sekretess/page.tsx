@@ -36,10 +36,10 @@ export default async function PrivacyPage({ params, searchParams }: { params: Pr
 
     <section className="profileSettingsCard">
       <div className="profileSettingsCardHeading"><span>{en ? 'YOUR DATA' : 'DINA DATA'}</span><h2>{en ? 'Export and account deletion' : 'Export och kontoradering'}</h2></div>
-      <p>{en ? 'Secure data export and account deletion require a fresh authentication step and are implemented in SCRUM-22. They are shown here now so this remains their single home.' : 'Säker dataexport och kontoradering kräver aktuell återautentisering och implementeras i SCRUM-22. De visas redan här så att Sekretess förblir deras enda hem.'}</p>
+      <p>{en ? 'Download a JSON copy of the data connected to your signed-in account. The file is generated for your current authenticated session and is not cached.' : 'Ladda ner en JSON-kopia av de uppgifter som är kopplade till ditt inloggade konto. Filen skapas för din aktuella autentiserade session och cachas inte.'}</p>
       <div style={{display:'grid',gap:10}}>
-        <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en?'Download your data — coming next':'Ladda ner dina data — kommer härnäst'}</button>
-        <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en?'Delete my account — coming next':'Ta bort mig som användare — kommer härnäst'}</button>
+        <a className="profilePrimaryAction" href="/api/account/export" download>{en?'Download your data':'Ladda ner dina data'}</a>
+        <Link className="profilePrimaryAction" href={`/topsecret/${locale}/profil/sekretess/radera-konto`}>{en?'Delete my account':'Ta bort mig som användare'}</Link>
       </div>
     </section>
 

@@ -32,3 +32,11 @@ test('skip link is keyboard reachable and moves focus to main content', async ({
   await page.keyboard.press('Enter');
   await expect(page.locator('#main-content')).toBeFocused();
 });
+
+test('account data export rejects unauthenticated requests', async ({ request }) => {
+  const response = await request.get('/api/account/export');
+  expect(response.status()).toBe(401);
+  expect(response.headers()['cache-control']).toContain('no-store');
+  expect(response.headers()['content-disposition']).toBeUndefined();
+  await expect(response.json()).resolves.toMatchObject({ error: 'Not authenticated' });
+});
