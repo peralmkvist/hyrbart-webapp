@@ -3,6 +3,16 @@ import { defineConfig, devices } from '@playwright/test';
 const externalBaseURL = process.env.E2E_BASE_URL;
 const baseURL = externalBaseURL || 'http://127.0.0.1:3000';
 const vercelAutomationBypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+const githubOidcToken = process.env.E2E_OIDC_TOKEN;
+
+const extraHTTPHeaders: Record<string, string> = {};
+if (vercelAutomationBypass) {
+  extraHTTPHeaders['x-vercel-protection-bypass'] = vercelAutomationBypass;
+  extraHTTPHeaders['x-vercel-set-bypass-cookie'] = 'true';
+}
+if (githubOidcToken) {
+  extraHTTPHeaders['X-Hyrbart-GitHub-OIDC'] = githubOidcToken;
+}
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -18,12 +28,7 @@ export default defineConfig({
   },
   use: {
     baseURL,
-    extraHTTPHeaders: vercelAutomationBypass
-      ? {
-          'x-vercel-protection-bypass': vercelAutomationBypass,
-          'x-vercel-set-bypass-cookie': 'true',
-        }
-      : undefined,
+    extraHTTPHeaders: Object.keys(extraHTTPHeaders).length ? extraHTTPHeaders : undefined,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
