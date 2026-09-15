@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 const PRODUCT_ID = 'bosch-glm-40';
 const CONDITION_BUCKET = 'booking-condition-photos';
-const SANITY_PROJECT_ID = 'djps09z6';
+const SANITY_PROJECT_ID = 'ew1i5o0v';
 const SANITY_DATASET = 'production';
 const SANITY_API_VERSION = '2026-09-08';
 type Label = 'lifecycle' | 'cancellation' | 'dispute' | 'race';
