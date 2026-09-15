@@ -45,7 +45,6 @@ async function selectStableLeafCategory(page: import('@playwright/test').Page) {
   }
 
   await expect(picker.locator('.newListingCategoryPath')).toHaveText('Bygg & verktyg › Borrmaskiner och skruvdragare › Borrmaskin', { timeout: 10_000 });
-  await expect(page.getByRole('button', { name: /Fortsätt/ })).toBeEnabled({ timeout: 10_000 });
 }
 
 async function continueListing(page: import('@playwright/test').Page) {
@@ -82,10 +81,19 @@ test.describe('production full marketplace funnel', () => {
     await hostPage.goto('/topsecret/sv/vard/annonser/ny', { waitUntil: 'domcontentloaded' });
     await expect(hostPage.getByRole('heading', { name: 'Vad vill du hyra ut?' })).toBeVisible();
 
-    await hostPage.getByLabel('Produkttyp').fill('E2E testprodukt');
-    await hostPage.getByLabel('Varumärke').fill('Hyrbart');
-    await hostPage.getByLabel('Modell / produktnamn').fill(uniqueName);
+    // Category selection exercises the hydrated React picker. Fill the controlled
+    // text inputs afterwards so hydration cannot replace their DOM-only values.
     await selectStableLeafCategory(hostPage);
+
+    const productType = hostPage.getByLabel('Produkttyp');
+    const brand = hostPage.getByLabel('Varumärke');
+    const productName = hostPage.getByLabel('Modell / produktnamn');
+    await productType.fill('E2E testprodukt');
+    await brand.fill('Hyrbart');
+    await productName.fill(uniqueName);
+    await expect(productType).toHaveValue('E2E testprodukt');
+    await expect(brand).toHaveValue('Hyrbart');
+    await expect(productName).toHaveValue(uniqueName);
     await continueListing(hostPage);
 
     await expect(hostPage.getByRole('heading', { name: 'Lägg till bilder' })).toBeVisible();
