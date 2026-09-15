@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import styles from './NotificationBell.module.css';
 
 type NotificationItem={id:string;title:string;body:string;url:string|null;read_at:string|null;created_at:string};
 
@@ -40,14 +41,14 @@ export default function NotificationBell({locale}:{locale:string}){
   }
 
   if(!available)return null;
-  return <div ref={rootRef} style={{position:'fixed',top:14,right:16,zIndex:90}}>
-    <button onClick={()=>setOpen(v=>!v)} aria-haspopup="dialog" aria-expanded={open} aria-label={en?'Notifications':'Notiser'} style={{width:44,height:44,borderRadius:22,border:'1px solid var(--line)',background:'#fff',display:'grid',placeItems:'center',position:'relative',boxShadow:'0 6px 22px rgba(0,0,0,.08)',cursor:'pointer',fontSize:20}}>
-      <span aria-hidden="true">🔔</span>{unread>0?<span aria-label={en?`${unread} unread`:`${unread} olästa`} style={{position:'absolute',right:-3,top:-3,minWidth:20,height:20,padding:'0 5px',borderRadius:10,background:'#111',color:'#fff',fontSize:11,fontWeight:800,display:'grid',placeItems:'center'}}>{unread>99?'99+':unread}</span>:null}
+  return <div ref={rootRef} className={styles.root}>
+    <button onClick={()=>setOpen(v=>!v)} aria-haspopup="dialog" aria-expanded={open} aria-label={en?'Notifications':'Notiser'} className={styles.trigger}>
+      <span aria-hidden="true">🔔</span>{unread>0?<span aria-label={en?`${unread} unread`:`${unread} olästa`} className={styles.badge}>{unread>99?'99+':unread}</span>:null}
     </button>
-    {open?<section role="dialog" aria-label={en?'Notification center':'Notiscenter'} style={{position:'absolute',right:0,top:52,width:'min(390px,calc(100vw - 24px))',maxHeight:'70vh',overflow:'auto',background:'#fff',border:'1px solid var(--line)',borderRadius:18,boxShadow:'0 18px 50px rgba(0,0,0,.18)',padding:14}}>
-      <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'2px 4px 12px'}}><strong>{en?'Notifications':'Notiser'}</strong>{unread>0?<button onClick={()=>void markAll()} style={{border:0,background:'none',fontWeight:700,cursor:'pointer'}}>{en?'Mark all read':'Markera alla lästa'}</button>:null}</header>
-      <div style={{display:'grid',gap:8}}>{items.length?items.map(item=><a key={item.id} href={item.url||'#'} onClick={()=>void mark(item.id)} style={{display:'block',padding:'12px 13px',borderRadius:14,border:'1px solid var(--line)',background:item.read_at?'#fff':'rgba(198,240,0,.12)',color:'inherit',textDecoration:'none'}}><div style={{display:'flex',justifyContent:'space-between',gap:10}}><strong style={{fontSize:14}}>{item.title}</strong>{!item.read_at?<span aria-label={en?'Unread':'Oläst'} style={{width:8,height:8,borderRadius:8,background:'#111',marginTop:5,flex:'0 0 auto'}}/>:null}</div><p style={{margin:'5px 0',fontSize:13,lineHeight:1.4}}>{item.body}</p><small style={{color:'var(--muted)'}}>{new Date(item.created_at).toLocaleString(en?'en-GB':'sv-SE')}</small></a>):<div style={{padding:22,textAlign:'center',color:'var(--muted)'}}>{en?'No notifications yet.':'Inga notiser ännu.'}</div>}</div>
-      <footer style={{padding:'12px 4px 2px',textAlign:'center'}}><Link href={`/${locale}/profil/notiser`} onClick={()=>setOpen(false)} style={{fontWeight:800,color:'inherit'}}>{en?'Notification settings':'Notisinställningar'}</Link></footer>
+    {open?<section role="dialog" aria-label={en?'Notification center':'Notiscenter'} className={styles.dialog}>
+      <header className={styles.header}><strong>{en?'Notifications':'Notiser'}</strong>{unread>0?<button onClick={()=>void markAll()} className={styles.markAll}>{en?'Mark all read':'Markera alla lästa'}</button>:null}</header>
+      <div className={styles.list}>{items.length?items.map(item=><a key={item.id} href={item.url||'#'} onClick={()=>void mark(item.id)} className={`${styles.item} ${item.read_at?'':styles.unread}`}><div className={styles.itemHeader}><strong className={styles.itemTitle}>{item.title}</strong>{!item.read_at?<span aria-label={en?'Unread':'Oläst'} className={styles.unreadDot}/>:null}</div><p className={styles.body}>{item.body}</p><small className={styles.timestamp}>{new Date(item.created_at).toLocaleString(en?'en-GB':'sv-SE')}</small></a>):<div className={styles.empty}>{en?'No notifications yet.':'Inga notiser ännu.'}</div>}</div>
+      <footer className={styles.footer}><Link href={`/${locale}/profil/notiser`} onClick={()=>setOpen(false)} className={styles.settingsLink}>{en?'Notification settings':'Notisinställningar'}</Link></footer>
     </section>:null}
   </div>;
 }
