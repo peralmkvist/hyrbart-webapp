@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 
-const projectId = 'djps09z6';
+const projectId = 'ew1i5o0v';
 const dataset = 'production';
 const apiVersion = '2026-09-11';
 const queryBase = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`;
@@ -8,7 +8,7 @@ const queryBase = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/
 export const BLOCKING_BOOKING_STATUSES = ['requested','reserved','accepted','paid','active','returned'] as const;
 
 export async function hasManualAvailabilityBlock(productId: string, from: string, to: string) {
-  const query = `count(*[_type == "availabilityBlock" && product._ref == ${JSON.stringify(productId)} && from <= ${JSON.stringify(to)} && to >= ${JSON.stringify(from)}])`;
+  const query = `count(*[_type == "availabilityBlock" && product._ref == ${JSON.stringify(productId)} && startDate <= ${JSON.stringify(to)} && endDate >= ${JSON.stringify(from)}])`;
   const response = await fetch(`${queryBase}?query=${encodeURIComponent(query)}`, { cache: 'no-store' });
   if (!response.ok) throw new Error(`Sanity availability query failed: ${response.status}`);
   const payload = await response.json() as { result?: number };
