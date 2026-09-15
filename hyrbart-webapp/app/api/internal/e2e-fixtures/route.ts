@@ -10,6 +10,7 @@ const CONDITION_BUCKET = 'booking-condition-photos';
 const SANITY_PROJECT_ID = 'ew1i5o0v';
 const SANITY_DATASET = 'production';
 const SANITY_API_VERSION = '2026-09-08';
+const E2E_AVATAR_URL = 'https://example.com/hyrbart-e2e-avatar.png';
 type Label = 'lifecycle' | 'cancellation' | 'dispute' | 'race';
 type SessionShape = { access_token:string; refresh_token:string; expires_at?:number; expires_in:number; token_type:string };
 type TestUser = { id:string; email:string; session:SessionShape };
@@ -60,7 +61,7 @@ async function makeTestUser(role:'renter'|'owner',runId:string):Promise<TestUser
   const userId=created.user.id;
   try{
     const owner=role==='owner';
-    const {error:profileError}=await admin.from('profiles').upsert({id:userId,display_name:role==='renter'?'E2E Hyrestagare':'E2E Uthyrare',first_name:role==='renter'?'E2E Renter':'E2E Owner',last_name:'CI',city:'Test',payment_method_ready:role==='renter',payout_method_ready:owner,payout_provider_account_id:owner?`e2e-${runId}`:null,sanity_profile_id:owner?sanityProfileId(runId):null,bankid_verified:true,identity_verification_status:'verified',account_status:'active',updated_at:new Date().toISOString()});
+    const {error:profileError}=await admin.from('profiles').upsert({id:userId,display_name:role==='renter'?'E2E Hyrestagare':'E2E Uthyrare',first_name:role==='renter'?'E2E Renter':'E2E Owner',last_name:'CI',city:'Test',avatar_url:E2E_AVATAR_URL,payment_method_ready:role==='renter',payout_method_ready:owner,payout_provider_account_id:owner?`e2e-${runId}`:null,sanity_profile_id:owner?sanityProfileId(runId):null,bankid_verified:true,identity_verification_status:'verified',account_status:'active',updated_at:new Date().toISOString()});
     if(profileError)throw profileError;
     const authClient=createSupabaseClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
     const {data:signedIn,error:signInError}=await authClient.auth.signInWithPassword({email,password});
