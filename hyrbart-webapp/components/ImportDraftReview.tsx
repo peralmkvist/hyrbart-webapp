@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import styles from './ImportFlow.module.css';
 
 type Confidence='verified'|'user_provided'|'suggested'|'missing';
 type Item={
@@ -123,32 +124,29 @@ export default function ImportDraftReview({item,locale,onSaved}:{item:Item;local
     finally{setAssetBusy(false);}
   }
 
-  const inputStyle={minHeight:44,border:'1px solid var(--line)',borderRadius:12,padding:'0 11px',background:'#fff'} as const;
-  const qualityStyle={minHeight:38,border:'1px solid var(--line)',borderRadius:10,padding:'0 9px',background:'#fff',fontSize:13} as const;
-
-  return <article style={{borderTop:'1px solid var(--line)',paddingTop:18,display:'grid',gap:16}}>
-    <form onSubmit={save} style={{display:'grid',gap:12}}>
-      <div style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'baseline'}}><strong>{values.title||values.reference||(en?'Untitled draft':'Namnlöst utkast')}</strong><span style={{fontSize:12,fontWeight:800,color:item.status==='ready'?'inherit':'var(--muted)'}}>{item.status==='ready'?(en?'READY':'REDO'):(en?'STAGING':'STAGING')}</span></div>
-      {fieldNames.map(key=><label key={key} style={{display:'grid',gap:6,fontWeight:700}}>
-        <span style={{display:'flex',justifyContent:'space-between',gap:10,alignItems:'center'}}><span>{fieldLabel(key)}</span><select value={confidence[key]} onChange={e=>setConfidence(current=>({...current,[key]:e.target.value as Confidence}))} style={qualityStyle} aria-label={`${key} quality`}><option value="verified">{confidenceLabel('verified')}</option><option value="user_provided">{confidenceLabel('user_provided')}</option><option value="suggested">{confidenceLabel('suggested')}</option><option value="missing">{confidenceLabel('missing')}</option></select></span>
-        {key==='description'?<textarea value={values.description} onChange={e=>setField('description',e.target.value)} rows={5} style={{...inputStyle,padding:11,resize:'vertical'}}/>:<input value={values[key]} onChange={e=>setField(key,e.target.value)} style={inputStyle}/>} 
+  return <article className={styles.review}>
+    <form onSubmit={save} className={styles.reviewForm}>
+      <div className={styles.reviewHeader}><strong>{values.title||values.reference||(en?'Untitled draft':'Namnlöst utkast')}</strong><span className={`${styles.reviewStatus} ${item.status==='ready'?'':styles.reviewStatusDraft}`}>{item.status==='ready'?(en?'READY':'REDO'):(en?'STAGING':'STAGING')}</span></div>
+      {fieldNames.map(key=><label key={key} className={styles.label}>
+        <span className={styles.qualityRow}><span>{fieldLabel(key)}</span><select value={confidence[key]} onChange={e=>setConfidence(current=>({...current,[key]:e.target.value as Confidence}))} className={styles.qualitySelect} aria-label={`${key} quality`}><option value="verified">{confidenceLabel('verified')}</option><option value="user_provided">{confidenceLabel('user_provided')}</option><option value="suggested">{confidenceLabel('suggested')}</option><option value="missing">{confidenceLabel('missing')}</option></select></span>
+        {key==='description'?<textarea value={values.description} onChange={e=>setField('description',e.target.value)} rows={5} className={styles.reviewTextarea}/>:<input value={values[key]} onChange={e=>setField(key,e.target.value)} className={styles.reviewInput}/>} 
       </label>)}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:12}}><label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Original URL':'Ursprunglig länk'}<input type="url" value={values.sourceUrl} onChange={e=>setField('sourceUrl',e.target.value)} style={inputStyle}/></label><label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Reference':'Referens'}<input value={values.reference} onChange={e=>setField('reference',e.target.value)} style={inputStyle}/></label></div>
-      <button type="submit" disabled={busy} className="modeSwitchButton" style={{border:0,cursor:'pointer',justifySelf:'start'}}>{busy?(en?'Saving…':'Sparar…'):(en?'Save review':'Spara granskning')}</button>
+      <div className={styles.reviewColumns}><label className={styles.label}>{en?'Original URL':'Ursprunglig länk'}<input type="url" value={values.sourceUrl} onChange={e=>setField('sourceUrl',e.target.value)} className={styles.reviewInput}/></label><label className={styles.label}>{en?'Reference':'Referens'}<input value={values.reference} onChange={e=>setField('reference',e.target.value)} className={styles.reviewInput}/></label></div>
+      <button type="submit" disabled={busy} className={`modeSwitchButton ${styles.actionButtonStart}`}>{busy?(en?'Saving…':'Sparar…'):(en?'Save review':'Spara granskning')}</button>
     </form>
 
-    <section style={{display:'grid',gap:10,padding:'14px',border:'1px solid var(--line)',borderRadius:14}}>
-      <div><strong>{en?'Images & documents':'Bilder & dokument'}</strong><p style={{margin:'4px 0 0',fontSize:13,color:'var(--muted)'}}>{en?'Files remain private in import staging. They are not published.':'Filerna ligger privat i importens staging och publiceras inte.'}</p></div>
-      {assets.length?<div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{assets.map(asset=>asset.asset_kind==='image'&&asset.preview_url?<a key={asset.id} href={asset.preview_url} target="_blank" rel="noreferrer" style={{display:'block'}}><img src={asset.preview_url} alt={asset.source_filename||''} style={{width:86,height:86,objectFit:'cover',borderRadius:12,border:'1px solid var(--line)'}}/></a>:<a key={asset.id} href={asset.preview_url||'#'} target={asset.preview_url?'_blank':undefined} rel="noreferrer" style={{padding:'10px 12px',border:'1px solid var(--line)',borderRadius:12,color:'inherit',textDecoration:'none',fontSize:13}}>{asset.source_filename|| (en?'Document':'Dokument')}</a>)}</div>:<span style={{fontSize:13,color:'var(--muted)'}}>{en?'No files attached yet.':'Inga filer bifogade ännu.'}</span>}
-      <form onSubmit={uploadAsset} style={{display:'grid',gap:9}}><input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf" onChange={e=>setFile(e.target.files?.[0]||null)}/><label style={{display:'flex',gap:8,alignItems:'flex-start',fontSize:13}}><input type="checkbox" checked={rightsConfirmed} onChange={e=>setRightsConfirmed(e.target.checked)} style={{marginTop:2}}/><span>{en?'I confirm that I have the right to use this file in my Hyrbart listing.':'Jag bekräftar att jag har rätt att använda filen i min Hyrbart-annons.'}</span></label><button type="submit" disabled={assetBusy||!file||!rightsConfirmed} className="modeSwitchButton" style={{border:0,cursor:'pointer',justifySelf:'start'}}>{assetBusy?(en?'Uploading…':'Laddar upp…'):(en?'Attach file':'Bifoga fil')}</button></form>
+    <section className={styles.panel}>
+      <div><strong>{en?'Images & documents':'Bilder & dokument'}</strong><p className={styles.help}>{en?'Files remain private in import staging. They are not published.':'Filerna ligger privat i importens staging och publiceras inte.'}</p></div>
+      {assets.length?<div className={styles.assetList}>{assets.map(asset=>asset.asset_kind==='image'&&asset.preview_url?<a key={asset.id} href={asset.preview_url} target="_blank" rel="noreferrer" className={styles.assetImageLink}><img src={asset.preview_url} alt={asset.source_filename||''} className={styles.assetImage}/></a>:<a key={asset.id} href={asset.preview_url||'#'} target={asset.preview_url?'_blank':undefined} rel="noreferrer" className={styles.assetDocument}>{asset.source_filename|| (en?'Document':'Dokument')}</a>)}</div>:<span className={styles.mutedSmall}>{en?'No files attached yet.':'Inga filer bifogade ännu.'}</span>}
+      <form onSubmit={uploadAsset} className={styles.uploadForm}><input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf" onChange={e=>setFile(e.target.files?.[0]||null)}/><label className={styles.compactCheckboxLabel}><input type="checkbox" checked={rightsConfirmed} onChange={e=>setRightsConfirmed(e.target.checked)} className={styles.compactCheckbox}/><span>{en?'I confirm that I have the right to use this file in my Hyrbart listing.':'Jag bekräftar att jag har rätt att använda filen i min Hyrbart-annons.'}</span></label><button type="submit" disabled={assetBusy||!file||!rightsConfirmed} className={`modeSwitchButton ${styles.actionButtonStart}`}>{assetBusy?(en?'Uploading…':'Laddar upp…'):(en?'Attach file':'Bifoga fil')}</button></form>
     </section>
 
-    <section style={{display:'grid',gap:10,padding:'14px',border:'1px solid var(--line)',borderRadius:14}}>
-      <div><strong>{en?'Ready for publication':'Redo för publicering'}</strong><p style={{margin:'4px 0 0',fontSize:13,color:'var(--muted)'}}>{en?'Complete every requirement before the draft can be marked ready. This does not publish anything.':'Slutför alla krav innan utkastet kan markeras som redo. Detta publicerar ingenting.'}</p></div>
-      <div style={{display:'grid',gap:7}}>{checklist.map(check=><div key={check.key} style={{display:'flex',gap:8,alignItems:'center',fontSize:14}}><span aria-hidden="true">{check.ok?'✓':'○'}</span><span>{check.label}</span></div>)}</div>
-      <button type="button" onClick={markReady} disabled={busy||!canMarkReady} className="modeSwitchButton" style={{border:0,cursor:canMarkReady?'pointer':'not-allowed',justifySelf:'start'}}>{item.status==='ready'?(en?'Revalidate readiness':'Validera redo-status igen'):(en?'Mark ready for publication':'Markera som redo för publicering')}</button>
-      {item.status==='ready'?<small style={{fontWeight:700}}>{en?'Ready in staging. CMS publication is still disabled.':'Redo i staging. CMS-publicering är fortfarande avstängd.'}</small>:null}
+    <section className={styles.panel}>
+      <div><strong>{en?'Ready for publication':'Redo för publicering'}</strong><p className={styles.help}>{en?'Complete every requirement before the draft can be marked ready. This does not publish anything.':'Slutför alla krav innan utkastet kan markeras som redo. Detta publicerar ingenting.'}</p></div>
+      <div className={styles.checklist}>{checklist.map(check=><div key={check.key} className={styles.checkItem}><span aria-hidden="true">{check.ok?'✓':'○'}</span><span>{check.label}</span></div>)}</div>
+      <button type="button" onClick={markReady} disabled={busy||!canMarkReady} className={`modeSwitchButton ${styles.actionButtonStart} ${canMarkReady?'':styles.notAllowed}`}>{item.status==='ready'?(en?'Revalidate readiness':'Validera redo-status igen'):(en?'Mark ready for publication':'Markera som redo för publicering')}</button>
+      {item.status==='ready'?<small className={styles.readyNote}>{en?'Ready in staging. CMS publication is still disabled.':'Redo i staging. CMS-publicering är fortfarande avstängd.'}</small>:null}
     </section>
-    {message?<p role="status" style={{margin:0,fontWeight:700}}>{message}</p>:null}
+    {message?<p role="status" className={styles.reviewMessage}>{message}</p>:null}
   </article>;
 }
