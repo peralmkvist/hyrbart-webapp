@@ -75,7 +75,6 @@ jobs:
           for attempt in $(seq 1 72); do
             STATUS=$(curl -sS -o /tmp/recovery-health.json -w '%{http_code}' \
               -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
-              -H 'x-vercel-set-bypass-cookie: true' \
               "$RECOVERY_PREVIEW_URL/api/health" || true)
 
             if [ "$STATUS" = "200" ]; then
@@ -84,7 +83,7 @@ jobs:
                 echo "Recovery preview is running $EXPECTED_PREVIEW_SHA"
                 exit 0
               fi
-            elif [ "$STATUS" = "302" ] || [ "$STATUS" = "401" ] || [ "$STATUS" = "403" ]; then
+            elif [ "$STATUS" = "302" ] || [ "$STATUS" = "307" ] || [ "$STATUS" = "401" ] || [ "$STATUS" = "403" ]; then
               echo "Vercel protection bypass was rejected (HTTP $STATUS). Verify Protection Bypass for Automation and the GitHub secret." >&2
               exit 2
             elif [ "$STATUS" = "503" ]; then
@@ -109,7 +108,6 @@ jobs:
           RUN_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_JOB}"
           FIXTURE=$(curl -fsSL -X POST "$RECOVERY_PREVIEW_URL/api/internal/e2e-fixtures" \
             -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
-            -H 'x-vercel-set-bypass-cookie: true' \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data "{\"runId\":\"$RUN_ID\"}")
@@ -149,7 +147,6 @@ jobs:
           PY
           curl -fsSL -X DELETE "$RECOVERY_PREVIEW_URL/api/internal/e2e-fixtures" \
             -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
-            -H 'x-vercel-set-bypass-cookie: true' \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data-binary @tests/.cleanup.json >/dev/null
