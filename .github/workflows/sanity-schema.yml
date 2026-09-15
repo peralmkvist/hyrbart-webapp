@@ -1,0 +1,64 @@
+name: Sanity schema
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hyrbart-webapp/sanity.config.ts'
+      - 'hyrbart-webapp/sanity.cli.ts'
+      - 'hyrbart-webapp/sanity/**'
+      - 'hyrbart-webapp/lib/category-taxonomy-complete.ts'
+      - 'hyrbart-webapp/package.json'
+      - 'hyrbart-webapp/package-lock.json'
+      - '.github/workflows/sanity-schema.yml'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy validated schema to Sanity'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hyrbart-webapp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hyrbart-webapp/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Validate Sanity schema
+        run: npm run sanity:schema:validate
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
+    needs: validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hyrbart-webapp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hyrbart-webapp/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Require deploy token
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_DEPLOY_TOKEN }}
+        run: test -n "$SANITY_AUTH_TOKEN"
+      - name: Deploy Sanity schema
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_DEPLOY_TOKEN }}
+        run: npm run sanity:schema:deploy
