@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import '../../../profile-menu.css';
+import '../../profile-menu.css';
 
 const FINAL_BOOKING_STATUSES = new Set(['completed', 'cancelled', 'canceled', 'rejected', 'expired']);
 const RECENT_AUTH_MINUTES = 15;
