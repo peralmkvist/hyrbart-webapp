@@ -23,11 +23,25 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
 
 async function selectFirstLeafCategory(page: import('@playwright/test').Page) {
   const selects = page.locator('.newListingCategoryPicker select');
+  const continueButton = page.getByRole('button', { name: /Fortsätt/ });
+
   for (let depth = 0; depth < 6; depth += 1) {
-    await expect(selects.nth(depth)).toBeVisible();
-    await selects.nth(depth).selectOption({ index: 1 });
-    await page.waitForTimeout(50);
-    if (await selects.count() <= depth + 1) return;
+    const current = selects.nth(depth);
+    await expect(current).toBeVisible();
+    await current.selectOption({ index: 1 });
+
+    let nextLevelAppeared = false;
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      if (await continueButton.isEnabled()) return;
+      if (await selects.count() > depth + 1 && await selects.nth(depth + 1).isVisible()) {
+        nextLevelAppeared = true;
+        break;
+      }
+      await page.waitForTimeout(100);
+    }
+
+    if (nextLevelAppeared) continue;
+    throw new Error(`Category picker did not settle after selecting level ${depth + 1}.`);
   }
   throw new Error('Category picker did not reach a leaf within six levels.');
 }
