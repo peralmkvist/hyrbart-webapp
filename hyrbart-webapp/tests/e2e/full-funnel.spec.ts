@@ -23,7 +23,7 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
 
 async function selectStableLeafCategory(page: import('@playwright/test').Page) {
   const picker = page.locator('.newListingCategoryPicker');
-  const path = ['Verktyg', 'Elverktyg', 'Borrmaskin'] as const;
+  const path = ['Bygg & verktyg', 'Borrmaskiner och skruvdragare', 'Borrmaskin'] as const;
 
   await expect(picker).toBeVisible({ timeout: 10_000 });
   await expect(picker.locator('select')).toHaveCount(1, { timeout: 10_000 });
@@ -44,7 +44,7 @@ async function selectStableLeafCategory(page: import('@playwright/test').Page) {
     }
   }
 
-  await expect(picker.locator('.newListingCategoryPath')).toHaveText('Verktyg › Elverktyg › Borrmaskin', { timeout: 10_000 });
+  await expect(picker.locator('.newListingCategoryPath')).toHaveText('Bygg & verktyg › Borrmaskiner och skruvdragare › Borrmaskin', { timeout: 10_000 });
   await expect(page.getByRole('button', { name: /Fortsätt/ })).toBeEnabled({ timeout: 10_000 });
 }
 
