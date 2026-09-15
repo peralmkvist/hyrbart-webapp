@@ -53,6 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RECOVERY_PREVIEW_URL: https://hyrbart-webapp-git-recovery-sanity-rebuild-2026-09-15-hygglo1.vercel.app
+      EXPECTED_PREVIEW_SHA: ${{ github.event.pull_request.head.sha }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     defaults:
       run:
@@ -76,13 +77,13 @@ jobs:
               -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
               -H 'x-vercel-set-bypass-cookie: true' \
               "$RECOVERY_PREVIEW_URL/api/health" 2>/dev/null | python3 -c 'import sys,json; print(json.load(sys.stdin).get("commit") or "")' 2>/dev/null || true)
-            if [ "$DEPLOYED_SHA" = "$GITHUB_SHA" ]; then
-              echo "Recovery preview is running $GITHUB_SHA"
+            if [ "$DEPLOYED_SHA" = "$EXPECTED_PREVIEW_SHA" ]; then
+              echo "Recovery preview is running $EXPECTED_PREVIEW_SHA"
               exit 0
             fi
             sleep 10
           done
-          echo "Recovery preview did not reach $GITHUB_SHA within 12 minutes" >&2
+          echo "Recovery preview did not reach $EXPECTED_PREVIEW_SHA within 12 minutes" >&2
           exit 1
       - name: Seed isolated authenticated preview fixture
         run: |
