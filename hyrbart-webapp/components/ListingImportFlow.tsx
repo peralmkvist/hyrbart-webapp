@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import ImportDraftReview from '@/components/ImportDraftReview';
+import styles from './ImportFlow.module.css';
 
 type Batch={id:string;source_platform:'hygglo'|'other'|'user_provided';source_profile_url:string|null;status:string;created_at:string};
 type Item={id:string;batch_id:string;source_reference:string|null;source_url:string|null;status:string;source_payload:Record<string,unknown>;normalized_data:Record<string,unknown>;field_confidence?:Record<string,string>;created_at:string};
@@ -79,41 +80,41 @@ export default function ListingImportFlow({locale}:{locale:string}){
     finally{setBusy(false);}
   }
 
-  return <div style={{display:'grid',gap:18}}>
-    <section className="profileIdentityCard" style={{display:'block'}}>
-      <span style={{fontSize:12,fontWeight:850,letterSpacing:'.08em'}}>{en?'ASSISTED IMPORT':'ASSISTERAD IMPORT'}</span>
+  return <div className={styles.flow}>
+    <section className={`profileIdentityCard ${styles.card}`}>
+      <span className={styles.eyebrow}>{en?'ASSISTED IMPORT':'ASSISTERAD IMPORT'}</span>
       <h2>{en?'Move existing listings without starting over':'Flytta befintliga annonser utan att börja om'}</h2>
       <p>{en?'You provide your own listing material. Hyrbart stores it as editable staging drafts and can later help structure and enrich it. Nothing is fetched automatically from Hygglo and nothing is published automatically.':'Du skickar själv in ditt befintliga annonsmaterial. Hyrbart sparar det som redigerbara staging-utkast och kan senare hjälpa till att strukturera och berika det. Inget hämtas automatiskt från Hygglo och inget publiceras automatiskt.'}</p>
-      <form onSubmit={createBatch} style={{display:'grid',gap:12,marginTop:18}}>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Original source':'Ursprunglig källa'}<select value={sourcePlatform} onChange={e=>setSourcePlatform(e.target.value as typeof sourcePlatform)} style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px',background:'#fff'}}><option value="hygglo">Hygglo</option><option value="other">{en?'Other marketplace':'Annan marknadsplats'}</option><option value="user_provided">{en?'My own material':'Eget material'}</option></select></label>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Profile/source URL (optional)':'Profil-/källänk (valfritt)'}<input type="url" value={sourceProfileUrl} onChange={e=>setSourceProfileUrl(e.target.value)} placeholder="https://www.hygglo.se/users/…" style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
-        <label style={{display:'flex',gap:10,alignItems:'flex-start',fontSize:14,lineHeight:1.45}}><input type="checkbox" checked={consentAccepted} onChange={e=>setConsentAccepted(e.target.checked)} style={{marginTop:3}}/><span>{en?'I ask Hyrbart to process material that I provide myself in order to create editable listing drafts. I understand that nothing is published automatically and that this does not authorize Hyrbart to retrieve data from third-party services without separate support.':'Jag ber Hyrbart att behandla material som jag själv tillhandahåller för att skapa redigerbara annonsutkast. Jag förstår att inget publiceras automatiskt och att detta inte ger Hyrbart rätt att hämta data från tredjepartstjänster utan separat stöd.'}</span></label>
-        <button type="submit" disabled={busy||!consentAccepted} className="modeSwitchButton" style={{border:0,cursor:'pointer'}}>{en?'Start import':'Starta import'}</button>
+      <form onSubmit={createBatch} className={styles.form}>
+        <label className={styles.label}>{en?'Original source':'Ursprunglig källa'}<select value={sourcePlatform} onChange={e=>setSourcePlatform(e.target.value as typeof sourcePlatform)} className={styles.control}><option value="hygglo">Hygglo</option><option value="other">{en?'Other marketplace':'Annan marknadsplats'}</option><option value="user_provided">{en?'My own material':'Eget material'}</option></select></label>
+        <label className={styles.label}>{en?'Profile/source URL (optional)':'Profil-/källänk (valfritt)'}<input type="url" value={sourceProfileUrl} onChange={e=>setSourceProfileUrl(e.target.value)} placeholder="https://www.hygglo.se/users/…" className={styles.input}/></label>
+        <label className={styles.checkboxLabel}><input type="checkbox" checked={consentAccepted} onChange={e=>setConsentAccepted(e.target.checked)} className={styles.checkbox}/><span>{en?'I ask Hyrbart to process material that I provide myself in order to create editable listing drafts. I understand that nothing is published automatically and that this does not authorize Hyrbart to retrieve data from third-party services without separate support.':'Jag ber Hyrbart att behandla material som jag själv tillhandahåller för att skapa redigerbara annonsutkast. Jag förstår att inget publiceras automatiskt och att detta inte ger Hyrbart rätt att hämta data från tredjepartstjänster utan separat stöd.'}</span></label>
+        <button type="submit" disabled={busy||!consentAccepted} className={`modeSwitchButton ${styles.actionButton}`}>{en?'Start import':'Starta import'}</button>
       </form>
     </section>
 
-    {batches.length?<section className="profileIdentityCard" style={{display:'block'}}>
-      <h2 style={{marginTop:0}}>{en?'Current import':'Aktuell import'}</h2>
-      <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Import session':'Importsession'}<select value={activeBatchId} onChange={e=>setActiveBatchId(e.target.value)} style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px',background:'#fff'}}>{batches.map(batch=><option key={batch.id} value={batch.id}>{batch.source_platform==='hygglo'?'Hygglo':batch.source_platform==='other'?(en?'Other marketplace':'Annan marknadsplats'):(en?'Own material':'Eget material')} · {new Date(batch.created_at).toLocaleDateString(en?'en-GB':'sv-SE')}</option>)}</select></label>
-      <form onSubmit={addItem} style={{display:'grid',gap:12,marginTop:18}}>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Title':'Rubrik'}<input required value={title} onChange={e=>setTitle(e.target.value)} style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Description':'Beskrivning'}<textarea required value={description} onChange={e=>setDescription(e.target.value)} rows={6} style={{border:'1px solid var(--line)',borderRadius:14,padding:12,resize:'vertical'}}/></label>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12}}>
-          <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Current price text':'Nuvarande pristext'}<input value={price} onChange={e=>setPrice(e.target.value)} placeholder={en?'e.g. 200 kr/day':'t.ex. 200 kr/dag'} style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
-          <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Category':'Kategori'}<input value={category} onChange={e=>setCategory(e.target.value)} placeholder={en?'e.g. Tools':'t.ex. Verktyg'} style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
+    {batches.length?<section className={`profileIdentityCard ${styles.card}`}>
+      <h2 className={styles.heading}>{en?'Current import':'Aktuell import'}</h2>
+      <label className={styles.label}>{en?'Import session':'Importsession'}<select value={activeBatchId} onChange={e=>setActiveBatchId(e.target.value)} className={styles.control}>{batches.map(batch=><option key={batch.id} value={batch.id}>{batch.source_platform==='hygglo'?'Hygglo':batch.source_platform==='other'?(en?'Other marketplace':'Annan marknadsplats'):(en?'Own material':'Eget material')} · {new Date(batch.created_at).toLocaleDateString(en?'en-GB':'sv-SE')}</option>)}</select></label>
+      <form onSubmit={addItem} className={styles.form}>
+        <label className={styles.label}>{en?'Title':'Rubrik'}<input required value={title} onChange={e=>setTitle(e.target.value)} className={styles.input}/></label>
+        <label className={styles.label}>{en?'Description':'Beskrivning'}<textarea required value={description} onChange={e=>setDescription(e.target.value)} rows={6} className={styles.textarea}/></label>
+        <div className={styles.columns}>
+          <label className={styles.label}>{en?'Current price text':'Nuvarande pristext'}<input value={price} onChange={e=>setPrice(e.target.value)} placeholder={en?'e.g. 200 kr/day':'t.ex. 200 kr/dag'} className={styles.input}/></label>
+          <label className={styles.label}>{en?'Category':'Kategori'}<input value={category} onChange={e=>setCategory(e.target.value)} placeholder={en?'e.g. Tools':'t.ex. Verktyg'} className={styles.input}/></label>
         </div>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Original listing URL (optional)':'Ursprunglig annonslänk (valfritt)'}<input type="url" value={sourceUrl} onChange={e=>setSourceUrl(e.target.value)} placeholder="https://…" style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
-        <label style={{display:'grid',gap:6,fontWeight:700}}>{en?'Your reference (optional)':'Egen referens (valfritt)'}<input value={reference} onChange={e=>setReference(e.target.value)} placeholder={en?'Model, listing ID or internal note':'Modell, annons-ID eller intern referens'} style={{minHeight:48,border:'1px solid var(--line)',borderRadius:14,padding:'0 12px'}}/></label>
-        <button type="submit" disabled={busy||!activeBatchId} className="modeSwitchButton" style={{border:0,cursor:'pointer'}}>{busy?(en?'Saving…':'Sparar…'):(en?'Save staging draft':'Spara staging-utkast')}</button>
+        <label className={styles.label}>{en?'Original listing URL (optional)':'Ursprunglig annonslänk (valfritt)'}<input type="url" value={sourceUrl} onChange={e=>setSourceUrl(e.target.value)} placeholder="https://…" className={styles.input}/></label>
+        <label className={styles.label}>{en?'Your reference (optional)':'Egen referens (valfritt)'}<input value={reference} onChange={e=>setReference(e.target.value)} placeholder={en?'Model, listing ID or internal note':'Modell, annons-ID eller intern referens'} className={styles.input}/></label>
+        <button type="submit" disabled={busy||!activeBatchId} className={`modeSwitchButton ${styles.actionButton}`}>{busy?(en?'Saving…':'Sparar…'):(en?'Save staging draft':'Spara staging-utkast')}</button>
       </form>
     </section>:null}
 
-    {activeBatchId?<section className="profileIdentityCard" style={{display:'block'}}>
-      <h2 style={{marginTop:0}}>{en?'Review staging drafts':'Granska staging-utkast'}</h2>
-      <p style={{marginTop:0}}>{en?'Edit the draft, mark how trustworthy each field is, and attach your own images or documents. Everything remains private staging data.':'Redigera utkastet, markera hur säkert varje fält är och bifoga egna bilder eller dokument. Allt ligger fortsatt privat i staging.'}</p>
-      {items.length?<div style={{display:'grid',gap:22}}>{items.map(item=><ImportDraftReview key={item.id} item={item} locale={locale} onSaved={()=>loadItems(activeBatchId)}/>)}</div>:<div style={{padding:'18px 0',color:'var(--muted)'}}>{en?'No staging drafts yet.':'Inga staging-utkast ännu.'}</div>}
+    {activeBatchId?<section className={`profileIdentityCard ${styles.card}`}>
+      <h2 className={styles.heading}>{en?'Review staging drafts':'Granska staging-utkast'}</h2>
+      <p className={styles.heading}>{en?'Edit the draft, mark how trustworthy each field is, and attach your own images or documents. Everything remains private staging data.':'Redigera utkastet, markera hur säkert varje fält är och bifoga egna bilder eller dokument. Allt ligger fortsatt privat i staging.'}</p>
+      {items.length?<div className={styles.reviewList}>{items.map(item=><ImportDraftReview key={item.id} item={item} locale={locale} onSaved={()=>loadItems(activeBatchId)}/>)}</div>:<div className={styles.empty}>{en?'No staging drafts yet.':'Inga staging-utkast ännu.'}</div>}
     </section>:null}
 
-    {message?<p role="status" style={{margin:0,fontWeight:750}}>{message}</p>:null}
+    {message?<p role="status" className={styles.message}>{message}</p>:null}
   </div>;
 }
