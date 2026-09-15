@@ -1,0 +1,23 @@
+name: Frontend code health
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-code-health:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hyrbart-webapp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run code-health:frontend
