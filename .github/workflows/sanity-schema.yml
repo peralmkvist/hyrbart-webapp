@@ -10,11 +10,6 @@ on:
       - 'hyrbart-webapp/lib/category-taxonomy-complete.ts'
       - 'hyrbart-webapp/package.json'
       - '.github/workflows/sanity-schema.yml'
-  push:
-    branches:
-      - recovery/sanity-rebuild-2026-09-15
-    paths:
-      - '.github/schema-deploy-approved'
   workflow_dispatch:
     inputs:
       deploy:
@@ -44,7 +39,7 @@ jobs:
         run: npm run sanity:schema:validate
 
   deploy:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy == true)
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
     needs: validate
     runs-on: ubuntu-latest
     defaults:
