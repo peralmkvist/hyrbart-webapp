@@ -52,7 +52,6 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     env:
-      RECOVERY_PREVIEW_URL: https://hyrbart-webapp-git-recovery-sanity-rebuild-2026-09-15-hygglo1.vercel.app
       EXPECTED_PREVIEW_SHA: ${{ github.event.pull_request.head.sha }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     defaults:
@@ -69,35 +68,44 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Require Vercel automation bypass secret
         run: test -n "$VERCEL_AUTOMATION_BYPASS_SECRET"
-      - name: Wait for matching recovery preview deployment
+      - name: Resolve current PR preview URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH_SLUG=$(printf '%s' "$GITHUB_HEAD_REF" | tr '/_' '--' | tr '[:upper:]' '[:lower:]')
+          PREVIEW_URL="https://hyrbart-webapp-git-${BRANCH_SLUG}-hygglo1.vercel.app"
+          echo "PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "Using current PR preview: $PREVIEW_URL"
+      - name: Wait for matching preview deployment
         run: |
           set -euo pipefail
           for attempt in $(seq 1 72); do
-            STATUS=$(curl -sS -o /tmp/recovery-health.json -w '%{http_code}' \
+            STATUS=$(curl -sS -o /tmp/preview-health.json -w '%{http_code}' \
               -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
-              "$RECOVERY_PREVIEW_URL/api/health" || true)
+              "$PREVIEW_URL/api/health" || true)
 
+            DEPLOYED_SHA=""
             if [ "$STATUS" = "200" ]; then
-              DEPLOYED_SHA=$(python3 -c 'import json; print(json.load(open("/tmp/recovery-health.json")).get("commit") or "")' 2>/dev/null || true)
+              DEPLOYED_SHA=$(python3 -c 'import json; print(json.load(open("/tmp/preview-health.json")).get("commit") or "")' 2>/dev/null || true)
               if [ "$DEPLOYED_SHA" = "$EXPECTED_PREVIEW_SHA" ]; then
-                echo "Recovery preview is running $EXPECTED_PREVIEW_SHA"
+                echo "PR preview is running $EXPECTED_PREVIEW_SHA"
                 exit 0
               fi
             elif [ "$STATUS" = "302" ] || [ "$STATUS" = "307" ] || [ "$STATUS" = "401" ] || [ "$STATUS" = "403" ]; then
               echo "Vercel protection bypass was rejected (HTTP $STATUS). Verify Protection Bypass for Automation and the GitHub secret." >&2
               exit 2
             elif [ "$STATUS" = "503" ]; then
-              echo "Recovery preview health returned HTTP 503. The preview runtime is missing a required dependency/environment variable or the database health check failed." >&2
-              cat /tmp/recovery-health.json >&2 || true
+              echo "PR preview health returned HTTP 503. The preview runtime is missing a required dependency/environment variable or the database health check failed." >&2
+              cat /tmp/preview-health.json >&2 || true
               exit 3
             fi
 
             if [ $((attempt % 6)) -eq 0 ]; then
-              echo "Waiting for recovery preview: HTTP $STATUS, deployed SHA ${DEPLOYED_SHA:-unknown}, expected $EXPECTED_PREVIEW_SHA"
+              echo "Waiting for PR preview: HTTP $STATUS, deployed SHA ${DEPLOYED_SHA:-unknown}, expected $EXPECTED_PREVIEW_SHA"
             fi
             sleep 10
           done
-          echo "Recovery preview did not reach $EXPECTED_PREVIEW_SHA within 12 minutes" >&2
+          echo "PR preview did not reach $EXPECTED_PREVIEW_SHA within 12 minutes" >&2
           exit 1
       - name: Seed isolated authenticated preview fixture
         run: |
@@ -106,7 +114,7 @@ jobs:
           OIDC_TOKEN=$(printf '%s' "$TOKEN_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["value"])')
           echo "::add-mask::$OIDC_TOKEN"
           RUN_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_JOB}"
-          FIXTURE=$(curl -fsSL -X POST "$RECOVERY_PREVIEW_URL/api/internal/e2e-fixtures" \
+          FIXTURE=$(curl -fsSL -X POST "$PREVIEW_URL/api/internal/e2e-fixtures" \
             -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
@@ -119,7 +127,7 @@ jobs:
           echo "E2E_TEST_SUPPORT=1" >> "$GITHUB_ENV"
           echo "E2E_FIXTURE_PATH=$GITHUB_WORKSPACE/hyrbart-webapp/tests/.auth-fixture.json" >> "$GITHUB_ENV"
           echo "E2E_OIDC_TOKEN=$OIDC_TOKEN" >> "$GITHUB_ENV"
-          echo "E2E_BASE_URL=$RECOVERY_PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "E2E_BASE_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
       - name: Authenticated preview accessibility and session smoke
         run: npm run test:e2e:auth
       - name: Full listing-to-booking funnel preview E2E
@@ -145,7 +153,7 @@ jobs:
           f=json.load(open('tests/.auth-fixture.json'))
           print(json.dumps({'runId':f['runId'],'bookingIds':list(f['bookings'].values()),'userIds':[f['users']['renter']['id'],f['users']['owner']['id']]}))
           PY
-          curl -fsSL -X DELETE "$RECOVERY_PREVIEW_URL/api/internal/e2e-fixtures" \
+          curl -fsSL -X DELETE "$PREVIEW_URL/api/internal/e2e-fixtures" \
             -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
@@ -213,7 +221,7 @@ jobs:
           if [ ! -f tests/.auth-fixture.json ]; then exit 0; fi
           TOKEN_JSON=$(curl -fsSL -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=hyrbart-e2e")
           OIDC_TOKEN=$(printf '%s' "$TOKEN_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["value"])')
-          echo "::add-mask::$OIDC_TOKEN"
+          echo "::add-mask::$OIDIDC_TOKEN"
           python3 - <<'PY' > tests/.cleanup.json
           import json
           f=json.load(open('tests/.auth-fixture.json'))
