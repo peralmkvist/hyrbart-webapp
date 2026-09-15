@@ -1,14 +1,14 @@
 import { RENTAL_TERMS_VERSION } from '@/lib/legal';
+import styles from './page.module.css';
 
 export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const en = locale === 'en';
-  const headingStyle = { maxWidth: 'calc(100% - 56px)', fontSize: 'clamp(2rem, 7vw, 3.8rem)' } as const;
 
   if (en) {
     return <div className="pageShell termsPage">
       <header className="pageHeader termsHeaderSticky">
-        <h1 style={headingStyle}>RENTAL TERMS</h1>
+        <h1 className={styles.heading}>RENTAL TERMS</h1>
         <p>Terms for bookings made through Hyrbart.</p>
         <small>Version {RENTAL_TERMS_VERSION}</small>
       </header>
@@ -24,7 +24,7 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
 
   return <div className="pageShell termsPage">
     <header className="pageHeader termsHeaderSticky">
-      <h1 style={headingStyle}>HYRESVILLKOR</h1>
+      <h1 className={styles.heading}>HYRESVILLKOR</h1>
       <p>Villkor för bokningar som görs via Hyrbart.</p>
       <small>Version {RENTAL_TERMS_VERSION}</small>
     </header>
