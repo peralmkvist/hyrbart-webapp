@@ -7,6 +7,10 @@ import { CalendarIcon, HeartIcon, ListingsIcon, PersonIcon, SearchIcon } from '.
 
 type BookingSummary = { status?: string; role?: 'owner' | 'renter' };
 
+function ModeIcon({ host }: { host: boolean }) {
+  return host ? <ListingsIcon className="navIcon" /> : <SearchIcon className="navIcon" />;
+}
+
 export default function BottomNav() {
   const pathname = usePathname();
   const [hasBookingAction, setHasBookingAction] = useState(false);
@@ -63,6 +67,14 @@ export default function BottomNav() {
     ? { calendar: 'Bookings', listings: 'Listings', profile: 'Profile', aria: 'Host menu' }
     : { calendar: 'Bokningar', listings: 'Annonser', profile: 'Profil', aria: 'Uthyrarmeny' };
 
+  const modeLabel = hostMode
+    ? (isEnglish ? 'Rent' : 'Hyr')
+    : (isEnglish ? 'Rent out' : 'Hyr ut');
+  const modeAria = hostMode
+    ? (isEnglish ? 'Switch to renting' : 'Byt till att hyra')
+    : (isEnglish ? 'Switch to renting out' : 'Byt till att hyra ut');
+  const modeHref = hostMode ? base : `${base}/vard`;
+
   const items = hostMode
     ? [
         { href: `${base}/vard/annonser`, label: hostLabels.listings, Icon: ListingsIcon, booking: false, match: (p: string) => p === `/${locale}/vard/annonser` || p.startsWith(`/${locale}/vard/annonser/`) },
@@ -76,21 +88,33 @@ export default function BottomNav() {
         { href: `${base}/profil`, label: renterLabels.profile, Icon: PersonIcon, booking: false, match: (p: string) => p.startsWith(`/${locale}/profil`) || p.startsWith(`/${locale}/mer`) },
       ];
 
+  const modeSwitch = (
+    <Link href={modeHref} className="navItem modeSwitch" aria-label={modeAria} data-mode-target={hostMode ? 'renter' : 'host'}>
+      <span className="navIconWrap"><ModeIcon host={!hostMode} /></span>
+      <span>{modeLabel}</span>
+    </Link>
+  );
+
   return (
-    <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria}>
-      {items.map(({ href, label, Icon, booking, match }) => {
-        const active = match(appPath);
-        return (
-          <Link key={href} href={href} className={`navItem ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
-            <span className="activeLens" aria-hidden="true" />
-            <span className="navIconWrap">
-              <Icon className="navIcon" />
-              {booking && hasBookingAction ? <span className="bookingNotificationDot" aria-label="Ny bokningsförfrågan" /> : null}
-            </span>
-            <span>{label}</span>
-          </Link>
-        );
-      })}
+    <nav className={`liquidNav ${hostMode ? 'hostNav' : 'renterNav'}`} aria-label={hostMode ? hostLabels.aria : renterLabels.aria} data-mode={hostMode ? 'host' : 'renter'}>
+      {hostMode ? modeSwitch : null}
+      <div className="navDestinations">
+        {items.map(({ href, label, Icon, booking, match }) => {
+          const active = match(appPath);
+          return (
+            <Link key={href} href={href} className={`navItem ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined}>
+              <span className="activeLens" aria-hidden="true" />
+              <span className="navIconWrap">
+                <Icon className="navIcon" />
+                {booking && hasBookingAction ? <span className="bookingNotificationDot" aria-label="Ny bokningsförfrågan" /> : null}
+              </span>
+              <span>{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+      {!hostMode ? modeSwitch : null}
+      <span className="srOnly" aria-live="polite">{hostMode ? (isEnglish ? 'Renting out mode' : 'Uthyrningsläge') : (isEnglish ? 'Renting mode' : 'Hyresläge')}</span>
     </nav>
   );
 }
