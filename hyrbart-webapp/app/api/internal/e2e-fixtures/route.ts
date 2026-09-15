@@ -111,7 +111,12 @@ async function removeBookingsForUsers(userIds:string[]){
   const filters=userIds.flatMap(id=>[`renter_id.eq.${id}`,`owner_id.eq.${id}`]).join(',');
   const {data,error}=await admin.from('bookings').select('id').or(filters);if(error)throw error;
   const ids=(data||[]).map(row=>String(row.id));
-  if(ids.length){await removeConditionObjects(ids);const {error:deleteError}=await admin.from('bookings').delete().in('id',ids);if(deleteError)throw deleteError}
+  if(ids.length){
+    await removeConditionObjects(ids);
+    const {error:agreementDeleteError}=await admin.from('booking_agreements').delete().in('booking_id',ids);if(agreementDeleteError)throw agreementDeleteError;
+    const {error:messageReportDeleteError}=await admin.from('booking_message_reports').delete().in('booking_id',ids);if(messageReportDeleteError)throw messageReportDeleteError;
+    const {error:deleteError}=await admin.from('bookings').delete().in('id',ids);if(deleteError)throw deleteError;
+  }
 }
 
 async function rollbackFailedSeed(runId:string,users:Array<TestUser|undefined>){
