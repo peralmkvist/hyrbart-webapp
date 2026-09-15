@@ -1,4 +1,5 @@
 import { expect, test, type Browser, type BrowserContext } from '@playwright/test';
+import { CATEGORY_TAXONOMY, type CategoryNode } from '../../lib/category-taxonomy-complete';
 import { loadAuthenticatedFixture, type FixtureSession } from './auth-fixture';
 
 const fixture = loadAuthenticatedFixture();
@@ -21,29 +22,29 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
   return context;
 }
 
+function firstLeafPath(nodes: readonly CategoryNode[]): string[] {
+  const first = nodes[0];
+  if (!first) throw new Error('Category taxonomy is empty.');
+  if (!first.children?.length) return [first.name];
+  return [first.name, ...firstLeafPath(first.children)];
+}
+
 async function selectFirstLeafCategory(page: import('@playwright/test').Page) {
   const selects = page.locator('.newListingCategoryPicker select');
   const continueButton = page.getByRole('button', { name: /Fortsätt/ });
+  const path = firstLeafPath(CATEGORY_TAXONOMY);
 
-  for (let depth = 0; depth < 6; depth += 1) {
+  for (let depth = 0; depth < path.length; depth += 1) {
     const current = selects.nth(depth);
-    await expect(current).toBeVisible();
-    await current.selectOption({ index: 1 });
+    await expect(current).toBeVisible({ timeout: 10_000 });
+    await current.selectOption({ label: path[depth] });
 
-    let nextLevelAppeared = false;
-    for (let attempt = 0; attempt < 30; attempt += 1) {
-      if (await continueButton.isEnabled()) return;
-      if (await selects.count() > depth + 1 && await selects.nth(depth + 1).isVisible()) {
-        nextLevelAppeared = true;
-        break;
-      }
-      await page.waitForTimeout(100);
+    if (depth < path.length - 1) {
+      await expect(selects.nth(depth + 1)).toBeVisible({ timeout: 10_000 });
     }
-
-    if (nextLevelAppeared) continue;
-    throw new Error(`Category picker did not settle after selecting level ${depth + 1}.`);
   }
-  throw new Error('Category picker did not reach a leaf within six levels.');
+
+  await expect(continueButton).toBeEnabled({ timeout: 10_000 });
 }
 
 async function continueListing(page: import('@playwright/test').Page) {
