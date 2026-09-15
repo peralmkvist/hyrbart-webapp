@@ -1,0 +1,79 @@
+/* Small cross-page interaction/layout overrides that intentionally load late. */
+
+/* Home search: tapping outside an active search returns it to the original compact state
+   unless a specific search step is still active. */
+.rentalSearchFlow2:not(:has(.rentalSearchSection2.active)):not(:has(.rentalSearchRow2.active)):not(:has(.rentalWhereField2.active)) > .rentalWhenWrap2,
+.rentalSearchFlow2:not(:has(.rentalSearchSection2.active)):not(:has(.rentalSearchRow2.active)):not(:has(.rentalWhereField2.active)) > .rentalWhereWrap2,
+.rentalSearchFlow2:not(:has(.rentalSearchSection2.active)):not(:has(.rentalSearchRow2.active)):not(:has(.rentalWhereField2.active)) > .rentalSearchActions2 {
+  display:none;
+}
+
+/* Renter bookings: align the page heading with the other top-level pages. Scroll the
+   document/list content naturally so the filter rail leaves the viewport instead of
+   covering the first booking card. Keep only the title row sticky. */
+.renterCalendarPage {
+  height:auto!important;
+  min-height:100dvh!important;
+  overflow:visible!important;
+  padding-top:var(--top-page-y)!important;
+}
+.renterCalendarPage .hostCalendarTop {
+  position:-webkit-sticky!important;
+  position:sticky!important;
+  top:0!important;
+  z-index:60!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:0 0 12px!important;
+  background:rgba(250,250,250,.98)!important;
+  backdrop-filter:blur(16px)!important;
+  -webkit-backdrop-filter:blur(16px)!important;
+}
+.renterCalendarPage .hostBookingFilterRail {
+  position:relative!important;
+  top:auto!important;
+  z-index:20!important;
+  margin-top:18px!important;
+  padding-top:0!important;
+  background:var(--bg)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.renterCalendarPage .hostCalendarList {
+  flex:none!important;
+  min-height:auto!important;
+  overflow:visible!important;
+  margin-top:12px!important;
+  padding-bottom:calc(var(--bottom-nav-h) + 30px)!important;
+}
+
+/* Insights is a top-level destination from the profile dashboard. */
+.profileInsightLink {
+  color:inherit!important;
+  text-decoration:none!important;
+  cursor:pointer;
+}
+.profileInsightLink:active {
+  transform:scale(.99);
+}
+.profileInsightsPage .profileSubHeader {
+  position:relative!important;
+  top:auto!important;
+  margin:0!important;
+  padding:0 0 12px!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  gap:10px!important;
+}
+.profileInsightsPage .profileSubHeader > a {
+  width:40px!important;
+  height:40px!important;
+}
+.profileInsightsPage .profileSubHeader h1 {
+  font-size:clamp(2rem,8.8vw,3rem)!important;
+  line-height:.98!important;
+  letter-spacing:-.055em!important;
+  font-weight:850!important;
+}
