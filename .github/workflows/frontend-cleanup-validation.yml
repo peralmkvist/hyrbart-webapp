@@ -1,0 +1,26 @@
+name: Frontend cleanup validation
+
+on:
+  push:
+    branches: [chore/frontend-code-health]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hyrbart-webapp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hyrbart-webapp/package.json
+      - run: npm install --ignore-scripts
+      - run: npm run code-health:frontend
+      - run: npm run test:lifecycle
+      - run: npm run build
