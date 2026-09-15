@@ -22,21 +22,29 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
 }
 
 async function selectStableLeafCategory(page: import('@playwright/test').Page) {
-  const path = [
-    { label: 'Huvudkategori', value: 'Verktyg' },
-    { label: 'Underkategori', value: 'Elverktyg' },
-    { label: 'Detaljkategori', value: 'Borrmaskin' },
-  ] as const;
+  const picker = page.locator('.newListingCategoryPicker');
+  const path = ['Verktyg', 'Elverktyg', 'Borrmaskin'] as const;
 
-  for (const { label, value } of path) {
-    const select = page.getByLabel(label, { exact: true });
+  await expect(picker).toBeVisible({ timeout: 10_000 });
+  await expect(picker.locator('select')).toHaveCount(1, { timeout: 10_000 });
+
+  for (let depth = 0; depth < path.length; depth += 1) {
+    const selects = picker.locator('select');
+    await expect(selects).toHaveCount(depth + 1, { timeout: 10_000 });
+    const select = selects.nth(depth);
+    const value = path[depth];
+
     await expect(select).toBeVisible({ timeout: 10_000 });
     await expect(select.locator(`option[value="${value}"]`)).toHaveCount(1, { timeout: 10_000 });
     await select.selectOption(value);
     await expect(select).toHaveValue(value);
+
+    if (depth < path.length - 1) {
+      await expect(picker.locator('select')).toHaveCount(depth + 2, { timeout: 10_000 });
+    }
   }
 
-  await expect(page.getByText('Verktyg › Elverktyg › Borrmaskin', { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(picker.locator('.newListingCategoryPath')).toHaveText('Verktyg › Elverktyg › Borrmaskin', { timeout: 10_000 });
   await expect(page.getByRole('button', { name: /Fortsätt/ })).toBeEnabled({ timeout: 10_000 });
 }
 
