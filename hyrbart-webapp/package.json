@@ -14,8 +14,8 @@
     "test:e2e:funnel": "playwright test tests/e2e/full-funnel.spec.ts --project=chromium-desktop",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "test:quality": "npm run test:lifecycle && npm run test:e2e",
-    "sanity:schema:validate": "sanity schemas validate --workspace default --level warning",
-    "sanity:schema:deploy": "sanity schemas deploy --workspace default --verbose"
+    "sanity:schema:validate": "npx --yes sanity@latest schemas validate --workspace default --level warning",
+    "sanity:schema:deploy": "npx --yes sanity@latest schemas deploy --workspace default --verbose"
   },
   "dependencies": {
     "@sanity/locale-sv-se": "1.2.38",
