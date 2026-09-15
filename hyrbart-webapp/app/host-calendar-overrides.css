@@ -1,0 +1,57 @@
+/* Host-calendar behavioral overrides.
+   These rules preserve the inner-scroller layout and iOS/PWA safe-area behavior. */
+.hostCalendarPage{
+  height:100dvh!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  padding-top:calc(max(24px, env(safe-area-inset-top)) + 60px)!important;
+}
+
+/* position:fixed is intentionally defined here for compatibility with iOS standalone
+   mode; the later workspace layout override layer may replace it for aligned layouts. */
+.hostCalendarPage .hostCalendarTop{
+  position:fixed!important;
+  top:max(24px, env(safe-area-inset-top))!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(calc(100% - 36px),724px)!important;
+  min-height:48px!important;
+  z-index:300!important;
+  display:flex!important;
+  align-items:center!important;
+  flex:0 0 auto!important;
+  padding:0!important;
+  margin:0!important;
+  background:var(--bg)!important;
+}
+
+.hostCalendarPage .hostCalendarTop::before{
+  content:'';
+  position:absolute;
+  left:-18px;
+  right:-18px;
+  top:calc(-1 * max(24px, env(safe-area-inset-top)));
+  bottom:-10px;
+  z-index:-1;
+  background:var(--bg);
+}
+
+.hostCalendarPage .hostCalendarTop h1{
+  margin-right:auto!important;
+}
+
+.hostCalendarPage .hostCalendarTopActions,
+.hostCalendarPage .hostListingFilter,
+.hostCalendarPage .hostBookingFilterRail{
+  flex:0 0 auto!important;
+}
+
+.hostCalendarPage .hostCalendarList,
+.hostCalendarPage .hostCalendarMonthsScroll{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
