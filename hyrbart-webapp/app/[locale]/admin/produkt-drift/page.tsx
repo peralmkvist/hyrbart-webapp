@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getAdminAccess } from '@/lib/admin';
 import { createAdminClient } from '@/lib/supabase/admin';
+import styles from './page.module.css';
 
 const TRACKING_STARTED_AT = '2026-09-14T18:42:40.000Z';
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -13,8 +14,8 @@ function exactCount(query: PromiseLike<{ count: number | null; error: any }>) {
   return query.then(({ count, error }) => { if (error) throw error; return count || 0; });
 }
 function metric(label: string, value: string | number, hint?: string) {
-  return <div style={{border:'1px solid var(--line)',borderRadius:18,padding:'16px 18px',background:'#fff'}}>
-    <b style={{fontSize:30,display:'block'}}>{value}</b><span style={{fontWeight:850}}>{label}</span>{hint?<small style={{display:'block',marginTop:5,color:'var(--muted)'}}>{hint}</small>:null}
+  return <div className={styles.metric}>
+    <b className={styles.metricValue}>{value}</b><span className={styles.metricLabel}>{label}</span>{hint?<small className={styles.metricHint}>{hint}</small>:null}
   </div>;
 }
 
@@ -88,33 +89,33 @@ export default async function ProductOperationsDashboard({params,searchParams}:{
     <header className="adminHeader"><div><span>HYRBART ADMIN</span><h1>Produkt & drift</h1><p>Funnel, support, risk, ekonomi och drift i samma operativa vy.</p></div></header>
     <p><Link href={`/${locale}/admin`}>← Till adminöversikten</Link></p>
 
-    <section style={{display:'flex',gap:8,flexWrap:'wrap',margin:'14px 0 20px'}}>
+    <section className={styles.links}>
       {[7,30,90].map(d=><Link key={d} className="modeSwitchButton" href={`/${locale}/admin/produkt-drift?days=${d}`} style={{fontWeight:days===d?950:700}}>{d} dagar</Link>)}
       <Link className="modeSwitchButton" href={`/${locale}/admin/drift`}>Drift & larm →</Link>
       <Link className="modeSwitchButton" href={`/${locale}/admin/ekonomi`}>Ekonomi →</Link>
     </section>
 
-    <section style={{border:`1px solid ${trackingConsistent?'#c9dfb2':'#f1c7a8'}`,background:trackingConsistent?'#f6ffe9':'#fff7ee',borderRadius:18,padding:'14px 16px',marginBottom:20}}>
+    <section className={`${styles.tracking} ${trackingConsistent?styles.trackingOk:styles.trackingWarning}`}>
       <strong>{trackingConsistent?'Trackingkontroll OK':'Trackingavvikelse'}</strong>
-      <div style={{marginTop:4,color:'var(--muted)'}}>Sedan {new Date(coverageStart).toLocaleString('sv-SE')}: {bookingEventCount} `booking_created`-events mot {bookingDirectCount} nya bokningsrader.</div>
+      <div className={styles.trackingCopy}>Sedan {new Date(coverageStart).toLocaleString('sv-SE')}: {bookingEventCount} `booking_created`-events mot {bookingDirectCount} nya bokningsrader.</div>
       {!trackingConsistent?<small>Undersök eventlagret innan funneln används för beslut.</small>:null}
     </section>
 
     <h2>Produkttratt</h2>
-    <p style={{color:'var(--muted)'}}>Eventbaserad funnel från SCRUM-84. Tracking startade {new Date(TRACKING_STARTED_AT).toLocaleString('sv-SE')}.</p>
-    <section style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:10,margin:'14px 0 26px'}}>
-      {funnel.map((item,index)=><div key={item.label} style={{border:'1px solid var(--line)',borderRadius:18,padding:16,background:'#fff'}}><small style={{color:'var(--muted)'}}>Steg {index+1}</small><b style={{fontSize:30,display:'block',margin:'4px 0'}}>{item.value}</b><strong>{item.label}</strong><small style={{display:'block',marginTop:6}}>{item.rate}{item.rate!=='Bas'?' från föregående steg':''}</small></div>)}
+    <p className={styles.muted}>Eventbaserad funnel från SCRUM-84. Tracking startade {new Date(TRACKING_STARTED_AT).toLocaleString('sv-SE')}.</p>
+    <section className={styles.funnel}>
+      {funnel.map((item,index)=><div key={item.label} className={styles.funnelCard}><small className={styles.step}>Steg {index+1}</small><b className={styles.funnelValue}>{item.value}</b><strong>{item.label}</strong><small className={styles.rate}>{item.rate}{item.rate!=='Bas'?' från föregående steg':''}</small></div>)}
     </section>
 
     <h2>Bokningar</h2>
-    <section style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(145px,1fr))',gap:10,margin:'14px 0 26px'}}>
+    <section className={styles.metrics145}>
       {Array.from(statusCounts.entries()).sort((a,b)=>b[1]-a[1]).map(([status,count])=>metric(status,count))}
       {!statusCounts.size?metric('Bokningar i perioden',0):null}
       {metric('Nekade övergångar',declined,'Eventbaserat')}
     </section>
 
     <h2>Support & risk</h2>
-    <section style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10,margin:'14px 0 26px'}}>
+    <section className={styles.metrics180}>
       {metric('Aktiva supportärenden',activeCases)}
       {metric('Öppna riskflaggor',activeFlags)}
       {metric('Begränsade/frysta konton',restrictedUsers)}
@@ -122,7 +123,7 @@ export default async function ProductOperationsDashboard({params,searchParams}:{
     </section>
 
     <h2>Ekonomi</h2>
-    <section style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10,margin:'14px 0 26px'}}>
+    <section className={styles.metrics180}>
       {metric('Captures',money(capturedAmount))}
       {metric('Service fees',money(serviceFees))}
       {metric('Refunds',money(refunds))}
@@ -131,14 +132,14 @@ export default async function ProductOperationsDashboard({params,searchParams}:{
     </section>
 
     <h2>Drifthälsa</h2>
-    <section style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(120px,1fr))',gap:10,margin:'14px 0 16px'}}>
+    <section className={styles.health}>
       {metric('Critical',criticalOps)}{metric('Errors',errorOps)}{metric('Warnings',warningOps)}
     </section>
     <section className="adminQueue">
-      {(ops as any[]).map((event:any)=><div key={`${event.correlation_id}-${event.created_at}`} className="adminCaseRow" style={{gridTemplateColumns:'1fr auto'}}><div><span>{new Date(event.created_at).toLocaleString('sv-SE')} · {event.severity.toUpperCase()}</span><strong>{event.event_type}</strong><small>{event.source}</small></div><Link href={`/${locale}/admin/drift?correlation=${encodeURIComponent(event.correlation_id)}`}>Trace →</Link></div>)}
+      {(ops as any[]).map((event:any)=><div key={`${event.correlation_id}-${event.created_at}`} className={`adminCaseRow ${styles.caseRow}`}><div><span>{new Date(event.created_at).toLocaleString('sv-SE')} · {event.severity.toUpperCase()}</span><strong>{event.event_type}</strong><small>{event.source}</small></div><Link href={`/${locale}/admin/drift?correlation=${encodeURIComponent(event.correlation_id)}`}>Trace →</Link></div>)}
       {!ops.length?<div className="adminEmpty">Inga persistenta driftlarm i perioden.</div>:null}
     </section>
 
-    <p style={{color:'var(--muted)',fontSize:12,marginTop:18}}>Period: senaste {days} dagar. Funnelns första möjliga datapunkt begränsas av eventkontraktets starttid. Ekonomisiffror bygger på ledgerposter, inte beräknade annonspriser.</p>
+    <p className={styles.footnote}>Period: senaste {days} dagar. Funnelns första möjliga datapunkt begränsas av eventkontraktets starttid. Ekonomisiffror bygger på ledgerposter, inte beräknade annonspriser.</p>
   </main>;
 }
