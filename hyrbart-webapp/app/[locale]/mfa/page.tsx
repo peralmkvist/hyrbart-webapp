@@ -1,5 +1,7 @@
 import UserMfaChallenge from '@/components/UserMfaChallenge';
 
+export const dynamic = 'force-dynamic';
+
 export default async function MfaPage({params}:{params:Promise<{locale:string}>}){
   const {locale}=await params;
   const en=locale==='en';
