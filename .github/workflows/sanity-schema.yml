@@ -9,7 +9,6 @@ on:
       - 'hyrbart-webapp/sanity/**'
       - 'hyrbart-webapp/lib/category-taxonomy-complete.ts'
       - 'hyrbart-webapp/package.json'
-      - 'hyrbart-webapp/package-lock.json'
       - '.github/workflows/sanity-schema.yml'
   workflow_dispatch:
     inputs:
@@ -34,8 +33,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: hyrbart-webapp/package-lock.json
-      - run: npm ci --ignore-scripts
+          cache-dependency-path: hyrbart-webapp/package.json
+      - run: npm install --ignore-scripts
       - name: Validate Sanity schema
         run: npm run sanity:schema:validate
 
@@ -52,8 +51,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: hyrbart-webapp/package-lock.json
-      - run: npm ci --ignore-scripts
+          cache-dependency-path: hyrbart-webapp/package.json
+      - run: npm install --ignore-scripts
       - name: Require deploy token
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_DEPLOY_TOKEN }}
