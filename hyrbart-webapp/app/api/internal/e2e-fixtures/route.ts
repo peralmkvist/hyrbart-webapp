@@ -75,6 +75,22 @@ async function makeTestUser(role:'renter'|'owner',runId:string):Promise<TestUser
   }
 }
 
+async function seedHostPickupLocation(ownerId:string){
+  const admin=createAdminClient();
+  const {error}=await admin.from('host_pickup_locations').insert({
+    user_id:ownerId,
+    name:'E2E utlämning',
+    label:'E2E utlämning',
+    city:'Test',
+    area:'Testområde',
+    address:'E2E-gatan 1',
+    lat:59.332,
+    lng:18.064,
+    sort_order:0,
+  });
+  if(error)throw error;
+}
+
 async function seedBookings(renterId:string,ownerId:string,runId:string):Promise<BookingSeed[]>{
   const admin=createAdminClient();
   const productId=productIdForRun(runId);
@@ -119,6 +135,7 @@ export async function POST(request:Request){
     await seedSanityOwner(runId);
     renter=await makeTestUser('renter',runId);
     owner=await makeTestUser('owner',runId);
+    await seedHostPickupLocation(owner.id);
     const bookings=await seedBookings(renter.id,owner.id,runId);
     return NextResponse.json({ok:true,runId,users:{renter,owner},bookings:Object.fromEntries(bookings.map(item=>[item.label,item.id])),sanity:{ownerProfileId:sanityProfileId(runId),pickupLocationId:sanityPickupId(runId)},supabaseUrl:process.env.NEXT_PUBLIC_SUPABASE_URL,publishableKey:process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY},{headers:{'cache-control':'no-store'}})
   }catch(error){
