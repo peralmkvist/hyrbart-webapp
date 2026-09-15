@@ -24,3 +24,11 @@ jobs:
       - run: npm run code-health:frontend
       - run: npm run test:lifecycle
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-cleanup-playwright-report
+          path: hyrbart-webapp/playwright-report/
+          retention-days: 7
