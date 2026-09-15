@@ -112,7 +112,7 @@ export default function HostCalendar({ locale, onOpenAutomations }: { locale: st
 
   const visibleGroups = useMemo(() => {
     const groups = [
-      { key:'action' as const, title:en?'Needs action':'Behöver åtgärd', items:groupedBookings.action },
+      { key:'action' as const, title:en?'Requests':'Förfrågningar', items:groupedBookings.action },
       { key:'upcoming' as const, title:en?'Upcoming':'Kommande', items:groupedBookings.upcoming },
       { key:'active' as const, title:en?'Active':'Pågående', items:groupedBookings.active },
       { key:'completed' as const, title:en?'Completed':'Avslutade', items:groupedBookings.completed },
@@ -214,7 +214,7 @@ export default function HostCalendar({ locale, onOpenAutomations }: { locale: st
     {view === 'list' && <div className="hostBookingFilterRail" role="tablist" aria-label={en?'Filter bookings':'Filtrera bokningar'}>
       {([
         ['all', en?'All':'Alla'],
-        ['action', en?'Needs action':'Behöver åtgärd'],
+        ['action', en?'Requests':'Förfrågningar'],
         ['upcoming', en?'Upcoming':'Kommande'],
         ['active', en?'Active':'Pågående'],
         ['completed', en?'Completed':'Avslutade'],
