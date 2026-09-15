@@ -51,6 +51,9 @@ jobs:
   authenticated-pr:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      RECOVERY_PREVIEW_URL: https://hyrbart-webapp-git-recovery-sanity-rebuild-2026-09-15-hygglo1.vercel.app
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     defaults:
       run:
         working-directory: hyrbart-webapp
@@ -63,14 +66,34 @@ jobs:
           cache-dependency-path: hyrbart-webapp/package.json
       - run: npm install --ignore-scripts
       - run: npx playwright install --with-deps chromium
-      - name: Seed isolated authenticated fixture
+      - name: Require Vercel automation bypass secret
+        run: test -n "$VERCEL_AUTOMATION_BYPASS_SECRET"
+      - name: Wait for matching recovery preview deployment
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 72); do
+            DEPLOYED_SHA=$(curl -fsSL \
+              -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
+              -H 'x-vercel-set-bypass-cookie: true' \
+              "$RECOVERY_PREVIEW_URL/api/health" 2>/dev/null | python3 -c 'import sys,json; print(json.load(sys.stdin).get("commit") or "")' 2>/dev/null || true)
+            if [ "$DEPLOYED_SHA" = "$GITHUB_SHA" ]; then
+              echo "Recovery preview is running $GITHUB_SHA"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Recovery preview did not reach $GITHUB_SHA within 12 minutes" >&2
+          exit 1
+      - name: Seed isolated authenticated preview fixture
         run: |
           set -euo pipefail
           TOKEN_JSON=$(curl -fsSL -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=hyrbart-e2e")
           OIDC_TOKEN=$(printf '%s' "$TOKEN_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["value"])')
           echo "::add-mask::$OIDC_TOKEN"
           RUN_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_JOB}"
-          FIXTURE=$(curl -fsSL -X POST https://www.hyrbart.se/api/internal/e2e-fixtures \
+          FIXTURE=$(curl -fsSL -X POST "$RECOVERY_PREVIEW_URL/api/internal/e2e-fixtures" \
+            -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
+            -H 'x-vercel-set-bypass-cookie: true' \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data "{\"runId\":\"$RUN_ID\"}")
@@ -81,15 +104,21 @@ jobs:
           echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY" >> "$GITHUB_ENV"
           echo "E2E_TEST_SUPPORT=1" >> "$GITHUB_ENV"
           echo "E2E_FIXTURE_PATH=$GITHUB_WORKSPACE/hyrbart-webapp/tests/.auth-fixture.json" >> "$GITHUB_ENV"
-      - name: Authenticated PR accessibility and session smoke
+          echo "E2E_OIDC_TOKEN=$OIDC_TOKEN" >> "$GITHUB_ENV"
+          echo "E2E_BASE_URL=$RECOVERY_PREVIEW_URL" >> "$GITHUB_ENV"
+      - name: Authenticated preview accessibility and session smoke
         run: npm run test:e2e:auth
+      - name: Full listing-to-booking funnel preview E2E
+        run: npm run test:e2e:funnel
+      - name: Full authenticated lifecycle preview E2E
+        run: npm run test:e2e:lifecycle
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: authenticated-pr-playwright-report
           path: hyrbart-webapp/playwright-report/
           retention-days: 7
-      - name: Cleanup authenticated fixture
+      - name: Cleanup authenticated preview fixture
         if: always()
         run: |
           set -euo pipefail
@@ -102,7 +131,9 @@ jobs:
           f=json.load(open('tests/.auth-fixture.json'))
           print(json.dumps({'runId':f['runId'],'bookingIds':list(f['bookings'].values()),'userIds':[f['users']['renter']['id'],f['users']['owner']['id']]}))
           PY
-          curl -fsSL -X DELETE https://www.hyrbart.se/api/internal/e2e-fixtures \
+          curl -fsSL -X DELETE "$RECOVERY_PREVIEW_URL/api/internal/e2e-fixtures" \
+            -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
+            -H 'x-vercel-set-bypass-cookie: true' \
             -H "X-Hyrbart-GitHub-OIDC: $OIDC_TOKEN" \
             -H 'content-type: application/json' \
             --data-binary @tests/.cleanup.json >/dev/null
