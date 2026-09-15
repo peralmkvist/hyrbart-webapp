@@ -20,16 +20,20 @@ async function walk(dir) {
   return files;
 }
 
+async function inspectFiles(files) {
+  return Promise.all(
+    files.map(async (file) => ({
+      file,
+      size: (await stat(file)).size,
+      content: await readFile(file, 'utf8'),
+    })),
+  );
+}
+
 const roots = [appDir, componentDir];
 const files = (await Promise.all(roots.map(walk))).flat();
-const cssFiles = files.filter((file) => file.endsWith('.css'));
-const cssStats = await Promise.all(
-  cssFiles.map(async (file) => ({
-    file,
-    size: (await stat(file)).size,
-    content: await readFile(file, 'utf8'),
-  })),
-);
+const cssStats = await inspectFiles(files.filter((file) => file.endsWith('.css')));
+const sourceStats = await inspectFiles(files.filter((file) => /\.(?:ts|tsx)$/.test(file)));
 
 const globals = await readFile(globalsPath, 'utf8');
 const layout = await readFile(layoutPath, 'utf8');
@@ -39,12 +43,20 @@ const importantCount = cssStats.reduce(
   (total, file) => total + (file.content.match(/!important\b/g) ?? []).length,
   0,
 );
+const inlineStyleCount = sourceStats.reduce(
+  (total, file) => total + (file.content.match(/\bstyle=\{\{/g) ?? []).length,
+  0,
+);
 const suspiciousPatchFiles = cssStats
   .map(({ file }) => path.relative(root, file))
   .filter((file) => /(?:fix(?:es)?|polish)\.css$/i.test(file));
 const largeCssFiles = cssStats
   .filter(({ size }) => size > 12_000)
   .map(({ file, size }) => ({ file: path.relative(root, file), size }));
+const largeSourceFiles = sourceStats
+  .filter(({ size }) => size > 20_000)
+  .map(({ file, size }) => ({ file: path.relative(root, file), size }))
+  .sort((a, b) => b.size - a.size);
 
 const failures = [];
 
@@ -74,14 +86,22 @@ console.log(`- globals.css bytes: ${Buffer.byteLength(globals)}`);
 console.log(`- global stylesheet imports: ${globalCssImports.length}`);
 console.log(`- !important declarations: ${importantCount}`);
 console.log(`- patch/polish stylesheets: ${suspiciousPatchFiles.length}`);
+console.log(`- TS/TSX files inspected: ${sourceStats.length}`);
+console.log(`- inline style objects: ${inlineStyleCount}`);
+console.log(`- TS/TSX files over 20 KB: ${largeSourceFiles.length}`);
 
 if (largeCssFiles.length > 0) {
   console.log('- CSS files over 12 KB:');
   for (const file of largeCssFiles) console.log(`  - ${file.file}: ${file.size} bytes`);
 }
 
+if (largeSourceFiles.length > 0) {
+  console.log('- Large frontend source files (reported, not failed):');
+  for (const file of largeSourceFiles) console.log(`  - ${file.file}: ${file.size} bytes`);
+}
+
 if (suspiciousPatchFiles.length > 0) {
-  console.log('- Remaining migration debt (reported, not failed):');
+  console.log('- Remaining stylesheet migration debt (reported, not failed):');
   for (const file of suspiciousPatchFiles) console.log(`  - ${file}`);
 }
 
