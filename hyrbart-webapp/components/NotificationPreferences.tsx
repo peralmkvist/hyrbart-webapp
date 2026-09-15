@@ -43,6 +43,14 @@ export default function NotificationPreferences({locale}:{locale:string}){
     setSaving('');
   }
 
+  async function resetRecommended(){
+    setSaving('reset');setMessage('');
+    const response=await fetch('/api/notifications/preferences',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reset_recommended'})});
+    if(response.ok){await load();setMessage(en?'Recommended settings restored.':'Rekommenderade inställningar återställda.');}
+    else setMessage(en?'Could not restore recommended settings.':'Kunde inte återställa rekommenderade inställningar.');
+    setSaving('');
+  }
+
   if(loading)return <div style={{padding:'18px 20px'}}>{en?'Loading settings…':'Laddar inställningar…'}</div>;
   const channelHead=(channel:Channel)=>channel==='in_app'?(en?'App':'App'):channel==='push'?'Push':channel==='email'?(en?'Email':'E-post'):'SMS';
   return <div style={{padding:'0 20px 100px',display:'grid',gap:16}}>
@@ -55,11 +63,12 @@ export default function NotificationPreferences({locale}:{locale:string}){
       </div>
     </section>
     <section style={{border:'1px solid var(--line)',borderRadius:18,background:'#fff',overflow:'hidden'}}>
+      <div style={{padding:'14px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,borderBottom:'1px solid var(--line)'}}><div><strong>{en?'Notification preferences':'Notisinställningar'}</strong><div style={{fontSize:12,color:'var(--muted)',marginTop:3}}>{en?'Choose channel per notification type.':'Välj kanal separat för varje notistyp.'}</div></div><button type="button" disabled={saving==='reset'} onClick={()=>void resetRecommended()} style={{border:'1px solid var(--line)',background:'#fff',borderRadius:999,padding:'8px 12px',fontWeight:700,cursor:'pointer'}}>{saving==='reset'?(en?'Restoring…':'Återställer…'):(en?'Restore recommended':'Återställ rekommenderat')}</button></div>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:760}}><thead><tr><th style={{textAlign:'left',padding:'14px 16px'}}>{en?'Notification':'Notistyp'}</th>{(['in_app','push','email','sms'] as Channel[]).map(channel=><th key={channel} style={{padding:'14px 10px',textAlign:'center'}}>{channelHead(channel)}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.type} style={{borderTop:'1px solid var(--line)'}}><td style={{padding:'14px 16px',fontWeight:700}}>{labels[row.type]?.[en?'en':'sv']||row.type}<div style={{fontSize:11,color:'var(--muted)',fontWeight:500,marginTop:3}}>{row.classification==='transactional'?(en?'Transactional':'Transaktionell'):(en?'Optional':'Valbar')} · SLA {row.slaMinutes<60?`${row.slaMinutes} min`:`${Math.round(row.slaMinutes/60)} h`}{row.maxExternalPer24h?` · max ${row.maxExternalPer24h}/24h`:''}</div>{row.mandatoryInApp?<div style={{fontSize:11,color:'var(--muted)',fontWeight:500,marginTop:2}}>{en?'Required in app':'Obligatorisk i appen'}</div>:null}</td>{(['in_app','push','email','sms'] as Channel[]).map(channel=>{
         const disabled=(channel==='in_app'&&row.mandatoryInApp);
         const checked=Boolean(row[channel]);
         const key=`${row.type}:${channel}`;
-        return <td key={channel} style={{padding:'12px 10px',textAlign:'center'}}><input type="checkbox" checked={checked} disabled={disabled||saving===key} onChange={e=>void toggle(row.type,channel,e.target.checked)} aria-label={`${labels[row.type]?.[en?'en':'sv']||row.type} ${channelHead(channel)}`}/></td>;
+        return <td key={channel} style={{padding:'12px 10px',textAlign:'center'}}><input type="checkbox" checked={checked} disabled={disabled||saving===key||saving==='reset'} onChange={e=>void toggle(row.type,channel,e.target.checked)} aria-label={`${labels[row.type]?.[en?'en':'sv']||row.type} ${channelHead(channel)}`}/></td>;
       })}</tr>)}</tbody></table></div>
     </section>
     <p role="status" style={{margin:0,minHeight:20,color:'var(--muted)',fontWeight:700}}>{message}</p>
