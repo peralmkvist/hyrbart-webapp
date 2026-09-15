@@ -1,4 +1,8 @@
-/* Focused rental-search interaction polish. Keep route-specific search behavior here until merged into rental-search.css. */
+/* Rental-search route overrides. Kept after rental-search.css so cascade order stays explicit. */
+.rentPage2{padding-top:max(22px,env(safe-area-inset-top))}
+.rentSticky2{margin-top:0;padding-top:0}
+.rentIntro2{margin-top:20px}
+.hyggloSecondaryLink2{display:none!important}
 
 /* Keep the Hyrbart brand at the same safe top position when the search header becomes sticky. */
 .rentSticky2 {
