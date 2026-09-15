@@ -39,24 +39,35 @@ const globals = await readFile(globalsPath, 'utf8');
 const layout = await readFile(layoutPath, 'utf8');
 const globalCssImports = [...layout.matchAll(/^import ['"](.+\.css)['"];?$/gm)].map((match) => match[1]);
 const duplicateImports = globalCssImports.filter((value, index) => globalCssImports.indexOf(value) !== index);
-const importantCount = cssStats.reduce(
-  (total, file) => total + (file.content.match(/!important\b/g) ?? []).length,
-  0,
-);
-const inlineStyleCount = sourceStats.reduce(
-  (total, file) => total + (file.content.match(/\bstyle=\{\{/g) ?? []).length,
-  0,
-);
-const suspiciousPatchFiles = cssStats
-  .map(({ file }) => path.relative(root, file))
+const cssDebt = cssStats.map((file) => ({
+  file: path.relative(root, file.file),
+  size: file.size,
+  important: (file.content.match(/!important\b/g) ?? []).length,
+}));
+const sourceDebt = sourceStats.map((file) => ({
+  file: path.relative(root, file.file),
+  size: file.size,
+  inlineStyles: (file.content.match(/\bstyle=\{\{/g) ?? []).length,
+}));
+const importantCount = cssDebt.reduce((total, file) => total + file.important, 0);
+const inlineStyleCount = sourceDebt.reduce((total, file) => total + file.inlineStyles, 0);
+const suspiciousPatchFiles = cssDebt
+  .map(({ file }) => file)
   .filter((file) => /(?:fix(?:es)?|polish)\.css$/i.test(file));
-const largeCssFiles = cssStats
+const largeCssFiles = cssDebt
   .filter(({ size }) => size > 12_000)
-  .map(({ file, size }) => ({ file: path.relative(root, file), size }));
-const largeSourceFiles = sourceStats
-  .filter(({ size }) => size > 20_000)
-  .map(({ file, size }) => ({ file: path.relative(root, file), size }))
   .sort((a, b) => b.size - a.size);
+const largeSourceFiles = sourceDebt
+  .filter(({ size }) => size > 20_000)
+  .sort((a, b) => b.size - a.size);
+const topImportantFiles = cssDebt
+  .filter(({ important }) => important > 0)
+  .sort((a, b) => b.important - a.important)
+  .slice(0, 10);
+const topInlineStyleFiles = sourceDebt
+  .filter(({ inlineStyles }) => inlineStyles > 0)
+  .sort((a, b) => b.inlineStyles - a.inlineStyles)
+  .slice(0, 10);
 
 const failures = [];
 
@@ -93,6 +104,16 @@ console.log(`- TS/TSX files over 20 KB: ${largeSourceFiles.length}`);
 if (largeCssFiles.length > 0) {
   console.log('- CSS files over 12 KB:');
   for (const file of largeCssFiles) console.log(`  - ${file.file}: ${file.size} bytes`);
+}
+
+if (topImportantFiles.length > 0) {
+  console.log('- Highest !important counts:');
+  for (const file of topImportantFiles) console.log(`  - ${file.file}: ${file.important}`);
+}
+
+if (topInlineStyleFiles.length > 0) {
+  console.log('- Highest inline-style counts:');
+  for (const file of topInlineStyleFiles) console.log(`  - ${file.file}: ${file.inlineStyles}`);
 }
 
 if (largeSourceFiles.length > 0) {
