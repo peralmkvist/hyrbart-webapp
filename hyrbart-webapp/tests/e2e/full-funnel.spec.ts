@@ -2,7 +2,7 @@ import { expect, test, type Browser, type BrowserContext } from '@playwright/tes
 import { loadAuthenticatedFixture, type FixtureSession } from './auth-fixture';
 
 const fixture = loadAuthenticatedFixture();
-const tinyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII=', 'base64');
+const tinyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAGElEQVR4nGP8f4aBJMBEmvJRDaMahpIGAK90AeujlIFeAAAAAElFTkSuQmCC', 'base64');
 
 function isoDate(days: number) {
   return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
