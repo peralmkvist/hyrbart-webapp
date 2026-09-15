@@ -2,7 +2,7 @@ import { expect, test, type Browser, type BrowserContext } from '@playwright/tes
 import { loadAuthenticatedFixture, type FixtureSession } from './auth-fixture';
 
 const fixture = loadAuthenticatedFixture();
-const tinyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII=', 'base64');
+const tinyPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAGElEQVR4nGP8f4aBJMBEmvJRDaMahpIGAK90AeujlIFeAAAAAElFTkSuQmCC', 'base64');
 
 function isoDate(days: number) {
   return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
@@ -21,15 +21,43 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
   return context;
 }
 
-async function selectFirstLeafCategory(page: import('@playwright/test').Page) {
-  const selects = page.locator('.newListingCategoryPicker select');
-  for (let depth = 0; depth < 6; depth += 1) {
-    await expect(selects.nth(depth)).toBeVisible();
-    await selects.nth(depth).selectOption({ index: 1 });
-    await page.waitForTimeout(50);
-    if (await selects.count() <= depth + 1) return;
+async function selectStableLeafCategory(page: import('@playwright/test').Page) {
+  const picker = page.locator('.newListingCategoryPicker');
+  const path = ['Bygg & verktyg', 'Borrmaskiner och skruvdragare', 'Borrmaskin'] as const;
+  const finalPath = path.join(' › ');
+
+  await expect(picker).toBeVisible({ timeout: 10_000 });
+  await expect(picker.locator('select')).toHaveCount(1, { timeout: 10_000 });
+
+  for (let depth = 0; depth < path.length; depth += 1) {
+    const value = path[depth];
+
+    // A server-rendered select can be visible just before React hydration attaches
+    // its change handler. Require a state-driven effect (the next level, or the
+    // final path) so a DOM-only selectOption can never be mistaken for success.
+    await expect.poll(async () => {
+      const selects = picker.locator('select');
+      if (await selects.count() < depth + 1) return false;
+
+      const select = selects.nth(depth);
+      if (await select.locator(`option[value="${value}"]`).count() !== 1) return false;
+      await select.selectOption(value);
+
+      if (depth < path.length - 1) {
+        return (await picker.locator('select').count()) >= depth + 2;
+      }
+
+      return (await picker.locator('.newListingCategoryPath').textContent()) === finalPath;
+    }, {
+      timeout: 10_000,
+      intervals: [100, 250, 500, 1_000],
+      message: `Category level ${depth + 1} should update hydrated React state.`,
+    }).toBe(true);
+
+    await expect(picker.locator('select').nth(depth)).toHaveValue(value);
   }
-  throw new Error('Category picker did not reach a leaf within six levels.');
+
+  await expect(picker.locator('.newListingCategoryPath')).toHaveText(finalPath, { timeout: 10_000 });
 }
 
 async function continueListing(page: import('@playwright/test').Page) {
@@ -39,9 +67,9 @@ async function continueListing(page: import('@playwright/test').Page) {
 }
 
 test.describe('production full marketplace funnel', () => {
-  // A newly published Sanity listing can legitimately sit behind the 60 s
-  // product cache before it appears in search. Keep assertions strict while
-  // allowing the complete publish → discovery → booking path enough wall time.
+  // Successful listing mutations invalidate the shared Sanity product cache.
+  // Keep a short poll window only for normal request/render propagation; a stale
+  // 60-second cache must no longer be able to make this test pass eventually.
   test.describe.configure({ mode: 'serial', retries: 0, timeout: 210_000 });
 
   let owner: BrowserContext;
@@ -66,10 +94,19 @@ test.describe('production full marketplace funnel', () => {
     await hostPage.goto('/topsecret/sv/vard/annonser/ny', { waitUntil: 'domcontentloaded' });
     await expect(hostPage.getByRole('heading', { name: 'Vad vill du hyra ut?' })).toBeVisible();
 
-    await hostPage.getByLabel('Produkttyp').fill('E2E testprodukt');
-    await hostPage.getByLabel('Varumärke').fill('Hyrbart');
-    await hostPage.getByLabel('Modell / produktnamn').fill(uniqueName);
-    await selectFirstLeafCategory(hostPage);
+    // Category selection now proves that React hydration is active. Fill the
+    // controlled text inputs afterwards so hydration cannot replace their values.
+    await selectStableLeafCategory(hostPage);
+
+    const productType = hostPage.getByLabel('Produkttyp');
+    const brand = hostPage.getByLabel('Varumärke');
+    const productName = hostPage.getByLabel('Modell / produktnamn');
+    await productType.fill('E2E testprodukt');
+    await brand.fill('Hyrbart');
+    await productName.fill(uniqueName);
+    await expect(productType).toHaveValue('E2E testprodukt');
+    await expect(brand).toHaveValue('Hyrbart');
+    await expect(productName).toHaveValue(uniqueName);
     await continueListing(hostPage);
 
     await expect(hostPage.getByRole('heading', { name: 'Lägg till bilder' })).toBeVisible();
@@ -114,14 +151,23 @@ test.describe('production full marketplace funnel', () => {
       await renterPage.goto(searchUrl, { waitUntil: 'domcontentloaded' });
       return result.count();
     }, {
-      timeout: 75_000,
-      intervals: [2_000, 4_000, 8_000, 12_000, 15_000],
-      message: 'Published E2E listing should become visible through the Sanity-backed product search cache.',
+      timeout: 30_000,
+      intervals: [1_000, 2_000, 3_000, 5_000],
+      message: 'Published E2E listing should become visible promptly after the Sanity product cache is invalidated.',
     }).toBeGreaterThan(0);
 
     await expect(result).toBeVisible();
+    const resultHref = await result.getAttribute('href');
+    expect(resultHref).toBeTruthy();
+    expect(resultHref).toContain(String(listing.slug));
     await result.click();
-    await expect(renterPage.getByText(uniqueName, { exact: true })).toBeVisible();
+    await expect(renterPage).toHaveURL(new RegExp(`/${String(listing.slug).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\?|$)`), { timeout: 20_000 });
+
+    // The detail route intentionally renders a loading skeleton while its client
+    // data resolves. Wait for that explicit state to clear instead of racing the
+    // default 5-second assertion against a valid intermediate UI.
+    await expect(renterPage.getByRole('status', { name: 'Laddar' })).toBeHidden({ timeout: 20_000 });
+    await expect(renterPage.getByText(uniqueName, { exact: true })).toBeVisible({ timeout: 20_000 });
 
     const bookingButton = renterPage.getByRole('button', { name: 'Skicka bokningsförfrågan' });
     await expect(bookingButton).toBeEnabled({ timeout: 20_000 });

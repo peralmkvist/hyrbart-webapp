@@ -62,7 +62,7 @@
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  color: #737373 !important;
+  color: var(--muted) !important;
   text-shadow: none !important;
   font-size: 11px !important;
   line-height: 1 !important;

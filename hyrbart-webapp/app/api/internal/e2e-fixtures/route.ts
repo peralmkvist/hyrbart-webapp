@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic';
 
 const PRODUCT_ID = 'bosch-glm-40';
 const CONDITION_BUCKET = 'booking-condition-photos';
-const SANITY_PROJECT_ID = 'djps09z6';
+const SANITY_PROJECT_ID = 'ew1i5o0v';
 const SANITY_DATASET = 'production';
 const SANITY_API_VERSION = '2026-09-08';
+const E2E_AVATAR_URL = 'https://example.com/hyrbart-e2e-avatar.png';
 type Label = 'lifecycle' | 'cancellation' | 'dispute' | 'race';
 type SessionShape = { access_token:string; refresh_token:string; expires_at?:number; expires_in:number; token_type:string };
 type TestUser = { id:string; email:string; session:SessionShape };
@@ -60,7 +61,7 @@ async function makeTestUser(role:'renter'|'owner',runId:string):Promise<TestUser
   const userId=created.user.id;
   try{
     const owner=role==='owner';
-    const {error:profileError}=await admin.from('profiles').upsert({id:userId,display_name:role==='renter'?'E2E Hyrestagare':'E2E Uthyrare',first_name:role==='renter'?'E2E Renter':'E2E Owner',last_name:'CI',city:'Test',payment_method_ready:role==='renter',payout_method_ready:owner,payout_provider_account_id:owner?`e2e-${runId}`:null,sanity_profile_id:owner?sanityProfileId(runId):null,bankid_verified:true,identity_verification_status:'verified',account_status:'active',updated_at:new Date().toISOString()});
+    const {error:profileError}=await admin.from('profiles').upsert({id:userId,display_name:role==='renter'?'E2E Hyrestagare':'E2E Uthyrare',first_name:role==='renter'?'E2E Renter':'E2E Owner',last_name:'CI',city:'Test',avatar_url:E2E_AVATAR_URL,payment_method_ready:role==='renter',payout_method_ready:owner,payout_provider_account_id:owner?`e2e-${runId}`:null,sanity_profile_id:owner?sanityProfileId(runId):null,bankid_verified:true,identity_verification_status:'verified',account_status:'active',updated_at:new Date().toISOString()});
     if(profileError)throw profileError;
     const authClient=createSupabaseClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
     const {data:signedIn,error:signInError}=await authClient.auth.signInWithPassword({email,password});
@@ -72,6 +73,22 @@ async function makeTestUser(role:'renter'|'owner',runId:string):Promise<TestUser
     if(deleteError)console.warn('Could not roll back partially created E2E user',userId,deleteError.message);
     throw error;
   }
+}
+
+async function seedHostPickupLocation(ownerId:string){
+  const admin=createAdminClient();
+  const {error}=await admin.from('host_pickup_locations').insert({
+    user_id:ownerId,
+    name:'E2E utlämning',
+    label:'E2E utlämning',
+    city:'Test',
+    area:'Testområde',
+    address:'E2E-gatan 1',
+    lat:59.332,
+    lng:18.064,
+    sort_order:0,
+  });
+  if(error)throw error;
 }
 
 async function seedBookings(renterId:string,ownerId:string,runId:string):Promise<BookingSeed[]>{
@@ -94,7 +111,12 @@ async function removeBookingsForUsers(userIds:string[]){
   const filters=userIds.flatMap(id=>[`renter_id.eq.${id}`,`owner_id.eq.${id}`]).join(',');
   const {data,error}=await admin.from('bookings').select('id').or(filters);if(error)throw error;
   const ids=(data||[]).map(row=>String(row.id));
-  if(ids.length){await removeConditionObjects(ids);const {error:deleteError}=await admin.from('bookings').delete().in('id',ids);if(deleteError)throw deleteError}
+  if(ids.length){
+    await removeConditionObjects(ids);
+    const {error:agreementDeleteError}=await admin.from('booking_agreements').delete().in('booking_id',ids);if(agreementDeleteError)throw agreementDeleteError;
+    const {error:messageReportDeleteError}=await admin.from('booking_message_reports').delete().in('booking_id',ids);if(messageReportDeleteError)throw messageReportDeleteError;
+    const {error:deleteError}=await admin.from('bookings').delete().in('id',ids);if(deleteError)throw deleteError;
+  }
 }
 
 async function rollbackFailedSeed(runId:string,users:Array<TestUser|undefined>){
@@ -118,6 +140,7 @@ export async function POST(request:Request){
     await seedSanityOwner(runId);
     renter=await makeTestUser('renter',runId);
     owner=await makeTestUser('owner',runId);
+    await seedHostPickupLocation(owner.id);
     const bookings=await seedBookings(renter.id,owner.id,runId);
     return NextResponse.json({ok:true,runId,users:{renter,owner},bookings:Object.fromEntries(bookings.map(item=>[item.label,item.id])),sanity:{ownerProfileId:sanityProfileId(runId),pickupLocationId:sanityPickupId(runId)},supabaseUrl:process.env.NEXT_PUBLIC_SUPABASE_URL,publishableKey:process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY},{headers:{'cache-control':'no-store'}})
   }catch(error){

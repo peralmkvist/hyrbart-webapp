@@ -11,7 +11,8 @@ export default defineConfig({
   name: 'default',
   title: 'Hyrbart',
   basePath: '/studio',
-  projectId: 'djps09z6',
+  // Recovery project replacing the permanently deleted djps09z6 project.
+  projectId: 'ew1i5o0v',
   dataset: 'production',
   plugins: [structureTool(), svSELocale()],
   schema: {
