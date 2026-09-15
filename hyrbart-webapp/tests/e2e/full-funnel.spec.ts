@@ -157,8 +157,17 @@ test.describe('production full marketplace funnel', () => {
     }).toBeGreaterThan(0);
 
     await expect(result).toBeVisible();
+    const resultHref = await result.getAttribute('href');
+    expect(resultHref).toBeTruthy();
+    expect(resultHref).toContain(String(listing.slug));
     await result.click();
-    await expect(renterPage.getByText(uniqueName, { exact: true })).toBeVisible();
+    await expect(renterPage).toHaveURL(new RegExp(`/${String(listing.slug).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\?|$)`), { timeout: 20_000 });
+
+    // The detail route intentionally renders a loading skeleton while its client
+    // data resolves. Wait for that explicit state to clear instead of racing the
+    // default 5-second assertion against a valid intermediate UI.
+    await expect(renterPage.getByRole('status', { name: 'Laddar' })).toBeHidden({ timeout: 20_000 });
+    await expect(renterPage.getByText(uniqueName, { exact: true })).toBeVisible({ timeout: 20_000 });
 
     const bookingButton = renterPage.getByRole('button', { name: 'Skicka bokningsförfrågan' });
     await expect(bookingButton).toBeEnabled({ timeout: 20_000 });
