@@ -15,7 +15,7 @@ export default async function PrivacyPage({ params, searchParams }: { params: Pr
 
   return <section className="ds2Page profileSettingsPage">
     <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{en ? 'Privacy' : 'Sekretess'}</h1></header>
-    <p className="profileSettingsIntro">{en ? 'Control optional data use and find the tools for your personal data. Processing required for bookings, payments, security or legal obligations is kept separate from consent.' : 'Styr valfri användning av data och hitta verktygen för dina personuppgifter. Behandling som krävs för bokningar, betalningar, säkerhet eller rättsliga skyldigheter hålls separat från samtycken.'}</p>
+    <p className="profileSettingsIntro">{en ? 'Control optional data use and read how Hyrbart handles personal data. Processing required for bookings, payments, security or legal obligations is kept separate from consent.' : 'Styr valfri användning av data och läs hur Hyrbart hanterar personuppgifter. Behandling som krävs för bokningar, betalningar, säkerhet eller rättsliga skyldigheter hålls separat från samtycken.'}</p>
 
     <section className="profileSettingsCard">
       <div className="profileSettingsCardHeading"><span>{en ? 'YOUR CHOICES' : 'DINA VAL'}</span><h2>{en ? 'Optional consent' : 'Valfria samtycken'}</h2></div>
@@ -23,7 +23,7 @@ export default async function PrivacyPage({ params, searchParams }: { params: Pr
     </section>
 
     <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'COOKIES' : 'COOKIES'}</span><h2>{en ? 'Cookie settings' : 'Cookieinställningar'}</h2></div>
+      <div className="profileSettingsCardHeading"><span>COOKIES</span><h2>{en ? 'Cookie settings' : 'Cookieinställningar'}</h2></div>
       <p>{en ? 'See which cookies are necessary for sign-in and security and how optional browser storage will be handled.' : 'Se vilka cookies som krävs för inloggning och säkerhet och hur valfri lagring i webbläsaren ska hanteras.'}</p>
       <Link className="profilePrimaryAction" href={`/topsecret/${locale}/profil/sekretess/cookies`}>{en?'Open cookie settings':'Öppna cookieinställningar'}</Link>
     </section>
@@ -32,15 +32,6 @@ export default async function PrivacyPage({ params, searchParams }: { params: Pr
       <div className="profileSettingsCardHeading"><span>{en ? 'PERSONAL DATA' : 'PERSONUPPGIFTER'}</span><h2>{en ? 'How Hyrbart uses your information' : 'Så använder Hyrbart dina uppgifter'}</h2></div>
       <p>{en ? 'Read about categories of data, purposes, rights and the contact path for privacy questions.' : 'Läs om datakategorier, ändamål, rättigheter och kontaktväg för frågor om personuppgifter.'}</p>
       <Link className="profilePrimaryAction" href={`/topsecret/${locale}/profil/sekretess/personuppgifter`}>{en?'Personal data information':'Personuppgiftshantering'}</Link>
-    </section>
-
-    <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'YOUR DATA' : 'DINA DATA'}</span><h2>{en ? 'Export and account deletion' : 'Export och kontoradering'}</h2></div>
-      <p>{en ? 'Secure data export and account deletion require a fresh authentication step and are implemented in SCRUM-22. They are shown here now so this remains their single home.' : 'Säker dataexport och kontoradering kräver aktuell återautentisering och implementeras i SCRUM-22. De visas redan här så att Sekretess förblir deras enda hem.'}</p>
-      <div style={{display:'grid',gap:10}}>
-        <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en?'Download your data — coming next':'Ladda ner dina data — kommer härnäst'}</button>
-        <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en?'Delete my account — coming next':'Ta bort mig som användare — kommer härnäst'}</button>
-      </div>
     </section>
 
     <section className="profileSettingsCard profilePrivacyNotice">
