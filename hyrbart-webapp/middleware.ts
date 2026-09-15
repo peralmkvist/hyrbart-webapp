@@ -8,6 +8,7 @@ const LOCALE_COOKIE = 'hyrbart_locale';
 function appPath(pathname:string){return pathname.startsWith(`${PRIVATE_PREFIX}/`)?pathname.slice(PRIVATE_PREFIX.length):pathname}
 function localeFor(pathname:string,saved:'sv'|'en'){const path=appPath(pathname);return path==='/en'||path.startsWith('/en/')?'en':path==='/sv'||path.startsWith('/sv/')?'sv':saved}
 function isPublicAuthPath(pathname:string){const path=appPath(pathname);return /^\/(sv|en)\/(logga-in|mfa|admin-inloggning|admin-installning|admin-mfa)(\/|$)/.test(path)||/^\/(sv|en)\/auth(\/|$)/.test(path)||path.startsWith('/auth/')}
+function isStudioPath(pathname:string){return pathname==='/studio'||pathname.startsWith('/studio/')}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -57,7 +58,7 @@ export async function middleware(request: NextRequest) {
 
   const {data:{user}}=await supabase.auth.getUser();
   const isApi=pathname==='/api'||pathname.startsWith('/api/');
-  if(!user&&!isApi&&!isPublicAuthPath(pathname)){
+  if(!user&&!isApi&&!isPublicAuthPath(pathname)&&!isStudioPath(pathname)){
     const locale=localeFor(pathname,savedLocale);
     const login=request.nextUrl.clone();
     login.pathname=`${PRIVATE_PREFIX}/${locale}/logga-in`;
