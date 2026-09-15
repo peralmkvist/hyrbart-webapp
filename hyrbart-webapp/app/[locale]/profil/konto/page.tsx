@@ -11,9 +11,7 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
   const { back, section, saved, error, required } = await searchParams;
   const en = locale === 'en';
   const profileSection = section === 'profile';
-  const backHref = profileSection
-    ? (back === 'vard' ? `/topsecret/${locale}/vard/installningar` : `/topsecret/${locale}/profil/installningar`)
-    : (back === 'vard' ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`);
+  const backHref = profileSection ? (back === 'vard' ? `/topsecret/${locale}/vard/installningar` : `/topsecret/${locale}/profil/installningar`) : (back === 'vard' ? `/topsecret/${locale}/vard/profil` : `/topsecret/${locale}/profil`);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/topsecret/${locale}/logga-in?next=${encodeURIComponent(`/topsecret/${locale}/profil/konto`)}`);
@@ -31,45 +29,21 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
     const query = new URLSearchParams();
     if (back) query.set('back', back);
     if (section) query.set('section', section);
-
-    if (bio.length > MAX_BIO_LENGTH) {
-      query.set('error', 'bio-too-long');
-      redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`);
-    }
-
+    if (bio.length > MAX_BIO_LENGTH) { query.set('error', 'bio-too-long'); redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`); }
     if (avatarUrl) {
-      try {
-        const parsed = new URL(avatarUrl);
-        if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('invalid protocol');
-      } catch {
-        query.set('error', 'invalid-avatar-url');
-        redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`);
-      }
+      try { const parsed = new URL(avatarUrl); if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('invalid protocol'); }
+      catch { query.set('error', 'invalid-avatar-url'); redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`); }
     }
-
-    const { error: updateError } = await supabase.from('profiles').update({
-      display_name: displayName || null,
-      city: city || null,
-      avatar_url: avatarUrl || null,
-      bio: bio || null,
-      updated_at: new Date().toISOString(),
-    }).eq('id', user.id);
-    if (updateError) {
-      query.set('error', 'save-failed');
-      redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`);
-    }
-    revalidatePath(`/topsecret/${locale}/profil`);
-    revalidatePath(`/topsecret/${locale}/vard/profil`);
-    revalidatePath(`/${locale}/profil/${user.id}`);
-    query.set('saved', '1');
-    redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`);
+    const { error: updateError } = await supabase.from('profiles').update({ display_name: displayName || null, city: city || null, avatar_url: avatarUrl || null, bio: bio || null, updated_at: new Date().toISOString() }).eq('id', user.id);
+    if (updateError) { query.set('error', 'save-failed'); redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`); }
+    revalidatePath(`/topsecret/${locale}/profil`); revalidatePath(`/topsecret/${locale}/vard/profil`); revalidatePath(`/${locale}/profil/${user.id}`);
+    query.set('saved', '1'); redirect(`/topsecret/${locale}/profil/konto?${query.toString()}`);
   }
 
   const title = profileSection ? (en ? 'Profile settings' : 'Profilinställningar') : (en ? 'Account settings' : 'Kontoinställningar');
   return <section className="ds2Page profileSettingsPage">
     <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{title}</h1></header>
     <p className="profileSettingsIntro">{profileSection ? (en ? 'These profile details are shared between renter and host mode.' : 'De här profiluppgifterna delas mellan hyrar- och uthyrarläget.') : (en ? 'Manage the details connected to your Hyrbart account.' : 'Hantera uppgifterna som hör till ditt Hyrbart-konto.')}</p>
-
     <section className="profileSettingsCard">
       <div className="profileSettingsCardHeading"><span>{en ? 'PROFILE' : 'PROFIL'}</span><h2>{en ? 'Personal details' : 'Personliga uppgifter'}</h2></div>
       {required === 'photo' ? <p role="alert" className="profileSettingsError">{en ? 'Add a profile photo before you can create a listing.' : 'Lägg till en profilbild innan du kan skapa en annons.'}</p> : null}
@@ -86,10 +60,19 @@ export default async function AccountSettingsPage({ params, searchParams }: { pa
         <button type="submit" className="profilePrimaryAction">{en ? 'Save changes' : 'Spara ändringar'}</button>
       </form>
     </section>
-
-    {!profileSection ? <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'SECURITY' : 'SÄKERHET'}</span><h2>{en ? 'Sign-in and account' : 'Inloggning och konto'}</h2></div>
-      <p>{en ? 'Your email address is tied to your sign-in. More security controls can be added here as account management expands.' : 'Din e-postadress är kopplad till inloggningen. Här kan fler säkerhetsinställningar läggas till när kontohanteringen byggs ut.'}</p>
-    </section> : null}
+    {!profileSection ? <>
+      <section className="profileSettingsCard">
+        <div className="profileSettingsCardHeading"><span>{en ? 'SECURITY' : 'SÄKERHET'}</span><h2>{en ? 'Sign-in and account' : 'Inloggning och konto'}</h2></div>
+        <p>{en ? 'Your email address is tied to your sign-in. More security controls can be added here as account management expands.' : 'Din e-postadress är kopplad till inloggningen. Här kan fler säkerhetsinställningar läggas till när kontohanteringen byggs ut.'}</p>
+      </section>
+      <section className="profileSettingsCard">
+        <div className="profileSettingsCardHeading"><span>{en ? 'YOUR DATA' : 'DINA DATA'}</span><h2>{en ? 'Your data and account' : 'Dina data och ditt konto'}</h2></div>
+        <p>{en ? 'Download a copy of your Hyrbart data or request deletion of your account. Both actions require secure verification before they can be completed.' : 'Ladda ner en kopia av dina Hyrbart-data eller begär att ditt konto tas bort. Båda åtgärderna kräver säker verifiering innan de kan genomföras.'}</p>
+        <div style={{display:'grid',gap:10}}>
+          <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en ? 'Download your data' : 'Ladda ner dina data'}</button>
+          <button type="button" className="profilePrimaryAction" disabled aria-disabled="true">{en ? 'Delete my account' : 'Ta bort mig som användare'}</button>
+        </div>
+      </section>
+    </> : null}
   </section>;
 }
