@@ -1,5 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { hasIduraConfig } from '@/lib/idura';
 
 export type IdentityVerificationStatus = 'unverified'|'pending'|'verified'|'failed'|'cancelled'|'review_required'|'revoked';
 export type ProviderResultStatus = Exclude<IdentityVerificationStatus,'unverified'>;
@@ -8,9 +9,12 @@ const isProduction = () => process.env.VERCEL_ENV ? process.env.VERCEL_ENV === '
 
 export function configuredIdentityProvider() {
   const provider = String(process.env.IDENTITY_VERIFICATION_PROVIDER || '').trim().toLowerCase();
-  if (!provider) return null;
-  if (provider === 'mock' && isProduction()) return null;
-  return provider;
+  if (provider) {
+    if (provider === 'mock' && isProduction()) return null;
+    return provider;
+  }
+  if (hasIduraConfig()) return 'idura-bankid';
+  return null;
 }
 
 export async function getIdentityVerificationState(userId:string){
@@ -36,8 +40,8 @@ export async function startIdentityVerification(userId:string,correlationId:stri
   const provider=configuredIdentityProvider();
   if(!provider)return {available:false as const,reason:'PROVIDER_NOT_CONFIGURED' as const};
   const admin=createAdminClient();
-  const {data:latest}=await admin.from('identity_verification_attempts').select('id,status').eq('user_id',userId).order('started_at',{ascending:false}).limit(1).maybeSingle();
-  if(latest?.status==='pending')return {available:true as const,attemptId:latest.id,provider,status:'pending' as const,reused:true};
+  const {data:latest}=await admin.from('identity_verification_attempts').select('id,status,provider').eq('user_id',userId).order('started_at',{ascending:false}).limit(1).maybeSingle();
+  if(latest?.status==='pending'&&latest.provider===provider)return {available:true as const,attemptId:latest.id,provider,status:'pending' as const,reused:true};
   const providerAttemptId=provider==='mock'?`mock_${crypto.randomUUID()}`:null;
   const {data:attempt,error}=await admin.from('identity_verification_attempts').insert({user_id:userId,provider,provider_attempt_id:providerAttemptId,status:'pending'}).select('id,status').single();
   if(error)throw error;
