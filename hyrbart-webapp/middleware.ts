@@ -42,6 +42,10 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
   response.headers.set('X-Request-ID', requestId);
 
+  // Public hyrbart.se/ is intentionally only the logo holding page.
+  // Authentication remains available solely through the private app path.
+  if (pathname === '/') return response;
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!supabaseUrl || !supabaseKey) return response;

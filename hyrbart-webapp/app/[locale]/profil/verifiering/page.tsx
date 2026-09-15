@@ -16,15 +16,15 @@ export default async function VerificationSafetyPage({ params, searchParams }: {
 
   return <section className="ds2Page profileSettingsPage">
     <header className="profileSubHeader"><Link href={backHref} aria-label={en ? 'Back' : 'Tillbaka'}>‹</Link><h1>{en ? 'Verification & safety' : 'Verifiering & trygghet'}</h1></header>
-    <p className="profileSettingsIntro">{en ? 'The same identity verification follows your Hyrbart account whether you rent or host.' : 'Samma identitetsverifiering följer ditt Hyrbart-konto oavsett om du hyr eller hyr ut.'}</p>
+    <p className="profileSettingsIntro">{en ? 'Verify your identity with Swedish BankID. The same verification follows your Hyrbart account whether you rent or host.' : 'Verifiera din identitet med svenskt BankID. Samma verifiering följer ditt Hyrbart-konto oavsett om du hyr eller hyr ut.'}</p>
     <IdentityVerificationPanel locale={locale}/>
     <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'DATA MINIMISATION' : 'DATAMINIMERING'}</span><h2>{en ? 'Hyrbart stores the result, not your identity document' : 'Hyrbart lagrar resultatet, inte din identitetshandling'}</h2></div>
-      <p>{en ? 'The integration contract is designed to retain verification state, provider reference and timestamps only. Personal identity numbers, BankID secrets and raw provider payloads must not be stored in Hyrbart.' : 'Integrationskontraktet är utformat för att endast behålla verifieringsstatus, leverantörsreferens och tidsstämplar. Personnummer, BankID-hemligheter och råa leverantörssvar får inte lagras i Hyrbart.'}</p>
+      <div className="profileSettingsCardHeading"><span>{en ? 'DATA MINIMISATION' : 'DATAMINIMERING'}</span><h2>{en ? 'Hyrbart stores the result, not your BankID credentials' : 'Hyrbart lagrar resultatet, inte dina BankID-uppgifter'}</h2></div>
+      <p>{en ? 'Hyrbart retains verification state, provider and timestamps needed for the service. Personal identity numbers, BankID secrets and raw identity-provider responses are not stored.' : 'Hyrbart sparar verifieringsstatus, leverantör och tidsstämplar som behövs för tjänsten. Personnummer, BankID-hemligheter och råa svar från identitetsleverantören lagras inte.'}</p>
     </section>
     <section className="profileSettingsCard">
-      <div className="profileSettingsCardHeading"><span>{en ? 'SAFETY' : 'TRYGGHET'}</span><h2>{en ? 'One status for both roles' : 'En status för båda rollerna'}</h2></div>
-      <p>{en ? 'Identity status is shared across renting and hosting. The production provider is not connected yet; no local button or mock response can mark a production account as verified.' : 'Identitetsstatus delas mellan hyrar- och uthyrarläget. Produktionsleverantören är ännu inte ansluten; ingen lokal knapp eller mock-respons kan markera ett produktionskonto som verifierat.'}</p>
+      <div className="profileSettingsCardHeading"><span>{en ? 'SAFETY' : 'TRYGGHET'}</span><h2>{en ? 'One verification for both roles' : 'En verifiering för båda rollerna'}</h2></div>
+      <p>{en ? 'Identity status is shared across renting and hosting. Verification is performed through Idura and Swedish BankID and is only attached to the Hyrbart account that started the flow.' : 'Identitetsstatus delas mellan hyrar- och uthyrarläget. Verifieringen görs via Idura och svenskt BankID och kopplas endast till det Hyrbart-konto som startade flödet.'}</p>
     </section>
   </section>;
 }
