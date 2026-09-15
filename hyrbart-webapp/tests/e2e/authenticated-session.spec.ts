@@ -27,11 +27,40 @@ test.describe('authenticated local quality gate', () => {
       const preferences = await context.request.get('/api/notifications/preferences');
       expect(preferences.status()).toBe(200);
       const body = await preferences.json();
-      expect(body.preferences).toMatchObject({
-        push_enabled: true,
-        email_enabled: true,
-        reminder_enabled: true,
-        review_enabled: true,
+
+      expect(Array.isArray(body.preferences)).toBe(true);
+      expect(body.preferences).toHaveLength(8);
+      expect(body.preferences.map((preference: { type: string }) => preference.type)).toEqual(
+        expect.arrayContaining([
+          'follower',
+          'booking',
+          'booking_update',
+          'message',
+          'followed_host_listing',
+          'favorite_price_change',
+          'search_alert',
+          'pickup_return_reminder',
+        ]),
+      );
+
+      const bookingPreference = body.preferences.find(
+        (preference: { type: string }) => preference.type === 'booking',
+      );
+      expect(bookingPreference).toMatchObject({
+        type: 'booking',
+        in_app: true,
+        push: true,
+        email: true,
+        sms: false,
+        mandatoryInApp: true,
+        classification: 'transactional',
+        priority: 'critical',
+        digest: 'none',
+      });
+      expect(body.channels).toMatchObject({
+        push: { available: true },
+        email: { available: true },
+        sms: { active: false },
       });
       await context.close();
     });
