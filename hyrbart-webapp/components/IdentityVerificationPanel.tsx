@@ -27,13 +27,16 @@ export default function IdentityVerificationPanel({locale}:{locale:string}){
   async function start(){
     setBusy(true);setError('');
     try{
-      const response=await fetch('/api/identity-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      const response=await fetch('/api/identity-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({locale})});
       const body=await response.json().catch(()=>({}));
       if(response.status===503&&body.error==='PROVIDER_NOT_CONFIGURED')throw new Error(en?'Identity verification is not connected yet.':'Identitetsverifiering är ännu inte ansluten.');
       if(!response.ok)throw new Error(en?'Verification could not start.':'Verifieringen kunde inte startas.');
+      if(typeof body.redirectUrl==='string'&&body.redirectUrl){
+        window.location.assign(body.redirectUrl);
+        return;
+      }
       await load();
-    }catch(err){setError(err instanceof Error?err.message:String(err));}
-    finally{setBusy(false);}
+    }catch(err){setError(err instanceof Error?err.message:String(err));setBusy(false);}
   }
 
   const status=state?.status||'unverified';
@@ -43,20 +46,20 @@ export default function IdentityVerificationPanel({locale}:{locale:string}){
     unverified:'Inte verifierad',pending:'Verifiering pågår',verified:'Identiteten är verifierad',failed:'Verifieringen misslyckades',cancelled:'Verifieringen avbröts',review_required:'Verifieringen behöver granskas',revoked:'Verifieringen är återkallad'
   };
   const next:Record<string,string>=en?{
-    unverified:'Start verification when a provider is connected.',pending:'No action is needed right now. The provider result will update this status server-side.',verified:'Your verified status is stored server-side. Hyrbart does not need to expose provider identity data here.',failed:'Try again when verification is available, or contact support if the problem remains.',cancelled:'You can start a new verification attempt.',review_required:'The result requires review. Do not start repeated attempts unless support asks you to.',revoked:'Your previous verification is no longer valid. A new verification will be required.'
+    unverified:'Verify your identity securely with Swedish BankID.',pending:'A verification attempt is in progress. You can continue it with BankID.',verified:'Your identity has been verified. Hyrbart stores the verification result, not your BankID credentials.',failed:'The verification did not complete. Try again with BankID.',cancelled:'The verification was cancelled. You can start again when you are ready.',review_required:'The result requires review. Do not start repeated attempts unless support asks you to.',revoked:'Your previous verification is no longer valid. Verify again with BankID.'
   }:{
-    unverified:'Starta verifiering när en leverantör är ansluten.',pending:'Du behöver inte göra något just nu. Leverantörens resultat uppdaterar statusen på serversidan.',verified:'Din verifierade status lagras på serversidan. Hyrbart behöver inte visa leverantörens identitetsdata här.',failed:'Försök igen när verifiering är tillgänglig, eller kontakta support om problemet kvarstår.',cancelled:'Du kan starta ett nytt verifieringsförsök.',review_required:'Resultatet behöver granskas. Starta inte upprepade försök om inte support ber dig.',revoked:'Din tidigare verifiering gäller inte längre. En ny verifiering kommer att krävas.'
+    unverified:'Verifiera din identitet säkert med svenskt BankID.',pending:'Ett verifieringsförsök pågår. Du kan fortsätta det med BankID.',verified:'Din identitet är verifierad. Hyrbart lagrar verifieringsresultatet, inte dina BankID-uppgifter.',failed:'Verifieringen slutfördes inte. Försök igen med BankID.',cancelled:'Verifieringen avbröts. Du kan starta igen när du vill.',review_required:'Resultatet behöver granskas. Starta inte upprepade försök om inte support ber dig.',revoked:'Din tidigare verifiering gäller inte längre. Verifiera dig igen med BankID.'
   };
-  const canRetry=['unverified','failed','cancelled','revoked'].includes(status);
+  const canRetry=['unverified','pending','failed','cancelled','revoked'].includes(status);
+  const bankIdConnected=state?.configuredProvider==='idura-bankid';
 
   return <section className="profileSettingsCard">
     <div className="profileSettingsCardHeading"><span>{en?'IDENTITY':'IDENTITET'}</span><h2>{title[status]}</h2></div>
     <p>{next[status]}</p>
-    {state?.provider?<p><strong>{en?'Provider:':'Leverantör:'}</strong> {state.provider}</p>:null}
     {state?.verifiedAt?<p><strong>{en?'Verified:':'Verifierad:'}</strong> {new Date(state.verifiedAt).toLocaleString(en?'en-GB':'sv-SE')}</p>:null}
     {!state?<p>{en?'Loading status…':'Läser status…'}</p>:null}
-    {state&&canRetry&&state.configuredProvider?<button type="button" className="profilePrimaryAction" onClick={start} disabled={busy}>{busy?(en?'Starting…':'Startar…'):(status==='unverified'?(en?'Start verification':'Starta verifiering'):(en?'Try again':'Försök igen'))}</button>:null}
-    {state&&canRetry&&!state.configuredProvider?<p><strong>{en?'Not connected yet.':'Inte ansluten ännu.'}</strong> {en?'Hyrbart will enable this action when the production identity provider has been selected and configured.':'Hyrbart aktiverar åtgärden när produktionsleverantören för identitetsverifiering har valts och konfigurerats.'}</p>:null}
+    {state&&canRetry&&bankIdConnected?<button type="button" className="profilePrimaryAction" onClick={start} disabled={busy}>{busy?(en?'Opening BankID…':'Öppnar BankID…'):(en?'Verify with BankID':'Verifiera med BankID')}</button>:null}
+    {state&&canRetry&&!state.configuredProvider?<p><strong>{en?'Not connected yet.':'Inte ansluten ännu.'}</strong> {en?'Hyrbart will enable this action when the identity provider has been configured.':'Hyrbart aktiverar åtgärden när identitetsleverantören har konfigurerats.'}</p>:null}
     {error?<p role="alert" className="authError">{error}</p>:null}
   </section>;
 }
