@@ -24,27 +24,40 @@ async function authenticatedContext(browser: Browser, session: FixtureSession) {
 async function selectStableLeafCategory(page: import('@playwright/test').Page) {
   const picker = page.locator('.newListingCategoryPicker');
   const path = ['Bygg & verktyg', 'Borrmaskiner och skruvdragare', 'Borrmaskin'] as const;
+  const finalPath = path.join(' › ');
 
   await expect(picker).toBeVisible({ timeout: 10_000 });
   await expect(picker.locator('select')).toHaveCount(1, { timeout: 10_000 });
 
   for (let depth = 0; depth < path.length; depth += 1) {
-    const selects = picker.locator('select');
-    await expect(selects).toHaveCount(depth + 1, { timeout: 10_000 });
-    const select = selects.nth(depth);
     const value = path[depth];
 
-    await expect(select).toBeVisible({ timeout: 10_000 });
-    await expect(select.locator(`option[value="${value}"]`)).toHaveCount(1, { timeout: 10_000 });
-    await select.selectOption(value);
-    await expect(select).toHaveValue(value);
+    // A server-rendered select can be visible just before React hydration attaches
+    // its change handler. Require a state-driven effect (the next level, or the
+    // final path) so a DOM-only selectOption can never be mistaken for success.
+    await expect.poll(async () => {
+      const selects = picker.locator('select');
+      if (await selects.count() < depth + 1) return false;
 
-    if (depth < path.length - 1) {
-      await expect(picker.locator('select')).toHaveCount(depth + 2, { timeout: 10_000 });
-    }
+      const select = selects.nth(depth);
+      if (await select.locator(`option[value="${value}"]`).count() !== 1) return false;
+      await select.selectOption(value);
+
+      if (depth < path.length - 1) {
+        return (await picker.locator('select').count()) >= depth + 2;
+      }
+
+      return (await picker.locator('.newListingCategoryPath').textContent()) === finalPath;
+    }, {
+      timeout: 10_000,
+      intervals: [100, 250, 500, 1_000],
+      message: `Category level ${depth + 1} should update hydrated React state.`,
+    }).toBe(true);
+
+    await expect(picker.locator('select').nth(depth)).toHaveValue(value);
   }
 
-  await expect(picker.locator('.newListingCategoryPath')).toHaveText('Bygg & verktyg › Borrmaskiner och skruvdragare › Borrmaskin', { timeout: 10_000 });
+  await expect(picker.locator('.newListingCategoryPath')).toHaveText(finalPath, { timeout: 10_000 });
 }
 
 async function continueListing(page: import('@playwright/test').Page) {
@@ -81,8 +94,8 @@ test.describe('production full marketplace funnel', () => {
     await hostPage.goto('/topsecret/sv/vard/annonser/ny', { waitUntil: 'domcontentloaded' });
     await expect(hostPage.getByRole('heading', { name: 'Vad vill du hyra ut?' })).toBeVisible();
 
-    // Category selection exercises the hydrated React picker. Fill the controlled
-    // text inputs afterwards so hydration cannot replace their DOM-only values.
+    // Category selection now proves that React hydration is active. Fill the
+    // controlled text inputs afterwards so hydration cannot replace their values.
     await selectStableLeafCategory(hostPage);
 
     const productType = hostPage.getByLabel('Produkttyp');
