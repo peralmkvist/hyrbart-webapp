@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import styles from './NotificationPreferences.module.css';
 
 type Channel='in_app'|'push'|'email'|'sms';
 type Row={type:string;in_app:boolean;push:boolean;email:boolean;sms:boolean;mandatoryInApp:boolean;classification:'transactional'|'optional_product';priority:string;slaMinutes:number;recipient:string;maxExternalPer24h:number|null;digest:'none'|'eligible'};
@@ -51,27 +52,27 @@ export default function NotificationPreferences({locale}:{locale:string}){
     setSaving('');
   }
 
-  if(loading)return <div style={{padding:'18px 20px'}}>{en?'Loading settings…':'Laddar inställningar…'}</div>;
+  if(loading)return <div className={styles.loading}>{en?'Loading settings…':'Laddar inställningar…'}</div>;
   const channelHead=(channel:Channel)=>channel==='in_app'?(en?'App':'App'):channel==='push'?'Push':channel==='email'?(en?'Email':'E-post'):'SMS';
-  return <div style={{padding:'0 20px 100px',display:'grid',gap:16}}>
-    <section style={{padding:16,border:'1px solid var(--line)',borderRadius:18,background:'#fff'}}>
+  return <div className={styles.page}>
+    <section className={styles.channelCard}>
       <strong>{en?'Channels':'Kanaler'}</strong>
-      <div style={{display:'grid',gap:6,marginTop:8,fontSize:13,color:'var(--muted)'}}>
+      <div className={styles.channelList}>
         <span>Push: {channels?.push.active?(en?'active on this account':'aktiv på kontot'):(en?'not activated on a device yet':'inte aktiverad på någon enhet ännu')}</span>
         <span>{en?'Email':'E-post'}: {channels?.email.active?(en?'available':'tillgänglig'):(en?'requires a verified email and configured delivery provider':'kräver verifierad e-post och konfigurerad leverans')}</span>
         <span>SMS: {channels?.sms.active?(en?'active':'aktiv'):(en?'preference can be saved now; delivery provider is not active yet':'inställningen kan sparas nu; leveransleverantör är ännu inte aktiv')}</span>
       </div>
     </section>
-    <section style={{border:'1px solid var(--line)',borderRadius:18,background:'#fff',overflow:'hidden'}}>
-      <div style={{padding:'14px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,borderBottom:'1px solid var(--line)'}}><div><strong>{en?'Notification preferences':'Notisinställningar'}</strong><div style={{fontSize:12,color:'var(--muted)',marginTop:3}}>{en?'Choose channel per notification type.':'Välj kanal separat för varje notistyp.'}</div></div><button type="button" disabled={saving==='reset'} onClick={()=>void resetRecommended()} style={{border:'1px solid var(--line)',background:'#fff',borderRadius:999,padding:'8px 12px',fontWeight:700,cursor:'pointer'}}>{saving==='reset'?(en?'Restoring…':'Återställer…'):(en?'Restore recommended':'Återställ rekommenderat')}</button></div>
-      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:760}}><thead><tr><th style={{textAlign:'left',padding:'14px 16px'}}>{en?'Notification':'Notistyp'}</th>{(['in_app','push','email','sms'] as Channel[]).map(channel=><th key={channel} style={{padding:'14px 10px',textAlign:'center'}}>{channelHead(channel)}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.type} style={{borderTop:'1px solid var(--line)'}}><td style={{padding:'14px 16px',fontWeight:700}}>{labels[row.type]?.[en?'en':'sv']||row.type}<div style={{fontSize:11,color:'var(--muted)',fontWeight:500,marginTop:3}}>{row.classification==='transactional'?(en?'Transactional':'Transaktionell'):(en?'Optional':'Valbar')} · SLA {row.slaMinutes<60?`${row.slaMinutes} min`:`${Math.round(row.slaMinutes/60)} h`}{row.maxExternalPer24h?` · max ${row.maxExternalPer24h}/24h`:''}</div>{row.mandatoryInApp?<div style={{fontSize:11,color:'var(--muted)',fontWeight:500,marginTop:2}}>{en?'Required in app':'Obligatorisk i appen'}</div>:null}</td>{(['in_app','push','email','sms'] as Channel[]).map(channel=>{
+    <section className={styles.preferencesCard}>
+      <div className={styles.header}><div><strong>{en?'Notification preferences':'Notisinställningar'}</strong><div className={styles.subtext}>{en?'Choose channel per notification type.':'Välj kanal separat för varje notistyp.'}</div></div><button type="button" disabled={saving==='reset'} onClick={()=>void resetRecommended()} className={styles.resetButton}>{saving==='reset'?(en?'Restoring…':'Återställer…'):(en?'Restore recommended':'Återställ rekommenderat')}</button></div>
+      <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th className={styles.leftHead}>{en?'Notification':'Notistyp'}</th>{(['in_app','push','email','sms'] as Channel[]).map(channel=><th key={channel} className={styles.channelHead}>{channelHead(channel)}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.type} className={styles.row}><td className={styles.typeCell}>{labels[row.type]?.[en?'en':'sv']||row.type}<div className={styles.meta}>{row.classification==='transactional'?(en?'Transactional':'Transaktionell'):(en?'Optional':'Valbar')} · SLA {row.slaMinutes<60?`${row.slaMinutes} min`:`${Math.round(row.slaMinutes/60)} h`}{row.maxExternalPer24h?` · max ${row.maxExternalPer24h}/24h`:''}</div>{row.mandatoryInApp?<div className={styles.required}>{en?'Required in app':'Obligatorisk i appen'}</div>:null}</td>{(['in_app','push','email','sms'] as Channel[]).map(channel=>{
         const disabled=(channel==='in_app'&&row.mandatoryInApp);
         const checked=Boolean(row[channel]);
         const key=`${row.type}:${channel}`;
-        return <td key={channel} style={{padding:'12px 10px',textAlign:'center'}}><input type="checkbox" checked={checked} disabled={disabled||saving===key||saving==='reset'} onChange={e=>void toggle(row.type,channel,e.target.checked)} aria-label={`${labels[row.type]?.[en?'en':'sv']||row.type} ${channelHead(channel)}`}/></td>;
+        return <td key={channel} className={styles.checkboxCell}><input type="checkbox" checked={checked} disabled={disabled||saving===key||saving==='reset'} onChange={e=>void toggle(row.type,channel,e.target.checked)} aria-label={`${labels[row.type]?.[en?'en':'sv']||row.type} ${channelHead(channel)}`}/></td>;
       })}</tr>)}</tbody></table></div>
     </section>
-    <p role="status" style={{margin:0,minHeight:20,color:'var(--muted)',fontWeight:700}}>{message}</p>
-    <p style={{margin:0,fontSize:13,color:'var(--muted)'}}>{en?'Required transaction messages remain visible in the app. Optional product notifications follow your choices. Duplicate event keys are suppressed, and optional external notifications are frequency-limited. SMS preferences are stored now but delivery remains inactive until an SMS provider is connected.':'Obligatoriska transaktionsmeddelanden är alltid synliga i appen. Valbara produktnotiser följer dina val. Dubbletter med samma eventnyckel stoppas och valbara externa notiser frekvensbegränsas. SMS-inställningar sparas redan nu men leverans är inaktiv tills en SMS-leverantör kopplats in.'}</p>
+    <p role="status" className={styles.status}>{message}</p>
+    <p className={styles.footnote}>{en?'Required transaction messages remain visible in the app. Optional product notifications follow your choices. Duplicate event keys are suppressed, and optional external notifications are frequency-limited. SMS preferences are stored now but delivery remains inactive until an SMS provider is connected.':'Obligatoriska transaktionsmeddelanden är alltid synliga i appen. Valbara produktnotiser följer dina val. Dubbletter med samma eventnyckel stoppas och valbara externa notiser frekvensbegränsas. SMS-inställningar sparas redan nu men leverans är inaktiv tills en SMS-leverantör kopplats in.'}</p>
   </div>;
 }
